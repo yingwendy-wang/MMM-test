@@ -16,11 +16,11 @@
             justify-content: space-between;
             align-items: center;
             background-color: #349beb;
-            padding: 20px;
+            padding: 25px;
             color: white;
         }
         .navbar .title {
-            font-size: 36px;
+            font-size: 46px;
         }
         .navbar .nav-links {
             list-style: none;
@@ -34,7 +34,7 @@
         .navbar .nav-links a {
             color: white;
             text-decoration: none;
-            font-size: 18px;
+            font-size: 36px;
         }
         .container {
             display: flex;
@@ -63,6 +63,9 @@
         .content img {
             max-width: 100%;
         }
+        .content iframe {
+            max-width: 100%;
+        }
         .hidden {
             display: none;
         }
@@ -73,7 +76,6 @@
 <div class="navbar">
     <div class="title">Multi Modal Mobility</div>
     <ul class="nav-links">
-        // <li><a href="#home">Home</a></li>
         <li><a href="#heatmap">Heatmap</a></li>
         <li><a href="#trajectory">Trajectory</a></li>
         <li><a href="#tabC">C</a></li>
@@ -88,7 +90,7 @@
     </div>
 </div>
 
-<div id="tabA" class="container hidden">
+<div id="heatmap" class="container hidden">
     <div class="sidebar">
         <ul>
             <li><a href="#imageA1" class="image-link" data-target="imageA1">Image 1</a></li>
@@ -113,7 +115,7 @@
     </div>
 </div>
 
-<div id="tabB" class="container hidden">
+<div id="trajectory" class="container hidden">
     <div class="sidebar">
         <ul>
             <li><a href="#imageB1" class="image-link" data-target="imageB1">Image 1</a></li>
