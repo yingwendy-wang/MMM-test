@@ -1,18 +1,197 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Multi Modal Mobility</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi Modal Mobility</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 10px;
+            color: white;
+        }
+        .navbar .title {
+            font-size: 24px;
+        }
+        .navbar .nav-links {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar .nav-links li {
+            margin: 0 15px;
+        }
+        .navbar .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .container {
+            display: flex;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #f4f4f4;
+            padding: 10px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            margin: 10px 0;
+        }
+        .sidebar ul li a {
+            text-decoration: none;
+            color: #333;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+        .content img {
+            max-width: 100%;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Multi Modal Mobility</h1>
-<p>Description.</p>
+<div class="navbar">
+    <div class="title">Multi Modal Mobility</div>
+    <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#tabA">A</a></li>
+        <li><a href="#tabB">B</a></li>
+        <li><a href="#tabC">C</a></li>
+        <li><a href="#about">About</a></li>
+    </ul>
+</div>
 
-<h2>Heatmap</h2>
-<iframe
-  src="heatmap.html"
-  style="width:80%; height:600px;"
-></iframe>
-  
+<div id="home" class="container">
+    <div class="content">
+        <h1>Welcome to the Home Page</h1>
+        <p>This is the home page content.</p>
+    </div>
+</div>
+
+<div id="tabA" class="container hidden">
+    <div class="sidebar">
+        <ul>
+            <li><a href="#imageA1" class="image-link" data-target="imageA1">Image 1</a></li>
+            <li><a href="#imageA2" class="image-link" data-target="imageA2">Image 2</a></li>
+            <li><a href="#imageA3" class="image-link" data-target="imageA3">Image 3</a></li>
+            <li><a href="#imageA4" class="image-link" data-target="imageA4">Image 4</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <div id="imageA1" class="image-content">
+            <img src="images/map_checkin_heatmap.html" alt="Image 1">
+        </div>
+        <div id="imageA2" class="image-content hidden">
+            <img src="images/map_locations_by_category.html" alt="Image 2">
+        </div>
+        <div id="imageA3" class="image-content hidden">
+            <img src="images/map_locations_heatmap.html" alt="Image 3">
+        </div>
+        <div id="imageA4" class="image-content hidden">
+            <img src="images/map_locations_heatmap.html" alt="Image 4">
+        </div>
+    </div>
+</div>
+
+<div id="tabB" class="container hidden">
+    <div class="sidebar">
+        <ul>
+            <li><a href="#imageB1" class="image-link" data-target="imageB1">Image 1</a></li>
+            <li><a href="#imageB2" class="image-link" data-target="imageB2">Image 2</a></li>
+            <li><a href="#imageB3" class="image-link" data-target="imageB3">Image 3</a></li>
+            <li><a href="#imageB4" class="image-link" data-target="imageB4">Image 4</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <div id="imageB1" class="image-content">
+            <img src="images/map_checkin_heatmap.html" alt="Image 1">
+        </div>
+        <div id="imageB2" class="image-content hidden">
+            <img src="images/map_locations_by_category.html" alt="Image 2">
+        </div>
+        <div id="imageB3" class="image-content hidden">
+            <img src="images/map_locations_heatmap.html" alt="Image 3">
+        </div>
+        <div id="imageB4" class="image-content hidden">
+            <img src="images/map_locations_by_category.html" alt="Image 4">
+        </div>
+    </div>
+</div>
+
+<div id="tabC" class="container hidden">
+    <div class="sidebar">
+        <ul>
+            <li><a href="#imageC1" class="image-link" data-target="imageC1">Image 1</a></li>
+            <li><a href="#imageC2" class="image-link" data-target="imageC2">Image 2</a></li>
+            <li><a href="#imageC3" class="image-link" data-target="imageC3">Image 3</a></li>
+            <li><a href="#imageC4" class="image-link" data-target="imageC4">Image 4"></a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <div id="imageC1" class="image-content">
+            <img src="images/map_locations_heatmap.html" alt="Image 1">
+        </div>
+        <div id="imageC2" class="image-content hidden">
+            <img src="images/map_locations_by_category.html" alt="Image 2">
+        </div>
+        <div id="imageC3" class="image-content hidden">
+            <img src="images/map_locations_heatmap.html" alt="Image 3">
+        </div>
+        <div id="imageC4" class="image-content hidden">
+            <img src="images/map_locations_by_category.html" alt="Image 4">
+        </div>
+    </div>
+</div>
+
+<div id="about" class="container hidden">
+    <div class="content">
+        <h1>About Us</h1>
+        <p>This is the about page content.</p>
+    </div>
+</div>
+
+<script>
+    // Navigation tabs functionality
+    const navLinks = document.querySelectorAll('.nav-links a');
+    const containers = document.querySelectorAll('.container');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            containers.forEach(container => container.classList.add('hidden'));
+            document.querySelector(this.getAttribute('href')).classList.remove('hidden');
+        });
+    });
+
+    // Image tabs functionality
+    const imageLinks = document.querySelectorAll('.image-link');
+    const imageContents = document.querySelectorAll('.image-content');
+
+    imageLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            imageContents.forEach(content => content.classList.add('hidden'));
+            document.getElementById(this.getAttribute('data-target')).classList.remove('hidden');
+        });
+    });
+</script>
+
 </body>
 </html>
