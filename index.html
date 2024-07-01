@@ -20,7 +20,9 @@
             color: white;
         }
         .navbar .title {
-            font-size: 46px;
+            font-size: 48px;
+            text-decoration: none;
+            color: white;
         }
         .navbar .nav-links {
             list-style: none;
@@ -34,7 +36,7 @@
         .navbar .nav-links a {
             color: white;
             text-decoration: none;
-            font-size: 36px;
+            font-size: 18px;
         }
         .container {
             display: flex;
@@ -54,27 +56,52 @@
         .sidebar ul li a {
             text-decoration: none;
             color: #333;
-            font-size: 28px;
+            padding: 5px;
+            display: block;
+        }
+        .sidebar ul li a.active {
+            background-color: #ddd;
         }
         .content {
             flex: 1;
             padding: 20px;
-        }
-        .content img {
-            max-width: 100%;
+            position: relative;
         }
         .content iframe {
-            max-width: 100%;
+            width: 100%;
+            height: calc(100vh - 50px);
+            border: none;
         }
         .hidden {
             display: none;
+        }
+        .home-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 20px;
+        }
+        .home-content .item {
+            width: 45%;
+            margin: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            text-align: center;
+        }
+        .home-content .item img {
+            width: 100%;
+            height: auto;
+        }
+        .home-content .item .text {
+            padding: 15px;
         }
     </style>
 </head>
 <body>
 
 <div class="navbar">
-    <div class="title">Multi Modal Mobility</div>
+    <a href="#home" class="title">Multi Modal Mobility</a>
     <ul class="nav-links">
         <li><a href="#heatmap">Heatmap</a></li>
         <li><a href="#trajectory">Trajectory</a></li>
@@ -84,84 +111,86 @@
 </div>
 
 <div id="home" class="container">
-    <div class="content">
-        <h1>Welcome to the Home Page</h1>
-        <p>This is the home page content.</p>
+    <div class="content home-content">
+        <div class="item">
+            <img src="images/Picture1.png" alt="Image 1">
+            <div class="text">
+                <h3>Image Title 1</h3>
+                <p>Image description goes here.</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="images/Picture1.png" alt="Image 2">
+            <div class="text">
+                <h3>Image Title 2</h3>
+                <p>Image description goes here.</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="images/Picture1.png" alt="Image 3">
+            <div class="text">
+                <h3>Image Title 3</h3>
+                <p>Image description goes here.</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="images/Picture1.png" alt="Image 4">
+            <div class="text">
+                <h3>Image Title 4</h3>
+                <p>Image description goes here.</p>
+            </div>
+        </div>
     </div>
 </div>
 
 <div id="heatmap" class="container hidden">
     <div class="sidebar">
         <ul>
-            <li><a href="#imageA1" class="image-link" data-target="imageA1">Image 1</a></li>
-            <li><a href="#imageA2" class="image-link" data-target="imageA2">Image 2</a></li>
-            <li><a href="#imageA3" class="image-link" data-target="imageA3">Image 3</a></li>
-            <li><a href="#imageA4" class="image-link" data-target="imageA4">Image 4</a></li>
+            <li><a href="#iframeA1" class="image-link active" data-target="iframeA1">Image 1</a></li>
+            <li><a href="#iframeA2" class="image-link" data-target="iframeA2">Image 2</a></li>
+            <li><a href="#iframeA3" class="image-link" data-target="iframeA3">Image 3</a></li>
+            <li><a href="#iframeA4" class="image-link" data-target="iframeA4">Image 4</a></li>
         </ul>
     </div>
     <div class="content">
-        <div id="imageA1" class="image-content">
-            <iframe src="heatmap.html" style="width:100%; height:500px;"  style="width:80%; height:600px;" alt="Image 1"></iframe>
-        </div>
-        <div id="imageA2" class="image-content hidden">
-            <iframe src="heatmap.html" style="width:100%; height:500px;"  style="width:80%; height:600px;" alt="Image 2"></iframe>
-        </div>
-        <div id="imageA3" class="image-content hidden">
-            <iframe src="heatmap.html" style="width:100%; height:500px;"  style="width:80%; height:600px;" alt="Image 3"></iframe>
-        </div>
-        <div id="imageA4" class="image-content hidden">
-            <iframe src="images/map_locations_heatmap.html" style="width:100%; height:500px;"  style="width:80%; height:600px;" alt="Image 4"></iframe>
-        </div>
+        <iframe id="iframeA1" src="images/map_checkin_heatmap.html"></iframe>
+        <iframe id="iframeA2" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
+        <iframe id="iframeA3" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
+        <iframe id="iframeA4" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
     </div>
 </div>
 
 <div id="trajectory" class="container hidden">
     <div class="sidebar">
         <ul>
-            <li><a href="#imageB1" class="image-link" data-target="imageB1">Image 1</a></li>
-            <li><a href="#imageB2" class="image-link" data-target="imageB2">Image 2</a></li>
-            <li><a href="#imageB3" class="image-link" data-target="imageB3">Image 3</a></li>
-            <li><a href="#imageB4" class="image-link" data-target="imageB4">Image 4</a></li>
+            <li><a href="#iframeB1" class="image-link active" data-target="iframeB1">Image 1</a></li>
+            <li><a href="#iframeB2" class="image-link" data-target="iframeB2">Image 2</a></li>
+            <li><a href="#iframeB3" class="image-link" data-target="iframeB3">Image 3</a></li>
+            <li><a href="#iframeB4" class="image-link" data-target="iframeB4">Image 4</a></li>
         </ul>
     </div>
     <div class="content">
-        <div id="imageB1" class="image-content">
-            <iframe src="images/map_locations_heatmap.html" style="width:100%; height:500px;"  style="width:80%; height:600px;" alt="Image 4"></iframe>
-        </div>
-        <div id="imageB2" class="image-content hidden">
-            <iframe src="images/map_locations_heatmap.html" style="width:100%; height:500px;"  style="width:80%; height:600px;" alt="Image 4"></iframe>
-        </div>
-        <div id="imageB3" class="image-content hidden">
-            <iframe src="images/map_locations_heatmap.html" style="width:100%; height:500px;"  style="width:80%; height:600px;" alt="Image 4"></iframe>
-        </div>
-        <div id="imageB4" class="image-content hidden">
-            <iframe src="images/map_locations_heatmap.html" style="width:100%; height:500px;"  style="width:80%; height:600px;" alt="Image 4"></iframe>
-        </div>
+        <iframe id="iframeB1" src="images/map_checkin_heatmap.html"></iframe>
+        <iframe id="iframeB2" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
+        <iframe id="iframeB3" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
+        <iframe id="iframeB4" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
     </div>
 </div>
 
 <div id="tabC" class="container hidden">
     <div class="sidebar">
         <ul>
-            <li><a href="#imageC1" class="image-link" data-target="imageC1">Image 1</a></li>
-            <li><a href="#imageC2" class="image-link" data-target="imageC2">Image 2</a></li>
-            <li><a href="#imageC3" class="image-link" data-target="imageC3">Image 3</a></li>
-            <li><a href="#imageC4" class="image-link" data-target="imageC4">Image 4"></a></li>
+            <li><a href="#iframeC1" class="image-link active" data-target="iframeC1">Image 1</a></li>
+            <li><a href="#iframeC2" class="image-link" data-target="iframeC2">Image 2</a></li>
+            <li><a href="#iframeC3" class="image-link" data-target="iframeC3">Image 3</a></li>
+            <li><a href="#iframeC4" class="image-link" data-target="iframeC4">Image 4</a></li>
         </ul>
     </div>
     <div class="content">
-        <div id="imageC1" class="image-content">
-            <img src="images/map_locations_heatmap.html" alt="Image 1">
-        </div>
-        <div id="imageC2" class="image-content hidden">
-            <img src="images/map_locations_by_category.html" alt="Image 2">
-        </div>
-        <div id="imageC3" class="image-content hidden">
-            <img src="images/map_locations_heatmap.html" alt="Image 3">
-        </div>
-        <div id="imageC4" class="image-content hidden">
-            <img src="images/map_locations_by_category.html" alt="Image 4">
-        </div>
+        <iframe id="iframeC1" src="images/map_checkin_heatmap.html"></iframe>
+        <iframe id="iframeC2" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
+        <iframe id="iframeC3" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
+        <iframe id="iframeC4" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
     </div>
 </div>
 
@@ -181,6 +210,16 @@
         link.addEventListener('click', function() {
             containers.forEach(container => container.classList.add('hidden'));
             document.querySelector(this.getAttribute('href')).classList.remove('hidden');
+            if (this.getAttribute('href') !== '#home') {
+                const defaultIframe = document.querySelector(`${this.getAttribute('href')} .content iframe`);
+                const allIframes = document.querySelectorAll(`${this.getAttribute('href')} .content iframe`);
+                allIframes.forEach(iframe => iframe.classList.add('hidden'));
+                defaultIframe.classList.remove('hidden');
+                const defaultLink = document.querySelector(`${this.getAttribute('href')} .image-link[data-target="${defaultIframe.id}"]`);
+                const allLinks = document.querySelectorAll(`${this.getAttribute('href')} .image-link`);
+                allLinks.forEach(link => link.classList.remove('active'));
+                defaultLink.classList.add('active');
+            }
         });
     });
 
@@ -190,11 +229,18 @@
 
     imageLinks.forEach(link => {
         link.addEventListener('click', function() {
-            imageContents.forEach(content => content.classList.add('hidden'));
+            const containerId = this.closest('.container').id;
+            const allIframes = document.querySelectorAll(`#${containerId} .content iframe`);
+            allIframes.forEach(iframe => iframe.classList.add('hidden'));
             document.getElementById(this.getAttribute('data-target')).classList.remove('hidden');
+
+            const allLinks = document.querySelectorAll(`#${containerId} .image-link`);
+            allLinks.forEach(link => link.classList.remove('active'));
+            this.classList.add('active');
         });
     });
 </script>
 
 </body>
 </html>
+
