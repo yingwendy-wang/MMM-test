@@ -36,7 +36,7 @@
         .navbar .nav-links a {
             color: white;
             text-decoration: none;
-            font-size: 18px;
+            font-size: 38px;
         }
         .container {
             display: flex;
@@ -209,14 +209,16 @@
     navLinks.forEach(link => {
         link.addEventListener('click', function() {
             containers.forEach(container => container.classList.add('hidden'));
-            document.querySelector(this.getAttribute('href')).classList.remove('hidden');
+            const targetContainer = document.querySelector(this.getAttribute('href'));
+            targetContainer.classList.remove('hidden');
+
             if (this.getAttribute('href') !== '#home') {
-                const defaultIframe = document.querySelector(`${this.getAttribute('href')} .content iframe`);
-                const allIframes = document.querySelectorAll(`${this.getAttribute('href')} .content iframe`);
+                const defaultIframe = targetContainer.querySelector('.content iframe');
+                const allIframes = targetContainer.querySelectorAll('.content iframe');
                 allIframes.forEach(iframe => iframe.classList.add('hidden'));
                 defaultIframe.classList.remove('hidden');
-                const defaultLink = document.querySelector(`${this.getAttribute('href')} .image-link[data-target="${defaultIframe.id}"]`);
-                const allLinks = document.querySelectorAll(`${this.getAttribute('href')} .image-link`);
+                const defaultLink = targetContainer.querySelector(`.image-link[data-target="${defaultIframe.id}"]`);
+                const allLinks = targetContainer.querySelectorAll('.image-link');
                 allLinks.forEach(link => link.classList.remove('active'));
                 defaultLink.classList.add('active');
             }
@@ -225,7 +227,6 @@
 
     // Image tabs functionality
     const imageLinks = document.querySelectorAll('.image-link');
-    const imageContents = document.querySelectorAll('.image-content');
 
     imageLinks.forEach(link => {
         link.addEventListener('click', function() {
@@ -239,6 +240,7 @@
             this.classList.add('active');
         });
     });
+
 </script>
 
 </body>
