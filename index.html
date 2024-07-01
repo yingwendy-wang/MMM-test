@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi Modal Mobility</title>
+    <title>Website Name</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
@@ -15,12 +15,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #349beb;
-            padding: 25px;
+            background-color: #333;
+            padding: 10px;
             color: white;
         }
         .navbar .title {
-            font-size: 48px;
+            font-size: 24px;
             text-decoration: none;
             color: white;
         }
@@ -36,15 +36,20 @@
         .navbar .nav-links a {
             color: white;
             text-decoration: none;
-            font-size: 38px;
+            font-size: 18px;
         }
         .container {
+            display: none;
+            flex: 1;
+            padding: 20px;
+        }
+        .container.active {
             display: flex;
         }
         .sidebar {
             width: 200px;
             background-color: #f4f4f4;
-            padding: 20px;
+            padding: 10px;
         }
         .sidebar ul {
             list-style: none;
@@ -86,6 +91,7 @@
             margin: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
+            overflow: hidden;
             text-align: center;
         }
         .home-content .item img {
@@ -100,40 +106,40 @@
 <body>
 
 <div class="navbar">
-    <a href="#home" class="title">Multi Modal Mobility</a>
+    <a href="#home" class="title" onclick="showTab('home')">Website Name</a>
     <ul class="nav-links">
-        <li><a href="#heatmap">Heatmap</a></li>
-        <li><a href="#trajectory">Trajectory</a></li>
-        <li><a href="#tabC">C</a></li>
-        <li><a href="#about">About</a></li>
+        <li><a href="#tabA" onclick="showTab('tabA')">A</a></li>
+        <li><a href="#tabB" onclick="showTab('tabB')">B</a></li>
+        <li><a href="#tabC" onclick="showTab('tabC')">C</a></li>
+        <li><a href="#about" onclick="showTab('about')">About</a></li>
     </ul>
 </div>
 
-<div id="home" class="container">
+<div id="home" class="container active">
     <div class="content home-content">
         <div class="item">
-            <img src="images/Picture1.png" alt="Image 1">
+            <img src="path/to/your/image1.jpg" alt="Image 1">
             <div class="text">
                 <h3>Image Title 1</h3>
                 <p>Image description goes here.</p>
             </div>
         </div>
         <div class="item">
-            <img src="images/Picture1.png" alt="Image 2">
+            <img src="path/to/your/image2.jpg" alt="Image 2">
             <div class="text">
                 <h3>Image Title 2</h3>
                 <p>Image description goes here.</p>
             </div>
         </div>
         <div class="item">
-            <img src="images/Picture1.png" alt="Image 3">
+            <img src="path/to/your/image3.jpg" alt="Image 3">
             <div class="text">
                 <h3>Image Title 3</h3>
                 <p>Image description goes here.</p>
             </div>
         </div>
         <div class="item">
-            <img src="images/Picture1.png" alt="Image 4">
+            <img src="path/to/your/image4.jpg" alt="Image 4">
             <div class="text">
                 <h3>Image Title 4</h3>
                 <p>Image description goes here.</p>
@@ -142,54 +148,54 @@
     </div>
 </div>
 
-<div id="heatmap" class="container">
+<div id="tabA" class="container">
     <div class="sidebar">
         <ul>
-            <li><a href="#iframeA1" class="image-link active" data-target="iframeA1">Image 1</a></li>
-            <li><a href="#iframeA2" class="image-link" data-target="iframeA2">Image 2</a></li>
-            <li><a href="#iframeA3" class="image-link" data-target="iframeA3">Image 3</a></li>
-            <li><a href="#iframeA4" class="image-link" data-target="iframeA4">Image 4</a></li>
+            <li><a href="#iframeA1" class="image-link active" onclick="showIframe('iframeA1')">Image 1</a></li>
+            <li><a href="#iframeA2" class="image-link" onclick="showIframe('iframeA2')">Image 2</a></li>
+            <li><a href="#iframeA3" class="image-link" onclick="showIframe('iframeA3')">Image 3</a></li>
+            <li><a href="#iframeA4" class="image-link" onclick="showIframe('iframeA4')">Image 4</a></li>
         </ul>
     </div>
     <div class="content">
-        <iframe id="iframeA1" src="images/map_checkin_heatmap.html"></iframe>
-        <iframe id="iframeA2" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
-        <iframe id="iframeA3" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
-        <iframe id="iframeA4" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
+        <iframe id="iframeA1" src="path/to/your/iframe1.html"></iframe>
+        <iframe id="iframeA2" src="path/to/your/iframe2.html" class="hidden"></iframe>
+        <iframe id="iframeA3" src="path/to/your/iframe3.html" class="hidden"></iframe>
+        <iframe id="iframeA4" src="path/to/your/iframe4.html" class="hidden"></iframe>
     </div>
 </div>
 
-<div id="trajectory" class="container">
+<div id="tabB" class="container">
     <div class="sidebar">
         <ul>
-            <li><a href="#iframeB1" class="image-link active" data-target="iframeB1">Image 1</a></li>
-            <li><a href="#iframeB2" class="image-link" data-target="iframeB2">Image 2</a></li>
-            <li><a href="#iframeB3" class="image-link" data-target="iframeB3">Image 3</a></li>
-            <li><a href="#iframeB4" class="image-link" data-target="iframeB4">Image 4</a></li>
+            <li><a href="#iframeB1" class="image-link active" onclick="showIframe('iframeB1')">Image 1</a></li>
+            <li><a href="#iframeB2" class="image-link" onclick="showIframe('iframeB2')">Image 2</a></li>
+            <li><a href="#iframeB3" class="image-link" onclick="showIframe('iframeB3')">Image 3</a></li>
+            <li><a href="#iframeB4" class="image-link" onclick="showIframe('iframeB4')">Image 4</a></li>
         </ul>
     </div>
     <div class="content">
-        <iframe id="iframeB1" src="images/map_checkin_heatmap.html"></iframe>
-        <iframe id="iframeB2" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
-        <iframe id="iframeB3" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
-        <iframe id="iframeB4" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
+        <iframe id="iframeB1" src="path/to/your/iframe1.html"></iframe>
+        <iframe id="iframeB2" src="path/to/your/iframe2.html" class="hidden"></iframe>
+        <iframe id="iframeB3" src="path/to/your/iframe3.html" class="hidden"></iframe>
+        <iframe id="iframeB4" src="path/to/your/iframe4.html" class="hidden"></iframe>
     </div>
 </div>
 
 <div id="tabC" class="container">
     <div class="sidebar">
         <ul>
-            <li><a href="#iframeC1" class="image-link active" data-target="iframeC1">Image 1</a></li>
-            <li><a href="#iframeC2" class="image-link" data-target="iframeC2">Image 2</a></li>
-            <li><a href="#iframeC3" class="image-link" data-target="iframeC3">Image 3</a></li>
-            <li><a href="#iframeC4" class="image-link" data-target="iframeC4">Image 4</a></li>
+            <li><a href="#iframeC1" class="image-link active" onclick="showIframe('iframeC1')">Image 1</a></li>
+            <li><a href="#iframeC2" class="image-link" onclick="showIframe('iframeC2')">Image 2</a></li>
+            <li><a href="#iframeC3" class="image-link" onclick="showIframe('iframeC3')">Image 3</a></li>
+            <li><a href="#iframeC4" class="image-link" onclick="showIframe('iframeC4')">Image 4</a></li>
         </ul>
     </div>
     <div class="content">
-        <iframe id="iframeC1" src="images/map_checkin_heatmap.html"></iframe>
-        <iframe id="iframeC2" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
-        <iframe id="iframeC3" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
-        <iframe id="iframeC4" src="images/map_checkin_heatmap.html" class="hidden"></iframe>
+        <iframe id="iframeC1" src="path/to/your/iframe1.html"></iframe>
+        <iframe id="iframeC2" src="path/to/your/iframe2.html" class="hidden"></iframe>
+        <iframe id="iframeC3" src="path/to/your/iframe3.html" class="hidden"></iframe>
+        <iframe id="iframeC4" src="path/to/your/iframe4.html" class="hidden"></iframe>
     </div>
 </div>
 
@@ -201,24 +207,42 @@
 </div>
 
 <script>
+    // Function to show the selected tab
+    function showTab(tabId) {
+        const containers = document.querySelectorAll('.container');
+        containers.forEach(container => container.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
 
-
-    // Image tabs functionality
-    const imageLinks = document.querySelectorAll('.image-link');
-
-    imageLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            const containerId = this.closest('.container').id;
-            const allIframes = document.querySelectorAll(`#${containerId} .content iframe`);
+               // Show the first iframe in the selected tab
+        const targetContainer = document.getElementById(tabId);
+        if (tabId !== 'home' && tabId !== 'about') {
+            const defaultIframe = targetContainer.querySelector('.content iframe');
+            const allIframes = targetContainer.querySelectorAll('.content iframe');
             allIframes.forEach(iframe => iframe.classList.add('hidden'));
-            document.getElementById(this.getAttribute('data-target')).classList.remove('hidden');
-
-            const allLinks = document.querySelectorAll(`#${containerId} .image-link`);
+            defaultIframe.classList.remove('hidden');
+            const defaultLink = targetContainer.querySelector(`.image-link[data-target="${defaultIframe.id}"]`);
+            const allLinks = targetContainer.querySelectorAll('.image-link');
             allLinks.forEach(link => link.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
+            defaultLink.classList.add('active');
+        }
+    }
 
+    // Function to show the selected iframe
+    function showIframe(iframeId) {
+        const containerId = document.getElementById(iframeId).closest('.container').id;
+        const allIframes = document.querySelectorAll(`#${containerId} .content iframe`);
+        allIframes.forEach(iframe => iframe.classList.add('hidden'));
+        document.getElementById(iframeId).classList.remove('hidden');
+
+        const allLinks = document.querySelectorAll(`#${containerId} .image-link`);
+        allLinks.forEach(link => link.classList.remove('active'));
+        document.querySelector(`.image-link[data-target="${iframeId}"]`).classList.add('active');
+    }
+
+    // Ensure the home tab is shown by default
+    document.addEventListener('DOMContentLoaded', function() {
+        showTab('home');
+    });
 </script>
 
 </body>
