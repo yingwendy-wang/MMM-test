@@ -37,24 +37,19 @@
         <!--Start Tab-->
         <div class="flex-row">
           <div class="flex-item flex-column full-width">
-            <div class="custom-tab" id="custom-tab">
-              <div class="custom-tab-menu left">
-                <a class="custom-tab-menu-item active" data-content="iframe">Iframe</a>
-                <a class="custom-tab-menu-item" data-content="iframe1">Iframe1</a>
-                <a class="custom-tab-menu-item" data-content="iframe2">Iframe2</a>
-              </div>
-              <div class="custom-tab-content no-padding" data-content="iframe">
-                <iframe class="iframe-in-tab" src="https://yenchiah.me/geo-heatmap/smell.html"></iframe>
-              </div>
-              <div class="custom-tab-content no-padding" data-content="iframe1">
-                <iframe class="iframe-in-tab" src="https://yenchiah.me/geo-heatmap/smell.html"></iframe>
-              </div>
-              <div class="custom-tab-content no-padding" data-content="iframe2">
-                <iframe class="iframe-in-tab" src="https://yenchiah.me/geo-heatmap/smell.html"></iframe>
-              </div>
+            <div class="sidebar">
+                <a href="#" onclick="loadIframe('iframe1A')">Option 1</a>
+                <a href="#" onclick="loadIframe('iframe1B')">Option 2</a>
+                <a href="#" onclick="loadIframe('iframe1C')">Option 3</a>
+                <a href="#" onclick="loadIframe('iframe1D')">Option 4</a>
             </div>
+            <iframe id="iframe1A" src="https://yenchiah.me/geo-heatmap/smell.html"></iframe>
+            <iframe id="iframe1B" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
+            <iframe id="iframe1C" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
+            <iframe id="iframe1D" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
           </div>
         </div>
+      </div>
         <!--End Tab-->
       </div>
     </div>
