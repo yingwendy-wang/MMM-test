@@ -246,6 +246,23 @@ hr {
   display: block;
 }
 
+.sidebar {
+  width: 100px;
+  background-color: #f4f4f4;
+  padding: 15px;
+  height: 100vh;
+  box-sizing: border-box;
+}
+.sidebar a {
+  display: block;
+  padding: 10px;
+  color: #333;
+  text-decoration: none;
+}
+.sidebar a:hover {
+  background-color: #ddd;
+}
+
 .content-container {
   z-index: 1;
   position: relative;
