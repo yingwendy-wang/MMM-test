@@ -20,6 +20,7 @@
   <script src="js/widgets.js"></script>
   <script src="js/util.js"></script>
   <script src="js/custom.js"></script>
+  <script src="js/sidebar.js"></script>
   <style>
     .menu-widget2 {
       color: rgb(255, 255, 255) !important;
@@ -78,24 +79,6 @@
             background-color: #495057;
         }
     </style>
-
-    <script>
-        function showIframe(iframeId) {
-            var iframes = document.querySelectorAll('iframe');
-            iframes.forEach(function(iframe) {
-                iframe.style.display = 'none';
-            });
-
-            document.getElementById(iframeId).style.display = 'block';
-
-            var items = document.querySelectorAll('.sidebar ul li');
-            items.forEach(function(item) {
-                item.classList.remove('active');
-            });
-
-            event.target.classList.add('active');
-        }
-    </script>
 </body>
 </html>
 
