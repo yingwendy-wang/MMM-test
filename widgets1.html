@@ -39,13 +39,12 @@
             <li onclick="showIframe('iframe4')"><a>Option 4</a></li>
         </ul>
     </div>
-    <div class="container">
-        <div class="iframe-sidebar">
-            <iframe class="iframe" id="iframe1" src="images/map_checkin_heatmap.html" style="display:block;"></iframe>
-            <iframe class="iframe" id="iframe2" src="images/map_locations_by_category.html" style="display:none;"></iframe>
-            <iframe class="iframe" id="iframe3" src="images/map_locations_heatmap.html" style="display:none;"></iframe>
-            <iframe class="iframe" id="iframe4" src="images/map_checkin_heatmap.html" style="display:none;"></iframe>
-        </div>
+
+    <div class="iframe-container">
+        <iframe class="iframe" id="iframe1" src="images/map_checkin_heatmap.html" style="display:block;"></iframe>
+        <iframe class="iframe" id="iframe2" src="images/map_locations_by_category.html" style="display:none;"></iframe>
+        <iframe class="iframe" id="iframe3" src="images/map_locations_heatmap.html" style="display:none;"></iframe>
+        <iframe class="iframe" id="iframe4" src="images/map_checkin_heatmap.html" style="display:none;"></iframe>
     </div>
 
     <style>
@@ -71,7 +70,7 @@
         }
 
         .regions-nav li a {
-            background: rgba(0,57,73,.65);
+            background: rgba(0,57,73,.70);
             border-radius: 100px;
             color: #fff;
             cursor: pointer;
@@ -82,15 +81,6 @@
             background: #0bb1bf;
         }
 
-        .container {
-            height: calc(100% - 50px); /* Adjust this if your menu height changes */
-            padding-top: 50px; /* Adjust this if your menu height changes */
-        }
-
-        .content {
-            height: 100%;
-            overflow: hidden;
-        }
     </style>
 
     <script>
