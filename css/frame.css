@@ -703,9 +703,9 @@ ol.nested>li:before {
   position: absolute;
   top: 61px;
   bottom: 0;
-  left: 150px;
+  left: 0px;
   height: auto;
-  width: 100%;
+  width: auto;
   min-width: 300px;
 }
 
