@@ -28,38 +28,84 @@
     }
   </style>
 </head>
-  
+
+
 <body>
-    <div class="sidebar">
-        <div class="option" id="option1">
-            <span>Option 1</span>
-            <button class="toggle-button" onclick="toggleIframe(1)">On</button>
-            <div class="iframe-container" id="iframe1">
-                <iframe src="https://yenchiah.me/geo-heatmap/smell.html" frameborder="0"></iframe>
-            </div>
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li class="active" onclick="showIframe('iframe1')">Option 1</li>
+                <li onclick="showIframe('iframe2')">Option 2</li>
+                <li onclick="showIframe('iframe3')">Option 3</li>
+                <li onclick="showIframe('iframe4')">Option 4</li>
+            </ul>
         </div>
-        <div class="option" id="option2">
-            <span>Option 2</span>
-            <button class="toggle-button" onclick="toggleIframe(2)">Off</button>
-            <div class="iframe-container" id="iframe2">
-                <iframe src="https://yenchiah.me/geo-heatmap/smell.html" frameborder="0"></iframe>
-            </div>
-        </div>
-        <div class="option" id="option3">
-            <span>Option 3</span>
-            <button class="toggle-button" onclick="toggleIframe(3)">Off</button>
-            <div class="iframe-container" id="iframe3">
-                <iframe src="https://yenchiah.me/geo-heatmap/smell.html" frameborder="0"></iframe>
-            </div>
-        </div>
-        <div class="option" id="option4">
-            <span>Option 4</span>
-            <button class="toggle-button" onclick="toggleIframe(4)">Off</button>
-            <div class="iframe-container" id="iframe4">
-                <iframe src="https://yenchiah.me/geo-heatmap/smell.html" frameborder="0"></iframe>
-            </div>
+        <div class="content">
+            <iframe id="iframe1" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:block;"></iframe>
+            <iframe id="iframe2" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
+            <iframe id="iframe3" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
+            <iframe id="iframe4" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
         </div>
     </div>
-    <script src="js/sidebar.js"></script>
+
+    <style>
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar ul li:hover, .sidebar ul li.active {
+            background-color: #495057;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+
+    <script>
+        function showIframe(iframeId) {
+            var iframes = document.querySelectorAll('iframe');
+            iframes.forEach(function(iframe) {
+                iframe.style.display = 'none';
+            });
+
+            document.getElementById(iframeId).style.display = 'block';
+
+            var items = document.querySelectorAll('.sidebar ul li');
+            items.forEach(function(item) {
+                item.classList.remove('active');
+            });
+
+            event.target.classList.add('active');
+        }
+    </script>
 </body>
 </html>
+
