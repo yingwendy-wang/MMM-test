@@ -247,20 +247,28 @@ hr {
 }
 
 .sidebar {
-  width: 100px;
-  background-color: #f4f4f4;
-  padding: 15px;
-  height: 100vh;
-  box-sizing: border-box;
+    width: 200px;
+    background-color: #f4f4f4;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
-.sidebar a {
-  display: block;
-  padding: 10px;
-  color: #333;
-  text-decoration: none;
+
+.option {
+    margin-bottom: 20px;
 }
-.sidebar a:hover {
-  background-color: #ddd;
+
+.toggle-button {
+    margin-left: 10px;
+}
+
+.iframe-container {
+    display: none;
+    margin-top: 10px;
+}
+
+.iframe-container iframe {
+    width: 100%;
+    height: 200px;
 }
 
 .content-container {
