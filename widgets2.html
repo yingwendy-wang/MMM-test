@@ -28,21 +28,38 @@
     }
   </style>
 </head>
-
+  
 <body>
-  <div class="menu-container"></div>
-  <div class="content-container">
     <div class="sidebar">
-        <a href="#" onclick="loadIframe('iframe1A')">Option 1</a>
-        <a href="#" onclick="loadIframe('iframe1B')">Option 2</a>
-        <a href="#" onclick="loadIframe('iframe1C')">Option 3</a>
-        <a href="#" onclick="loadIframe('iframe1D')">Option 4</a>
+        <div class="option" id="option1">
+            <span>Option 1</span>
+            <button class="toggle-button" onclick="toggleIframe(1)">On</button>
+            <div class="iframe-container" id="iframe1">
+                <iframe src="https://yenchiah.me/geo-heatmap/smell.html" frameborder="0"></iframe>
+            </div>
+        </div>
+        <div class="option" id="option2">
+            <span>Option 2</span>
+            <button class="toggle-button" onclick="toggleIframe(2)">Off</button>
+            <div class="iframe-container" id="iframe2">
+                <iframe src="https://yenchiah.me/geo-heatmap/smell.html" frameborder="0"></iframe>
+            </div>
+        </div>
+        <div class="option" id="option3">
+            <span>Option 3</span>
+            <button class="toggle-button" onclick="toggleIframe(3)">Off</button>
+            <div class="iframe-container" id="iframe3">
+                <iframe src="https://yenchiah.me/geo-heatmap/smell.html" frameborder="0"></iframe>
+            </div>
+        </div>
+        <div class="option" id="option4">
+            <span>Option 4</span>
+            <button class="toggle-button" onclick="toggleIframe(4)">Off</button>
+            <div class="iframe-container" id="iframe4">
+                <iframe src="https://yenchiah.me/geo-heatmap/smell.html" frameborder="0"></iframe>
+            </div>
+        </div>
     </div>
-    <iframe id="iframe1A" src="https://yenchiah.me/geo-heatmap/smell.html"></iframe>
-    <iframe id="iframe1B" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
-    <iframe id="iframe1C" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
-    <iframe id="iframe1D" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
-  </div>
+    <script src="js/sidebar.js"></script>
 </body>
-
 </html>
