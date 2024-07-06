@@ -31,6 +31,7 @@
 
 
 <body>
+    <div class="menu-container"></div>
     <div class="container">
         <div class="sidebar">
             <ul>
@@ -40,11 +41,11 @@
                 <li onclick="showIframe('iframe4')">Option 4</li>
             </ul>
         </div>
-        <div class="content">
-            <iframe id="iframe1" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:block;"></iframe>
-            <iframe id="iframe2" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
-            <iframe id="iframe3" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
-            <iframe id="iframe4" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
+        <div class="iframe-container">
+            <iframe class="iframe" id="iframe1" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:block;"></iframe>
+            <iframe class="iframe" id="iframe2" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
+            <iframe class="iframe" id="iframe3" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
+            <iframe class="iframe" id="iframe4" src="https://yenchiah.me/geo-heatmap/smell.html" style="display:none;"></iframe>
         </div>
     </div>
 
@@ -55,7 +56,7 @@
         }
 
         .sidebar {
-            width: 200px;
+            width: 150px;
             background-color: #343a40;
             color: white;
             padding: 20px;
