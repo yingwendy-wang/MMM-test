@@ -29,36 +29,87 @@
   </style>
 </head>
 
-<body>
-  <div class="menu-container"></div>
-  <div class="content-container">
-    <div class="content-wide">
-      <div class="content-table flex-column">
-        <!--Start Tab-->
-        <div class="flex-row">
-          <div class="flex-item flex-column full-width">
-            <div class="custom-tab" id="custom-tab">
-              <div class="custom-tab-menu left">
-                <a class="custom-tab-menu-item active" data-content="iframe">Iframe</a>
-                <a class="custom-tab-menu-item" data-content="iframe1">Iframe1</a>
-                <a class="custom-tab-menu-item" data-content="iframe2">Iframe2</a>
-              </div>
-              <div class="custom-tab-content no-padding" data-content="iframe">
-                <iframe class="iframe-in-tab" src="https://yenchiah.me/geo-heatmap/smell.html"></iframe>
-              </div>
-              <div class="custom-tab-content no-padding" data-content="iframe1">
-                <iframe class="iframe-in-tab" src="https://yenchiah.me/geo-heatmap/smell.html"></iframe>
-              </div>
-              <div class="custom-tab-content no-padding" data-content="iframe2">
-                <iframe class="iframe-in-tab" src="https://yenchiah.me/geo-heatmap/smell.html"></iframe>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!--End Tab-->
-      </div>
+<body class="force-no-scroll">
+    <div class="menu-container"></div>
+    <div class="regions-nav">
+        <ul class="nav">
+            <li class="active" onclick="showIframe('iframe1')"><a>Option 1</a></li>
+            <li onclick="showIframe('iframe2')"><a>Option 2</a></li>
+            <li onclick="showIframe('iframe3')"><a>Option 3</a></li>
+            <li onclick="showIframe('iframe4')"><a>Option 4</a></li>
+        </ul>
     </div>
-  </div>
+    <div class="container">
+        <div class="iframe-sidebar">
+            <iframe class="iframe" id="iframe1" src="images/map_checkin_heatmap.html" style="display:block;"></iframe>
+            <iframe class="iframe" id="iframe2" src="images/map_locations_by_category.html" style="display:none;"></iframe>
+            <iframe class="iframe" id="iframe3" src="images/map_locations_heatmap.html" style="display:none;"></iframe>
+            <iframe class="iframe" id="iframe4" src="images/map_checkin_heatmap.html" style="display:none;"></iframe>
+        </div>
+    </div>
+
+    <style>
+        .regions-nav {
+            position: absolute;
+            width: 100%;
+            z-index: 888;
+            top: 8rem;
+        }
+
+        .regions-nav ul.nav {
+            text-align: center;
+        }
+
+        .regions-nav.with_filter ul.nav {
+            padding-right: 375px;
+        }
+
+        .regions-nav li {
+            display: inline-block;
+            float: none;
+            margin: 0 8px;
+        }
+
+        .regions-nav li a {
+            background: rgba(0,57,73,.65);
+            border-radius: 100px;
+            color: #fff;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        .regions-nav li.active > a, .regions-nav li a:hover {
+            background: #0bb1bf;
+        }
+
+        .container {
+            height: calc(100% - 50px); /* Adjust this if your menu height changes */
+            padding-top: 50px; /* Adjust this if your menu height changes */
+        }
+
+        .content {
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+
+    <script>
+        function showIframe(iframeId) {
+            var iframes = document.querySelectorAll('iframe');
+            iframes.forEach(function(iframe) {
+                iframe.style.display = 'none';
+            });
+
+            document.getElementById(iframeId).style.display = 'block';
+
+            var items = document.querySelectorAll('.regions-nav li');
+            items.forEach(function(item) {
+                item.classList.remove('active');
+            });
+
+            event.target.parentElement.classList.add('active');
+        }
+    </script>
 </body>
 
 </html>
