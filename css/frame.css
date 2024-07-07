@@ -87,7 +87,7 @@ hr {
   z-index: 2;
   position: relative;
   : 100%;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(8, 8, 8, 0.8);
   min-: 300px;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
