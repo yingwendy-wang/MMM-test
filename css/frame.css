@@ -937,7 +937,7 @@ ol.nested>li:before {
   }
 }
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1100px) {
   .logo {
     -webkit-tap-highlight-color: transparent;
   }
