@@ -699,14 +699,11 @@ ol.nested>li:before {
   min-width: 300px;
 }
 
-.iframe-sidebar {
-  position: absolute;
-  top: 61px;
-  bottom: 0;
-  left: 150px;
-  height: auto;
+.iframe-in-column {
   width: 100%;
-  min-width: 300px;
+  height: 400px;
+  border: 1px solid #666666;
+  margin: 15px 0;
 }
 
 .iframe {
