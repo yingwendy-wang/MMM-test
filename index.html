@@ -42,6 +42,16 @@
       z-index: 1000;
     }
 
+    #chatbot-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      z-index: 9997;
+    }
+
     /* Gradio app container */
     #chatbot-container {
       position: fixed;
@@ -56,26 +66,7 @@
       background: white;
       overflow: hidden;
     }
-
-    /* Close button */
-    #chatbot-close {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      width: 28px;
-      height: 28px;
-      border: none;
-      background: #ff4b4b;
-      color: white;
-      font-weight: bold;
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 1001;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
+    
     gradio-app {
       width: 100%;
       height: 100%;
@@ -150,25 +141,26 @@
 
   <!-- Gradio container -->
   <div id="chatbot-container">
-    <button id="chatbot-close">&times;</button>
     <gradio-app src="https://yingwendy-wang-mmm-chatbot-01.hf.space"></gradio-app>
   </div>
 
   <script>
     const btn = document.getElementById("chatbot-button");
     const container = document.getElementById("chatbot-container");
-    const closeBtn = document.getElementById("chatbot-close");
+    const overlay = document.getElementById("chatbot-overlay");
 
-    // Show/hide Gradio app when clicking the robot
-    btn.addEventListener("click", () => {
-      container.style.display =
-        container.style.display === "block" ? "none" : "block";
-    });
+    function openChat() {
+      container.style.display = "block";
+      overlay.style.display = "block";
+    }
 
-    // Close button
-    closeBtn.addEventListener("click", () => {
+    function closeChat() {
       container.style.display = "none";
-    });
+      overlay.style.display = "none";
+    }
+
+    btn.addEventListener("click", openChat);
+    overlay.addEventListener("click", closeChat);
   </script>
 </body>
 </html>
