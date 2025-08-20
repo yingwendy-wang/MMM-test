@@ -43,17 +43,42 @@
     }
 
     /* Gradio app container */
-    gradio-app {
+    #chatbot-container {
       position: fixed;
-      bottom: 90px;
+      bottom: 90px; /* distance from bottom of icon */
       right: 20px;
       width: 400px;
       height: 500px;
-      border: 1px solid #ccc;
       border-radius: 12px;
-      display: none; /* hidden until icon is clicked */
+      display: none;
       z-index: 9998;
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      background: white;
+      overflow: hidden;
+    }
+
+    /* Close button */
+    #chatbot-close {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: #ff4b4b;
+      color: white;
+      font-weight: bold;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    gradio-app {
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
@@ -123,16 +148,26 @@
     <i class="fas fa-robot"></i>
   </div>
 
-  <!-- Gradio app -->
-  <gradio-app src="https://yingwendy-wang-mmm-chatbot-01.hf.space"></gradio-app>
+  <!-- Gradio container -->
+  <div id="chatbot-container">
+    <button id="chatbot-close">&times;</button>
+    <gradio-app src="https://yingwendy-wang-mmm-chatbot-01.hf.space"></gradio-app>
+  </div>
 
   <script>
     const btn = document.getElementById("chatbot-button");
-    const gradioApp = document.querySelector("gradio-app");
+    const container = document.getElementById("chatbot-container");
+    const closeBtn = document.getElementById("chatbot-close");
 
+    // Show/hide Gradio app when clicking the robot
     btn.addEventListener("click", () => {
-      gradioApp.style.display =
-        gradioApp.style.display === "block" ? "none" : "block";
+      container.style.display =
+        container.style.display === "block" ? "none" : "block";
+    });
+
+    // Close button
+    closeBtn.addEventListener("click", () => {
+      container.style.display = "none";
     });
   </script>
 </body>
