@@ -136,12 +136,14 @@
 
   <script>
     const btn = document.getElementById("chatbot-button");
-    const gradioApp = document.querySelector("gradio-app");
+    const container = document.getElementById("chatbot-container");
 
+    // Show/hide Gradio app when clicking the robot
     btn.addEventListener("click", () => {
-      gradioApp.style.display =
-        gradioApp.style.display === "block" ? "none" : "block";
+      container.style.display =
+        container.style.display === "block" ? "none" : "block";
     });
+
   </script>
 </body>
 </html>
