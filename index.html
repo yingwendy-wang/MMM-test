@@ -42,16 +42,6 @@
       z-index: 1000;
     }
 
-    #chatbot-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      display: none;
-      z-index: 9997;
-    }
-
     /* Gradio app container */
     #chatbot-container {
       position: fixed;
@@ -146,21 +136,12 @@
 
   <script>
     const btn = document.getElementById("chatbot-button");
-    const container = document.getElementById("chatbot-container");
-    const overlay = document.getElementById("chatbot-overlay");
+    const gradioApp = document.querySelector("gradio-app");
 
-    function openChat() {
-      container.style.display = "block";
-      overlay.style.display = "block";
-    }
-
-    function closeChat() {
-      container.style.display = "none";
-      overlay.style.display = "none";
-    }
-
-    btn.addEventListener("click", openChat);
-    overlay.addEventListener("click", closeChat);
+    btn.addEventListener("click", () => {
+      gradioApp.style.display =
+        gradioApp.style.display === "block" ? "none" : "block";
+    });
   </script>
 </body>
 </html>
