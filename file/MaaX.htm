@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #0f1a2a;
+            color: #e0e9f0;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+        
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        
+        .panel {
+            background: linear-gradient(135deg, #162747 0%, #1e3a5f 100%);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .panel h2 {
+            color: #6ec8fa;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #2a4b7c;
+            padding-bottom: 8px;
+        }
+        
+        .layer-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: rgba(26, 45, 75, 0.7);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .layer-toggle:hover {
+            background: rgba(36, 60, 100, 0.7);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2a4b7c;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #6ec8fa;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .layer-toggle.active {
+            background: rgba(42, 75, 124, 0.7);
+            border-left: 4px solid #6ec8fa;
+        }
+        
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        
+        .size-legend {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .size-circle {
+            border-radius: 50%;
+            background-color: rgba(110, 200, 250, 0.5);
+            display: inline-block;
+        }
+        
+        .location-details {
+            line-height: 1.8;
+        }
+        
+        .detail-item {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #b0c4de;
+        }
+        
+        .detail-value {
+            color: #6ec8fa;
+        }
+        
+        .sentiment-bar {
+            height: 10px;
+            background: linear-gradient(to right, #ff0000, #ffff00, #00ff00);
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 600px) {
+            .controls {
+                width: calc(100% - 40px);
+                right: 10px;
+                left: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="controls">
+        <div class="panel">
+            <h2>Map Layers</h2>
+            <div class="layer-controls">
+                <div class="layer-toggle active" id="movement-layer-toggle">
+                    <span><i class="fas fa-project-diagram"></i> Movement</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="layer-toggle active" id="sentiment-layer-toggle">
+                    <span><i class="fas fa-smile"></i> Sentiment</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="layer-toggle" id="behavior-layer-toggle">
+                    <span><i class="fas fa-user-check"></i> Behavior (to be added)</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="layer-toggle" id="sensory-layer-toggle">
+                    <span><i class="fas fa-eye"></i> Sensory (to be added)</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Sentiment Legend</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: #ff0000;"></div>
+                    <span>Negative (-1.0)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: #ffff00;"></div>
+                    <span>Neutral (0.0)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: #00ff00;"></div>
+                    <span>Positive (1.0)</span>
+                </div>
+            </div>
+            
+            <div class="sentiment-bar"></div>
+            
+        </div>
+        
+        <div class="panel">
+            <h2>Location Details</h2>
+            <div class="location-details" id="location-info">
+                <p>Click on a location marker to see details about visits and sentiment at that location.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([22.38, 114.2], 11);
+        
+        // Use CartoDB Positron tile layer (similar to Folium)
+        const cartoDBPositron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+        
+        // Sample data
+        const locations = 
+        [{id: 36, name: "Australia Dairy Company", lng: 114.1705439, lat: 22.304628, totalVisits: 64, sentimentScore: 0.1328484375, description: "Dining"}, {id: 37, name: "Avenue Of Stars", lng: 114.1768095, lat: 22.2959455, totalVisits: 130, sentimentScore: 0.4501453846153846, description: "Cityscapes"}, {id: 46, name: "Bakehouse (Wan Chai)", lng: 114.1713876, lat: 22.2758732, totalVisits: 264, sentimentScore: 0.3846189393939394, description: "Dining"}, {id: 96, name: "Causeway Bay", lng: 114.1914919, lat: 22.2859787, totalVisits: 226, sentimentScore: 0.26961194690265483, description: "area"}, {id: 101, name: "Central", lng: 114.1587983, lat: 22.2799907, totalVisits: 451, sentimentScore: 0.23289822616407985, description: "area"}, {id: 119, name: "Cheung Chau", lng: 114.0265007, lat: 22.2016179, totalVisits: 50, sentimentScore: 0.31112399999999996, description: "Natural"}, {id: 180, name: "Disneys Hollywood Hotel", lng: 114.0440642, lat: 22.3081194, totalVisits: 71, sentimentScore: 0.3478774647887324, description: "Hotel"}, {id: 191, name: "Dragons Back", lng: 114.2432252, lat: 22.2369295, totalVisits: 61, sentimentScore: 0.46607377049180326, description: "Hiking"}, {id: 295, name: "Hong Kong Cultural Centre", lng: 114.1703232, lat: 22.2938496, totalVisits: 96, sentimentScore: 0.23816875, description: "Cultural"}, {id: 296, name: "Hong Kong Disneyland", lng: 114.0412819, lat: 22.3129666, totalVisits: 8468, sentimentScore: 0.5691455951818611, description: "Entertainment"}, {id: 300, name: "Hong Kong International Airport", lng: 113.9137283, lat: 22.3134736, totalVisits: 1790, sentimentScore: 0.17188145251396647, description: "Transit"}, {id: 301, name: "Hong Kong Island", lng: 114.1910696, lat: 22.2587586, totalVisits: 62, sentimentScore: 0.2692532258064516, description: "Natural"}, {id: 307, name: "Hong Kong Observation Wheel", lng: 114.1615851, lat: 22.2853075, totalVisits: 187, sentimentScore: 0.48591336898395726, description: "Entertainment"}, {id: 310, name: "Hong Kong Park", lng: 114.1608187, lat: 22.2769477, totalVisits: 60, sentimentScore: 0.45074, description: "Cityscapes"}, {id: 324, name: "Hong Kong-Zhuhai-Macao Bridge", lng: 113.9473807, lat: 22.3146569, totalVisits: 83, sentimentScore: 0.2557180722891566, description: "Cityscapes"}, {id: 364, name: "K11 MUSEA", lng: 114.1739272, lat: 22.2941573, totalVisits: 170, sentimentScore: 0.3332458823529412, description: "Shopping"}, {id: 386, name: "Kennedy Town", lng: 114.1292619, lat: 22.2822235, totalVisits: 71, sentimentScore: 0.20226478873239437, description: "area"}, {id: 404, name: "Kowloon", lng: 114.1796057, lat: 22.3185673, totalVisits: 93, sentimentScore: 0.2993204301075269, description: "area"}, {id: 444, name: "Lamma Island", lng: 114.1350173, lat: 22.2000056, totalVisits: 72, sentimentScore: 0.46446527777777785, description: "Natural"}, {id: 446, name: "Lan Fong Yuen", lng: 114.1537154, lat: 22.2827177, totalVisits: 59, sentimentScore: 0.22849999999999998, description: "Dining"}, {id: 451, name: "Lantau Island", lng: 113.941751, lat: 22.2664984, totalVisits: 505, sentimentScore: 0.49852811881188125, description: "Natural"}, {id: 485, name: "M+", lng: 114.159495, lat: 22.3005044, totalVisits: 103, sentimentScore: 0.2498805825242718, description: "Cultural"}, {id: 494, name: "Madame Tussauds", lng: 114.1497382, lat: 22.2711973, totalVisits: 68, sentimentScore: 0.5078823529411762, description: "Cultural"}, {id: 506, name: "Man Mo Temple", lng: 114.1501999, lat: 22.2839729, totalVisits: 60, sentimentScore: 0.45924166666666666, description: "Religious"}, {id: 540, name: "Mong Kok", lng: 114.169773, lat: 22.3203648, totalVisits: 256, sentimentScore: 0.300814453125, description: "area"}, {id: 546, name: "Monster Building", lng: 114.2123028, lat: 22.2842028, totalVisits: 101, sentimentScore: 0.17655049504950496, description: "Cityscapes"}, {id: 557, name: "Museum of Art", lng: 114.1721324, lat: 22.2936055, totalVisits: 88, sentimentScore: 0.31007045454545457, description: "Cultural"}, {id: 565, name: "Nan Lian Garden", lng: 114.2045149, lat: 22.3396114, totalVisits: 109, sentimentScore: 0.5634807339449541, description: "Cultural"}, {id: 579, name: "Ngong Ping", lng: 113.9053189, lat: 22.2560986, totalVisits: 342, sentimentScore: 0.4545423976608188, description: "area"}, {id: 580, name: "Ngong Ping 360", lng: 113.9014163, lat: 22.2563163, totalVisits: 353, sentimentScore: 0.4568320113314448, description: "Entertainment"}, {id: 584, name: "Ngong Ping Village", lng: 113.9029888, lat: 22.2561853, totalVisits: 190, sentimentScore: 0.3485894736842104, description: "Cultural"}, {id: 598, name: "Ocean Park", lng: 114.1721746, lat: 22.2346359, totalVisits: 650, sentimentScore: 0.40927923076923084, description: "Entertainment"}, {id: 629, name: "Po Lin Monastery", lng: 113.9080796, lat: 22.2554932, totalVisits: 271, sentimentScore: 0.4658715867158672, description: "Religious"}, {id: 708, name: "Shau Kei Wan", lng: 114.2286476, lat: 22.278746, totalVisits: 58, sentimentScore: 0.04370344827586206, description: "area"}, {id: 721, name: "Sheung Wan", lng: 114.1491375, lat: 22.2863943, totalVisits: 56, sentimentScore: 0.15121071428571428, description: "area"}, {id: 733, name: "Sky 100", lng: 114.1603497, lat: 22.3034464, totalVisits: 82, sentimentScore: 0.3209109756097561, description: "Cityscapes"}, {id: 800, name: "Tai Kwun", lng: 114.154023, lat: 22.2811686, totalVisits: 58, sentimentScore: 0.20528620689655172, description: "Cultural"}, {id: 803, name: "Tai Mo Shan", lng: 114.1379499, lat: 22.4088464, totalVisits: 75, sentimentScore: 0.49599333333333334, description: "Hiking"}, {id: 804, name: "Tai O", lng: 113.8661195, lat: 22.2523195, totalVisits: 255, sentimentScore: 0.40850823529411767, description: "area"}, {id: 815, name: "Tai Po", lng: 114.165521, lat: 22.4423282, totalVisits: 87, sentimentScore: 0.41007931034482764, description: "area"}, {id: 833, name: "Temple St", lng: 114.1702215, lat: 22.3073082, totalVisits: 74, sentimentScore: 0.30298243243243245, description: "Cityscapes"}, {id: 872, name: "The Peak Tower", lng: 114.1502415, lat: 22.2712192, totalVisits: 158, sentimentScore: 0.38378291139240506, description: "Cityscapes"}, {id: 873, name: "The Peak Tram", lng: 114.1591909, lat: 22.2776827, totalVisits: 347, sentimentScore: 0.3185832853025937, description: "Entertainment"}, {id: 874, name: "The Peninsula", lng: 114.1718537, lat: 22.2951024, totalVisits: 169, sentimentScore: 0.43192485207100584, description: "Hotel"}, {id: 885, name: "Tian Tan Buddha", lng: 113.904984, lat: 22.2539847, totalVisits: 484, sentimentScore: 0.40075227272727276, description: "Religious"}, {id: 907, name: "Tsim Sha Tsui", lng: 114.1721746, lat: 22.2988123, totalVisits: 434, sentimentScore: 0.28685483870967743, description: "area"}, {id: 913, name: "Tsing Ma Bridge", lng: 114.0733443, lat: 22.3511503, totalVisits: 130, sentimentScore: 0.35982384615384616, description: "Cityscapes"}, {id: 944, name: "Victoria Harbour", lng: 114.167710150583, lat: 22.3074457936953, totalVisits: 689, sentimentScore: 0.4719847605224964, description: "Cityscapes"}, {id: 946, name: "Victoria Peak", lng: 114.145532, lat: 22.2758835, totalVisits: 822, sentimentScore: 0.4536276155717761, description: "Cityscapes"}, {id: 964, name: "Wan Chai", lng: 114.1751471, lat: 22.276022, totalVisits: 124, sentimentScore: 0.21333548387096776, description: "area"}, {id: 995, name: "Wong Tai Sin Temple", lng: 114.1932582, lat: 22.3427257, totalVisits: 75, sentimentScore: 0.39951200000000003, description: "Religious"}, {id: 1010, name: "Yat Lok Restaurant", lng: 114.1552917, lat: 22.2824828, totalVisits: 62, sentimentScore: 0.20271451612903227, description: "Dining"}, {id: 1044, name: "ifc mall", lng: 114.158131, lat: 22.28588, totalVisits: 50, sentimentScore: 0.324082, description: "Shopping"}];
+        
+        // Sample flow data
+        const flows = [{from: 300, to: 296, count: 130}, {from: 873, to: 946, count: 83}, {from: 296, to: 300, count: 72}, {from: 296, to: 598, count: 68}, {from: 598, to: 296, count: 67}, {from: 946, to: 873, count: 50}, {from: 946, to: 296, count: 44}, {from: 451, to: 885, count: 44}, {from: 580, to: 451, count: 43}, {from: 885, to: 451, count: 41}, {from: 944, to: 296, count: 41}, {from: 580, to: 579, count: 40}, {from: 451, to: 629, count: 40}, {from: 579, to: 451, count: 35}, {from: 296, to: 946, count: 34}, {from: 180, to: 296, count: 34}, {from: 629, to: 451, count: 33}, {from: 451, to: 579, count: 31}, {from: 451, to: 296, count: 31}, {from: 579, to: 580, count: 30}, {from: 296, to: 180, count: 29}, {from: 300, to: 913, count: 29}, {from: 451, to: 580, count: 29}, {from: 579, to: 885, count: 28}, {from: 296, to: 944, count: 27}, {from: 300, to: 944, count: 26}, {from: 946, to: 872, count: 26}, {from: 296, to: 451, count: 25}, {from: 296, to: 101, count: 25}, {from: 872, to: 946, count: 24}, {from: 300, to: 907, count: 21}, {from: 580, to: 296, count: 21}, {from: 584, to: 885, count: 21}, {from: 296, to: 873, count: 21}, {from: 946, to: 944, count: 21}, {from: 944, to: 300, count: 21}, {from: 451, to: 584, count: 20}];
+        
+        // Function to get color based on sentiment score
+        function getSentimentColor(score) {
+            // Interpolate between red (negative), yellow (neutral), and green (positive)
+            if (score < 0) {
+                return `rgb(255, ${Math.round(255 * (1 + score))}, 0)`;
+            } else {
+                return `rgb(${Math.round(255 * (1 - score))}, 255, 0)`;
+            }
+        }
+        
+        // Function to create a gradient line between two points
+        function createGradientLine(fromLoc, toLoc, fromScore, toScore, count) {
+            // Create a line with intermediate points for gradient effect
+            const latDiff = toLoc.lat - fromLoc.lat;
+            const lngDiff = toLoc.lng - fromLoc.lng;
+            
+            // Create segments for gradient effect
+            const segments = 20;
+            let points = [];
+            
+            for (let i = 0; i <= segments; i++) {
+                const ratio = i / segments;
+                const lat = fromLoc.lat + (latDiff * ratio);
+                const lng = fromLoc.lng + (lngDiff * ratio);
+                points.push([lat, lng]);
+            }
+            
+            // Create a multi-segment line with gradient colors
+            for (let i = 0; i < segments; i++) {
+                const ratio1 = i / segments;
+                const ratio2 = (i + 1) / segments;
+                
+                // Calculate intermediate sentiment score
+                const score = fromScore + (toScore - fromScore) * ratio1;
+                
+                // Create line segment
+                const segment = L.polyline([points[i], points[i+1]], {
+                    color: getSentimentColor(score),
+                    weight: count/8,
+                    opacity: 1
+                });
+                
+                sentimentLayer.addLayer(segment);
+            }
+        }
+        
+        
+        // Create layer groups
+        const movementLayer = L.layerGroup().addTo(map);
+        const sentimentLayer = L.layerGroup().addTo(map);
+        const behaviorLayer = L.layerGroup();
+        const sensoryLayer = L.layerGroup();
+        
+        // Create movement layer elements
+        // Add circle markers for locations (default color, size based on visits)
+        locations.forEach(location => {
+            const circleMarker = L.circleMarker([location.lat, location.lng], {
+                color: '#3388ff', // Default blue color
+                weight: 1,
+                fillOpacity: 1,
+                radius: Math.max(5, location.totalVisits/500)
+            }).addTo(movementLayer);
+            
+            // Add click event to show details in the panel
+            circleMarker.on('click', function() {
+                showLocationDetails(location);
+            });
+        });
+        
+        // Add straight lines for movement (default color, width based on count)
+        flows.forEach(flow => {
+            const fromLocation = locations.find(loc => loc.id === flow.from);
+            const toLocation = locations.find(loc => loc.id === flow.to);
+            
+            if (fromLocation && toLocation) {
+                const line = L.polyline([
+                    [fromLocation.lat, fromLocation.lng],
+                    [toLocation.lat, toLocation.lng]
+                ], {
+                    color: '#3388ff', // Default blue color
+                    weight: flow.count/8,
+                    opacity: 0.8
+                }).addTo(movementLayer);
+            }
+        });
+        
+        // Create sentiment layer elements
+        // Add circle markers for locations (color based on sentiment, size based on visits)
+        locations.forEach(location => {
+            const circleMarker = L.circleMarker([location.lat, location.lng], {
+                color: getSentimentColor(location.sentimentScore),
+                weight: 2,
+                fillColor: getSentimentColor(location.sentimentScore),
+                fillOpacity: 1,
+                radius: Math.max(5, location.totalVisits/500)
+            }).addTo(sentimentLayer);
+            
+            // Add click event to show details in the panel
+            circleMarker.on('click', function() {
+                showLocationDetails(location);
+            });
+        });
+
+        
+        // Add gradient lines for sentiment movement
+        flows.forEach(flow => {
+            const fromLocation = locations.find(loc => loc.id === flow.from);
+            const toLocation = locations.find(loc => loc.id === flow.to);
+            
+            if (fromLocation && toLocation) {
+                createGradientLine(
+                    fromLocation, 
+                    toLocation, 
+                    fromLocation.sentimentScore, 
+                    toLocation.sentimentScore,
+                    flow.count
+                );
+            }
+        });
+        
+        // Function to show location details in the panel
+        function showLocationDetails(location) {
+            // Determine sentiment category
+            let sentimentCategory = "Neutral";
+            if (location.sentimentScore > 0.3) sentimentCategory = "Positive";
+            else if (location.sentimentScore < -0.3) sentimentCategory = "Negative";
+            
+            document.getElementById('location-info').innerHTML = `
+                <h3>${location.name}</h3>
+                <p>${location.description}</p>
+                <div class="detail-item">
+                    <span class="detail-label">Sentiment Score:</span>
+                    <span class="detail-value">${location.sentimentScore.toFixed(2)} (${sentimentCategory})</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Total Visits:</span>
+                    <span class="detail-value">${location.totalVisits}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Latitude:</span>
+                    <span class="detail-value">${location.lat.toFixed(4)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Longitude:</span>
+                    <span class="detail-value">${location.lng.toFixed(4)}</span>
+                </div>
+            `;
+        }
+        
+        // Layer control functionality
+        const movementLayerToggle = document.getElementById('movement-layer-toggle');
+        const sentimentLayerToggle = document.getElementById('sentiment-layer-toggle');
+        const behaviorLayerToggle = document.getElementById('behavior-layer-toggle');
+        const sensoryLayerToggle = document.getElementById('sensory-layer-toggle');
+        
+        // Movement layer toggle
+        const movementInput = movementLayerToggle.querySelector('input');
+        movementInput.addEventListener('change', function() {
+            if (this.checked) {
+                movementLayerToggle.classList.add('active');
+                map.addLayer(movementLayer);
+            } else {
+                movementLayerToggle.classList.remove('active');
+                map.removeLayer(movementLayer);
+            }
+        });
+        
+        // Sentiment layer toggle
+        const sentimentInput = sentimentLayerToggle.querySelector('input');
+        sentimentInput.addEventListener('change', function() {
+            if (this.checked) {
+                sentimentLayerToggle.classList.add('active');
+                map.addLayer(sentimentLayer);
+            } else {
+                sentimentLayerToggle.classList.remove('active');
+                map.removeLayer(sentimentLayer);
+            }
+        });
+        
+        // Behavior layer toggle
+        const behaviorInput = behaviorLayerToggle.querySelector('input');
+        behaviorInput.addEventListener('change', function() {
+            if (this.checked) {
+                behaviorLayerToggle.classList.add('active');
+                map.addLayer(behaviorLayer);
+            } else {
+                behaviorLayerToggle.classList.remove('active');
+                map.removeLayer(behaviorLayer);
+            }
+        });
+        
+        // Sensory layer toggle
+        const sensoryInput = sensoryLayerToggle.querySelector('input');
+        sensoryInput.addEventListener('change', function() {
+            if (this.checked) {
+                sensoryLayerToggle.classList.add('active');
+                map.addLayer(sensoryLayer);
+            } else {
+                sensoryLayerToggle.classList.remove('active');
+                map.removeLayer(sensoryLayer);
+            }
+        });
+
+    </script>
+</body>
+</html>
