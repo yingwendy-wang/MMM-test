@@ -31,18 +31,32 @@
 
 <body class="force-no-scroll">
     <div class="menu-container"></div>
+
     <div class="regions-nav">
-        <ul class="nav">
-            <li class="active" onclick="showIframe('iframe1')"><a>Dynamic</a></li>
-            <li onclick="showIframe('iframe2')"><a>Static</a></li>
-        </ul>
-    </div>
+    <ul class="nav">
+      <li class="active" data-iframe="dynamic"><a>Dynamic</a></li>
+      <li data-iframe="static"><a>Static</a></li>
+    </ul>
+  </div>
 
-    <div class="iframe-container">
-        <iframe class="iframe" id="iframe1" src="file/flowmap_dynamic.htm" style="display:block;"></iframe>
-        <iframe class="iframe" id="iframe2" src="file/flowmap_static.htm" style="display:none;"></iframe>
+  <div class="iframe-container">
+    <div id="dynamic-frame" class="iframe-wrapper" style="display: block;">
+      <div class="loading">
+        <div class="spinner"></div>
+        Loading Dynamic Map...
+      </div>
+      <iframe class="iframe" id="dynamic-iframe" data-src="file/flowmap_dynamic.htm" style="display: none;"></iframe>
     </div>
-
+    
+    <div id="static-frame" class="iframe-wrapper" style="display: none;">
+      <div class="loading">
+        <div class="spinner"></div>
+        Loading Static Map...
+      </div>
+      <iframe class="iframe" id="static-iframe" data-src="file/flowmap_static.htm" style="display: none;"></iframe>
+    </div>
+  </div>
+  
     <style>
         .regions-nav {
             position: absolute;
@@ -76,23 +90,72 @@
 
     </style>
 
-    <script>
-        function showIframe(iframeId) {
-            var iframes = document.querySelectorAll('iframe');
-            iframes.forEach(function(iframe) {
-                iframe.style.display = 'none';
-            });
-
-            document.getElementById(iframeId).style.display = 'block';
-
-            var items = document.querySelectorAll('.regions-nav li');
-            items.forEach(function(item) {
-                item.classList.remove('active');
-            });
-
-            event.target.parentElement.classList.add('active');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabItems = document.querySelectorAll('.regions-nav li');
+      const iframeWrappers = document.querySelectorAll('.iframe-wrapper');
+      const loadedMaps = { dynamic: false, static: false };
+      
+      // Function to show a specific iframe
+      function showIframe(iframeType) {
+        // Hide all iframes
+        iframeWrappers.forEach(wrapper => {
+          wrapper.style.display = 'none';
+        });
+        
+        // Show selected iframe
+        document.getElementById(`${iframeType}-frame`).style.display = 'block';
+        
+        // Load iframe if not already loaded
+        if (!loadedMaps[iframeType]) {
+          const iframe = document.getElementById(`${iframeType}-iframe`);
+          const loadingElement = iframe.previousElementSibling;
+          
+          // Show loading indicator
+          loadingElement.style.display = 'block';
+          
+          // Set iframe source
+          iframe.src = iframe.getAttribute('data-src');
+          
+          // When iframe loads, hide loading indicator
+          iframe.onload = function() {
+            loadingElement.style.display = 'none';
+            iframe.style.display = 'block';
+            loadedMaps[iframeType] = true;
+            
+            // Trigger resize event to ensure proper map rendering
+            setTimeout(() => {
+              try {
+                iframe.contentWindow.dispatchEvent(new Event('resize'));
+              } catch (e) {
+                console.log('Could not trigger resize in iframe:', e);
+              }
+            }, 500);
+          };
         }
-    </script>
+        
+        // Update active tab
+        tabItems.forEach(item => {
+          item.classList.remove('active');
+          if (item.getAttribute('data-iframe') === iframeType) {
+            item.classList.add('active');
+          }
+        });
+      }
+      
+      // Add click event to tabs
+      tabItems.forEach(item => {
+        item.addEventListener('click', function() {
+          const iframeType = this.getAttribute('data-iframe');
+          showIframe(iframeType);
+        });
+      });
+      
+      // Load the initial iframe (dynamic)
+      showIframe('dynamic');
+    });
+  </script>
+</body>
 </body>
 
 </html>
