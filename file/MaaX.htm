@@ -201,7 +201,7 @@
     
     <div class="controls">
         <div class="panel">
-            <h2>Map Layers</h2>
+            <h2>MaaX Layers</h2>
             <div class="layer-controls">
                 <div class="layer-toggle active" id="movement-layer-toggle">
                     <span><i class="fas fa-project-diagram"></i> Movement</span>
@@ -218,14 +218,14 @@
                     </label>
                 </div>
                 <div class="layer-toggle" id="behavior-layer-toggle">
-                    <span><i class="fas fa-user-check"></i> Behavior (to be added)</span>
+                    <span><i class="fas fa-user-check"></i> Behavior (to do)</span>
                     <label class="toggle-switch">
                         <input type="checkbox">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
                 <div class="layer-toggle" id="sensory-layer-toggle">
-                    <span><i class="fas fa-eye"></i> Sensory (to be added)</span>
+                    <span><i class="fas fa-eye"></i> Sensory (to do)</span>
                     <label class="toggle-switch">
                         <input type="checkbox">
                         <span class="toggle-slider"></span>
@@ -240,12 +240,6 @@
                 <div class="legend-item">
                     <div class="color-box" style="background-color: #ff0000;"></div>
                     <span>Negative (-1.0)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="color-box" style="background-color: #ffff00;"></div>
-                    <span>Neutral (0.0)</span>
-                </div>
-                <div class="legend-item">
                     <div class="color-box" style="background-color: #00ff00;"></div>
                     <span>Positive (1.0)</span>
                 </div>
@@ -265,7 +259,7 @@
 
     <script>
         // Initialize the map
-        const map = L.map('map').setView([22.38, 114.2], 11);
+        const map = L.map('map').setView([22.35, 114.1], 12);
         
         // Use CartoDB Positron tile layer (similar to Folium)
         const cartoDBPositron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
