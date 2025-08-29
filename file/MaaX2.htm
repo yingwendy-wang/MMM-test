@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced 4-Layer Map Visualization</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            text-align: center;
+            position: relative;
+        }
+        
+        header {
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: #e94560;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .description {
+            max-width: 800px;
+            margin: 0 auto;
+            color: #b8b8d1;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .layers-wrapper {
+            display: flex;
+            width: 100%;
+            position: relative;
+            margin-bottom: 80px; /* Added space at the bottom */
+        }
+        
+        .layers-container {
+            width: 90%;
+            height: 600px;
+            position: relative;
+            margin: 20px auto;
+            perspective: 2000px;
+        }
+        
+        .sidebar {
+            width: 15%;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            transition: opacity 0.5s ease;
+        }
+        
+        .sidebar-item {
+            padding: 15px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: default;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-item.movement {
+            background: linear-gradient(45deg, rgba(233, 69, 96, 0.3), rgba(233, 69, 96, 0.1));
+            color: #e94560;
+            border-left: 3px solid #e94560;
+            margin-top: 50px;
+        }
+        
+        .sidebar-item.behavior {
+            background: linear-gradient(45deg, rgba(0, 199, 139, 0.3), rgba(0, 199, 139, 0.1));
+            color: #00c78b;
+            border-left: 3px solid #00c78b;
+            margin-top: 100px;
+        }
+        
+        .sidebar-item.sensory {
+            background: linear-gradient(45deg, rgba(97, 144, 232, 0.3), rgba(97, 144, 232, 0.1));
+            color: #6190e8;
+            border-left: 3px solid #6190e8;
+            margin-top: 100px;
+        }
+        
+        .sidebar-item.emotion {
+            background: linear-gradient(45deg, rgba(255, 184, 0, 0.3), rgba(255, 184, 0, 0.1));
+            color: #ffb800;
+            border-left: 3px solid #ffb800;
+            margin-top: 120px;
+        }
+        
+        .map-layer {
+            position: absolute;
+            width: 90%;
+            height: 450px;
+            left: 3%;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            transition: all 0.8s ease;
+            transform-origin: center;
+            cursor: pointer;
+        }
+        
+        .map-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .map-title {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .mini-map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .movement-layer {
+            background: linear-gradient(45deg, rgba(233, 69, 96, 0.7), rgba(233, 69, 96, 0.4));
+            border: 2px solid #e94560;
+            transform: rotateX(60deg) translateZ(110px) translateY(00px);
+            z-index: 4;
+        }
+        
+        .behavior-layer {
+            background: linear-gradient(45deg, rgba(0, 199, 139, 0.7), rgba(0, 199, 139, 0.4));
+            border: 2px solid #00c78b;
+            transform: rotateX(60deg) translateZ(-50px) translateY(50px);
+            z-index: 3;
+        }
+        
+        .sensory-layer {
+            background: linear-gradient(45deg, rgba(97, 144, 232, 0.7), rgba(97, 144, 232, 0.4));
+            border: 2px solid #6190e8;
+            transform: rotateX(60deg) translateZ(-240px) translateY(120px);
+            z-index: 2;
+        }
+        
+        .emotion-layer {
+            background: linear-gradient(45deg, rgba(255, 184, 0, 0.7), rgba(255, 184, 0, 0.4));
+            border: 2px solid #ffb800;
+            transform: rotateX(60deg) translateZ(-400px) translateY(260px);
+            z-index: 1;
+        }
+        
+        .map-layer.active {
+            transform: rotateX(0deg) translateZ(250px) !important;
+            z-index: 10;
+            cursor: auto;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            border-radius: 0;
+        }
+        
+        .map-layer.active ~ .sidebar {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(22, 33, 62, 0.8);
+            border-radius: 10px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .instructions p {
+            color: #b8b8d1;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #b8b8d1;
+        }
+        
+        @media (max-width: 768px) {
+            .layers-container {
+                height: 500px;
+            }
+            
+            .map-layer {
+                height: 250px;
+                width: 85%;
+                left: 7.5%;
+            }
+            
+            .map-layer.active {
+                height: 100%;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            /* Adjust spacing for mobile */
+            .behavior-layer {
+                transform: rotateX(60deg) translateZ(-100px) translateY(58px);
+            }
+            
+            .sensory-layer {
+                transform: rotateX(60deg) translateZ(-200px) translateY(116px);
+            }
+            
+            .emotion-layer {
+                transform: rotateX(60deg) translateZ(-300px) translateY(173px);
+            }
+            
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="layers-wrapper">
+            <div class="layers-container" id="layers-container">
+                <div class="map-layer movement-layer" id="movement-layer">
+                    <div class="map-content">
+                        <div class="mini-map" id="movement-map"></div>
+                        <div class="map-title">Movement Layer</div>
+                    </div>
+                </div>
+                <div class="map-layer behavior-layer" id="behavior-layer">
+                    <div class="map-content">
+                        <div class="mini-map" id="behavior-map"></div>
+                        <div class="map-title">Behavior Layer</div>
+                    </div>
+                </div>
+                <div class="map-layer sensory-layer" id="sensory-layer">
+                    <div class="map-content">
+                        <div class="mini-map" id="sensory-map"></div>
+                        <div class="map-title">Sensory Layer</div>
+                    </div>
+                </div>
+                <div class="map-layer emotion-layer" id="emotion-layer">
+                    <div class="map-content">
+                        <div class="mini-map" id="emotion-map"></div>
+                        <div class="map-title">Emotion Layer</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="sidebar-item movement">Movement</div>
+                <div class="sidebar-item behavior">Behavior</div>
+                <div class="sidebar-item sensory">Sensory</div>
+                <div class="sidebar-item emotion">Emotion</div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+
+        </div>
+        
+        <footer>
+
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Sample data
+        const locations = 
+        [{id: 36, name: "Australia Dairy Company", lng: 114.1705439, lat: 22.304628, totalVisits: 64, sentimentScore: 0.1328484375, description: "Dining"}, {id: 37, name: "Avenue Of Stars", lng: 114.1768095, lat: 22.2959455, totalVisits: 130, sentimentScore: 0.4501453846153846, description: "Cityscapes"}, {id: 46, name: "Bakehouse (Wan Chai)", lng: 114.1713876, lat: 22.2758732, totalVisits: 264, sentimentScore: 0.3846189393939394, description: "Dining"}, {id: 96, name: "Causeway Bay", lng: 114.1914919, lat: 22.2859787, totalVisits: 226, sentimentScore: 0.26961194690265483, description: "area"}, {id: 101, name: "Central", lng: 114.1587983, lat: 22.2799907, totalVisits: 451, sentimentScore: 0.23289822616407985, description: "area"}, {id: 119, name: "Cheung Chau", lng: 114.0265007, lat: 22.2016179, totalVisits: 50, sentimentScore: 0.31112399999999996, description: "Natural"}, {id: 180, name: "Disneys Hollywood Hotel", lng: 114.0440642, lat: 22.3081194, totalVisits: 71, sentimentScore: 0.3478774647887324, description: "Hotel"}, {id: 191, name: "Dragons Back", lng: 114.2432252, lat: 22.2369295, totalVisits: 61, sentimentScore: 0.46607377049180326, description: "Hiking"}, {id: 295, name: "Hong Kong Cultural Centre", lng: 114.1703232, lat: 22.2938496, totalVisits: 96, sentimentScore: 0.23816875, description: "Cultural"}, {id: 296, name: "Hong Kong Disneyland", lng: 114.0412819, lat: 22.3129666, totalVisits: 8468, sentimentScore: 0.5691455951818611, description: "Entertainment"}, {id: 300, name: "Hong Kong International Airport", lng: 113.9137283, lat: 22.3134736, totalVisits: 1790, sentimentScore: 0.17188145251396647, description: "Transit"}, {id: 301, name: "Hong Kong Island", lng: 114.1910696, lat: 22.2587586, totalVisits: 62, sentimentScore: 0.2692532258064516, description: "Natural"}, {id: 307, name: "Hong Kong Observation Wheel", lng: 114.1615851, lat: 22.2853075, totalVisits: 187, sentimentScore: 0.48591336898395726, description: "Entertainment"}, {id: 310, name: "Hong Kong Park", lng: 114.1608187, lat: 22.2769477, totalVisits: 60, sentimentScore: 0.45074, description: "Cityscapes"}, {id: 324, name: "Hong Kong-Zhuhai-Macao Bridge", lng: 113.9473807, lat: 22.3146569, totalVisits: 83, sentimentScore: 0.2557180722891566, description: "Cityscapes"}, {id: 364, name: "K11 MUSEA", lng: 114.1739272, lat: 22.2941573, totalVisits: 170, sentimentScore: 0.3332458823529412, description: "Shopping"}, {id: 386, name: "Kennedy Town", lng: 114.1292619, lat: 22.2822235, totalVisits: 71, sentimentScore: 0.20226478873239437, description: "area"}, {id: 404, name: "Kowloon", lng: 114.1796057, lat: 22.3185673, totalVisits: 93, sentimentScore: 0.2993204301075269, description: "area"}, {id: 444, name: "Lamma Island", lng: 114.1350173, lat: 22.2000056, totalVisits: 72, sentimentScore: 0.46446527777777785, description: "Natural"}, {id: 446, name: "Lan Fong Yuen", lng: 114.1537154, lat: 22.2827177, totalVisits: 59, sentimentScore: 0.22849999999999998, description: "Dining"}, {id: 451, name: "Lantau Island", lng: 113.941751, lat: 22.2664984, totalVisits: 505, sentimentScore: 0.49852811881188125, description: "Natural"}, {id: 485, name: "M+", lng: 114.159495, lat: 22.3005044, totalVisits: 103, sentimentScore: 0.2498805825242718, description: "Cultural"}, {id: 494, name: "Madame Tussauds", lng: 114.1497382, lat: 22.2711973, totalVisits: 68, sentimentScore: 0.5078823529411762, description: "Cultural"}, {id: 506, name: "Man Mo Temple", lng: 114.1501999, lat: 22.2839729, totalVisits: 60, sentimentScore: 0.45924166666666666, description: "Religious"}, {id: 540, name: "Mong Kok", lng: 114.169773, lat: 22.3203648, totalVisits: 256, sentimentScore: 0.300814453125, description: "area"}, {id: 546, name: "Monster Building", lng: 114.2123028, lat: 22.2842028, totalVisits: 101, sentimentScore: 0.17655049504950496, description: "Cityscapes"}, {id: 557, name: "Museum of Art", lng: 114.1721324, lat: 22.2936055, totalVisits: 88, sentimentScore: 0.31007045454545457, description: "Cultural"}, {id: 565, name: "Nan Lian Garden", lng: 114.2045149, lat: 22.3396114, totalVisits: 109, sentimentScore: 0.5634807339449541, description: "Cultural"}, {id: 579, name: "Ngong Ping", lng: 113.9053189, lat: 22.2560986, totalVisits: 342, sentimentScore: 0.4545423976608188, description: "area"}, {id: 580, name: "Ngong Ping 360", lng: 113.9014163, lat: 22.2563163, totalVisits: 353, sentimentScore: 0.4568320113314448, description: "Entertainment"}, {id: 584, name: "Ngong Ping Village", lng: 113.9029888, lat: 22.2561853, totalVisits: 190, sentimentScore: 0.3485894736842104, description: "Cultural"}, {id: 598, name: "Ocean Park", lng: 114.1721746, lat: 22.2346359, totalVisits: 650, sentimentScore: 0.40927923076923084, description: "Entertainment"}, {id: 629, name: "Po Lin Monastery", lng: 113.9080796, lat: 22.2554932, totalVisits: 271, sentimentScore: 0.4658715867158672, description: "Religious"}, {id: 708, name: "Shau Kei Wan", lng: 114.2286476, lat: 22.278746, totalVisits: 58, sentimentScore: 0.04370344827586206, description: "area"}, {id: 721, name: "Sheung Wan", lng: 114.1491375, lat: 22.2863943, totalVisits: 56, sentimentScore: 0.15121071428571428, description: "area"}, {id: 733, name: "Sky 100", lng: 114.1603497, lat: 22.3034464, totalVisits: 82, sentimentScore: 0.3209109756097561, description: "Cityscapes"}, {id: 800, name: "Tai Kwun", lng: 114.154023, lat: 22.2811686, totalVisits: 58, sentimentScore: 0.20528620689655172, description: "Cultural"}, {id: 803, name: "Tai Mo Shan", lng: 114.1379499, lat: 22.4088464, totalVisits: 75, sentimentScore: 0.49599333333333334, description: "Hiking"}, {id: 804, name: "Tai O", lng: 113.8661195, lat: 22.2523195, totalVisits: 255, sentimentScore: 0.40850823529411767, description: "area"}, {id: 815, name: "Tai Po", lng: 114.165521, lat: 22.4423282, totalVisits: 87, sentimentScore: 0.41007931034482764, description: "area"}, {id: 833, name: "Temple St", lng: 114.1702215, lat: 22.3073082, totalVisits: 74, sentimentScore: 0.30298243243243245, description: "Cityscapes"}, {id: 872, name: "The Peak Tower", lng: 114.1502415, lat: 22.2712192, totalVisits: 158, sentimentScore: 0.38378291139240506, description: "Cityscapes"}, {id: 873, name: "The Peak Tram", lng: 114.1591909, lat: 22.2776827, totalVisits: 347, sentimentScore: 0.3185832853025937, description: "Entertainment"}, {id: 874, name: "The Peninsula", lng: 114.1718537, lat: 22.2951024, totalVisits: 169, sentimentScore: 0.43192485207100584, description: "Hotel"}, {id: 885, name: "Tian Tan Buddha", lng: 113.904984, lat: 22.2539847, totalVisits: 484, sentimentScore: 0.40075227272727276, description: "Religious"}, {id: 907, name: "Tsim Sha Tsui", lng: 114.1721746, lat: 22.2988123, totalVisits: 434, sentimentScore: 0.28685483870967743, description: "area"}, {id: 913, name: "Tsing Ma Bridge", lng: 114.0733443, lat: 22.3511503, totalVisits: 130, sentimentScore: 0.35982384615384616, description: "Cityscapes"}, {id: 944, name: "Victoria Harbour", lng: 114.167710150583, lat: 22.3074457936953, totalVisits: 689, sentimentScore: 0.4719847605224964, description: "Cityscapes"}, {id: 946, name: "Victoria Peak", lng: 114.145532, lat: 22.2758835, totalVisits: 822, sentimentScore: 0.4536276155717761, description: "Cityscapes"}, {id: 964, name: "Wan Chai", lng: 114.1751471, lat: 22.276022, totalVisits: 124, sentimentScore: 0.21333548387096776, description: "area"}, {id: 995, name: "Wong Tai Sin Temple", lng: 114.1932582, lat: 22.3427257, totalVisits: 75, sentimentScore: 0.39951200000000003, description: "Religious"}, {id: 1010, name: "Yat Lok Restaurant", lng: 114.1552917, lat: 22.2824828, totalVisits: 62, sentimentScore: 0.20271451612903227, description: "Dining"}, {id: 1044, name: "ifc mall", lng: 114.158131, lat: 22.28588, totalVisits: 50, sentimentScore: 0.324082, description: "Shopping"}];
+        
+        // Sample flow data
+        const flows = [{from: 300, to: 296, count: 130}, {from: 873, to: 946, count: 83}, {from: 296, to: 300, count: 72}, {from: 296, to: 598, count: 68}, {from: 598, to: 296, count: 67}, {from: 946, to: 873, count: 50}, {from: 946, to: 296, count: 44}, {from: 451, to: 885, count: 44}, {from: 580, to: 451, count: 43}, {from: 885, to: 451, count: 41}, {from: 944, to: 296, count: 41}, {from: 580, to: 579, count: 40}, {from: 451, to: 629, count: 40}, {from: 579, to: 451, count: 35}, {from: 296, to: 946, count: 34}, {from: 180, to: 296, count: 34}, {from: 629, to: 451, count: 33}, {from: 451, to: 579, count: 31}, {from: 451, to: 296, count: 31}, {from: 579, to: 580, count: 30}, {from: 296, to: 180, count: 29}, {from: 300, to: 913, count: 29}, {from: 451, to: 580, count: 29}, {from: 579, to: 885, count: 28}, {from: 296, to: 944, count: 27}, {from: 300, to: 944, count: 26}, {from: 946, to: 872, count: 26}, {from: 296, to: 451, count: 25}, {from: 296, to: 101, count: 25}, {from: 872, to: 946, count: 24}, {from: 300, to: 907, count: 21}, {from: 580, to: 296, count: 21}, {from: 584, to: 885, count: 21}, {from: 296, to: 873, count: 21}, {from: 946, to: 944, count: 21}, {from: 944, to: 300, count: 21}, {from: 451, to: 584, count: 20}];
+
+        // Function to get color based on sentiment score
+        function getSentimentColor(score) {
+            // Interpolate between red (negative), yellow (neutral), and green (positive)
+            if (score < 0) {
+                return `rgb(255, ${Math.round(255 * (1 + score))}, 0)`;
+            } else {
+                return `rgb(${Math.round(255 * (1 - score))}, 255, 0)`;
+            }
+        }
+
+        // Function to create a gradient line between two points
+        function createGradientLine(fromLoc, toLoc, fromScore, toScore, count, layer) {
+            // Create a line with intermediate points for gradient effect
+            const latDiff = toLoc.lat - fromLoc.lat;
+            const lngDiff = toLoc.lng - fromLoc.lng;
+            
+            // Create segments for gradient effect
+            const segments = 20;
+            let points = [];
+            
+            for (let i = 0; i <= segments; i++) {
+                const ratio = i / segments;
+                const lat = fromLoc.lat + (latDiff * ratio);
+                const lng = fromLoc.lng + (lngDiff * ratio);
+                points.push([lat, lng]);
+            }
+            
+            // Create a multi-segment line with gradient colors
+            for (let i = 0; i < segments; i++) {
+                const ratio1 = i / segments;
+                const ratio2 = (i + 1) / segments;
+                
+                // Calculate intermediate sentiment score
+                const score = fromScore + (toScore - fromScore) * ratio1;
+                
+                // Create line segment
+                const segment = L.polyline([points[i], points[i+1]], {
+                    color: getSentimentColor(score),
+                    weight: count/8,
+                    opacity: 1
+                });
+                
+                layer.addLayer(segment);
+            }
+        }
+
+        // Initialize maps for each layer with CartoDB light tiles
+        function initMap(elementId, color) {
+            const map = L.map(elementId, {
+                zoomControl: false,
+                attributionControl: true,
+                dragging: false,
+                scrollWheelZoom: false
+            }).setView([22.35, 114.1], 11);
+            
+            // Use CartoDB light tiles instead of OpenStreetMap
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19
+            }).addTo(map);
+            
+            return {
+                map: map,
+                originalCenter: [22.35, 114.1],
+                originalZoom: 11
+            };
+        }
+
+        // Initialize movement map with custom visualization
+        function initMovementMap(elementId) {
+            const map = L.map(elementId, {
+                zoomControl: false,
+                attributionControl: true,
+                dragging: false,
+                scrollWheelZoom: false
+            }).setView([22.35, 114.1], 11);
+            
+            // Use CartoDB light tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Add circle markers for locations (default color, size based on visits)
+            locations.forEach(location => {
+                L.circleMarker([location.lat, location.lng], {
+                    color: '#3388ff',
+                    weight: 1,
+                    fillOpacity: 1,
+                    radius: Math.max(5, location.totalVisits/500)
+                }).addTo(map);
+            });
+            
+            // Add straight lines for movement (default color, width based on count)
+            flows.forEach(flow => {
+                const fromLocation = locations.find(loc => loc.id === flow.from);
+                const toLocation = locations.find(loc => loc.id === flow.to);
+                
+                if (fromLocation && toLocation) {
+                    L.polyline([
+                        [fromLocation.lat, fromLocation.lng],
+                        [toLocation.lat, toLocation.lng]
+                    ], {
+                        color: '#3388ff',
+                        weight: flow.count/8,
+                        opacity: 0.8
+                    }).addTo(map);
+                }
+            });
+            
+            return {
+                map: map,
+                originalCenter: [22.35, 114.1],
+                originalZoom: 11
+            };
+        }
+
+        // Initialize emotion map with custom visualization
+        function initEmotionMap(elementId) {
+            const map = L.map(elementId, {
+                zoomControl: false,
+                attributionControl: true,
+                dragging: false,
+                scrollWheelZoom: false
+            }).setView([22.35, 114.1], 11);
+            
+            // Use CartoDB light tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Add circle markers for locations (color based on sentiment, size based on visits)
+            locations.forEach(location => {
+                L.circleMarker([location.lat, location.lng], {
+                    color: getSentimentColor(location.sentimentScore),
+                    weight: 2,
+                    fillColor: getSentimentColor(location.sentimentScore),
+                    fillOpacity: 1,
+                    radius: Math.max(5, location.totalVisits/500)
+                }).addTo(map);
+            });
+            
+            // Add gradient lines for sentiment movement
+            flows.forEach(flow => {
+                const fromLocation = locations.find(loc => loc.id === flow.from);
+                const toLocation = locations.find(loc => loc.id === flow.to);
+                
+                if (fromLocation && toLocation) {
+                    createGradientLine(
+                        fromLocation, 
+                        toLocation, 
+                        fromLocation.sentimentScore, 
+                        toLocation.sentimentScore,
+                        flow.count,
+                        map
+                    );
+                }
+            });
+            
+            return {
+                map: map,
+                originalCenter: [22.35, 114.1],
+                originalZoom: 11
+            };
+        }
+        
+        // Initialize all maps
+        const movementData = initMovementMap('movement-map');
+        const behaviorData = initMap('behavior-map', '#00c78b');
+        const sensoryData = initMap('sensory-map', '#6190e8');
+        const emotionData = initEmotionMap('emotion-map');
+        
+        const movementMap = movementData.map;
+        const behaviorMap = behaviorData.map;
+        const sensoryMap = sensoryData.map;
+        const emotionMap = emotionData.map;
+        
+        // Layer control functionality
+        const layersContainer = document.getElementById('layers-container');
+        const layers = document.querySelectorAll('.map-layer');
+        
+        // Store map instances for interaction control
+        const mapInstances = {
+            'movement-map': movementData,
+            'behavior-map': behaviorData,
+            'sensory-map': sensoryData,
+            'emotion-map': emotionData
+        };
+        
+        // Store zoom controls to prevent duplicates
+        const zoomControls = {
+            'movement-map': null,
+            'behavior-map': null,
+            'sensory-map': null,
+            'emotion-map': null
+        };
+        
+        // Store original transforms for each layer
+        const originalTransforms = {
+            'movement-layer': 'rotateX(60deg) translateZ(110px) translateY(00px)',
+            'behavior-layer': 'rotateX(60deg) translateZ(-50px) translateY(50px)',
+            'sensory-layer': 'rotateX(60deg) translateZ(-240px) translateY(120px)',
+            'emotion-layer': 'rotateX(60deg) translateZ(-400px) translateY(260px)'
+        };
+        
+        // Function to reset a map to its original view
+        function resetMapView(mapData) {
+            mapData.map.setView(mapData.originalCenter, mapData.originalZoom);
+        }
+        
+        // Function to activate a layer
+        function activateLayer(layer) {
+            // Deactivate all layers first
+            layers.forEach(l => {
+                l.classList.remove('active');
+                
+                // Disable map interaction
+                const mapId = l.id.replace('-layer', '-map');
+                const mapData = mapInstances[mapId];
+                if (mapData) {
+                    mapData.map.dragging.disable();
+                    mapData.map.scrollWheelZoom.disable();
+                    mapData.map.touchZoom.disable();
+                    mapData.map.doubleClickZoom.disable();
+                    mapData.map.boxZoom.disable();
+                    mapData.map.keyboard.disable();
+                    
+                    // Remove zoom control if it exists
+                    if (zoomControls[mapId]) {
+                        mapData.map.removeControl(zoomControls[mapId]);
+                        zoomControls[mapId] = null;
+                    }
+                    
+                    // Reset the transform to original
+                    l.style.transform = originalTransforms[l.id];
+                }
+            });
+            
+            // Activate the selected layer
+            layer.classList.add('active');
+            
+            // Enable map interaction for active layer
+            const mapId = layer.id.replace('-layer', '-map');
+            const mapData = mapInstances[mapId];
+            if (mapData) {
+                // Wait for the transition to complete before enabling interactions
+                setTimeout(() => {
+                    mapData.map.dragging.enable();
+                    mapData.map.scrollWheelZoom.enable();
+                    mapData.map.touchZoom.enable();
+                    mapData.map.doubleClickZoom.enable();
+                    mapData.map.boxZoom.enable();
+                    mapData.map.keyboard.enable();
+                    
+                    // Update map size to fit container
+                    mapData.map.invalidateSize();
+                    
+                    // Add zoom control if not already added
+                    if (!zoomControls[mapId]) {
+                        zoomControls[mapId] = L.control.zoom({
+                            position: 'topright'
+                        }).addTo(mapData.map);
+                    }
+                }, 800); // Match the CSS transition duration
+            }
+        }
+        
+        // Function to deactivate all layers
+        function deactivateAllLayers() {
+            layers.forEach(l => {
+                l.classList.remove('active');
+                
+                // Disable map interaction and reset view
+                const mapId = l.id.replace('-layer', '-map');
+                const mapData = mapInstances[mapId];
+                if (mapData) {
+                    mapData.map.dragging.disable();
+                    mapData.map.scrollWheelZoom.disable();
+                    mapData.map.touchZoom.disable();
+                    mapData.map.doubleClickZoom.disable();
+                    mapData.map.boxZoom.disable();
+                    mapData.map.keyboard.disable();
+                    
+                    // Remove zoom control if it exists
+                    if (zoomControls[mapId]) {
+                        mapData.map.removeControl(zoomControls[mapId]);
+                        zoomControls[mapId] = null;
+                    }
+                    
+                    // Reset map to original view
+                    resetMapView(mapData);
+                    
+                    // Reset the transform to original
+                    l.style.transform = originalTransforms[l.id];
+                }
+            });
+        }
+        
+        // Add click event to map layers
+        layers.forEach(layer => {
+            layer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                activateLayer(layer);
+            });
+        });
+        
+        // Add click event to container to deactivate layers when clicking outside
+        layersContainer.addEventListener('click', (e) => {
+            if (e.target === layersContainer) {
+                deactivateAllLayers();
+            }
+        });
+        
+        // Add click event to document to deactivate layers when clicking outside
+        document.addEventListener('click', (e) => {
+            let isMapLayer = false;
+            let el = e.target;
+            
+            // Check if the clicked element is inside a map layer
+            while (el && el !== document.body) {
+                if (el.classList && el.classList.contains('map-layer')) {
+                    isMapLayer = true;
+                    break;
+                }
+                el = el.parentNode;
+            }
+            
+            if (!isMapLayer) {
+                deactivateAllLayers();
+            }
+        });
+    </script>
+</body>
+</html>
