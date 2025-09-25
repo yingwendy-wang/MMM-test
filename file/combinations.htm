@@ -1,0 +1,6758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Combination Effects Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f5f7fa;
+        }
+        
+        #map-container {
+            flex: 1;
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+        }
+        
+        #sidebar {
+            width: 400px;
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            box-shadow: -2px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-y: auto;   /* Enable vertical scroll */
+            color: #2d3748;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-y: auto;   /* Enable vertical scroll */
+        }
+        
+        .sidebar-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .sidebar-header h1 {
+            font-size: 24px;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-header p {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        #location-info {
+            display: none;
+        }
+        
+        .info-section {
+            margin-bottom: 25px;
+        }
+        
+        .info-section h2 {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .combination-list {
+            list-style: none;
+        }
+        
+        .combination-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            background-color: #f7fafc;
+            transition: all 0.3s ease;
+        }
+        
+        .combination-item:hover {
+            transform: translateX(5px);
+            background-color: #edf2f7;
+        }
+        
+        .positive {
+            border-left: 4px solid #48bb78;
+        }
+        
+        .negative {
+            border-left: 4px solid #f56565;
+        }
+        
+        .sentiment-value {
+            font-weight: bold;
+        }
+        
+        .positive .sentiment-value {
+            color: #48bb78;
+        }
+        
+        .negative .sentiment-value {
+            color: #f56565;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #718096;
+        }
+        
+        .positive-sentiment {
+            color: #48bb78;
+        }
+        
+        .negative-sentiment {
+            color: #f56565;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-width: 250px;
+            color: #2d3748;
+        }
+        
+        .legend h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #2d3748;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+        
+        .legend-line {
+            width: 30px;
+            height: 4px;
+            margin-right: 10px;
+        }
+        
+        .no-data-message {
+            text-align: center;
+            color: #718096;
+            padding: 20px;
+        }
+        
+        .location-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .visits-badge {
+            background: #4299e1;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .description {
+            color: #718096;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        .clear-btn {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        
+        .clear-btn:hover {
+            background: #e53e3e;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            #map-container {
+                height: 50vh;
+            }
+            
+            #sidebar {
+                width: 100%;
+                height: 50vh;
+            }
+        }
+        
+        /* Animation for markers */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s ease;
+        }
+        
+        /* Custom scrollbar for sidebar */
+        #sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+        
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+        
+        /* Ensure content doesn't cause horizontal scroll */
+        .sidebar-content > * {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+    
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1>Location Combination Effects</h1>
+            <p>Click on any location to see combination effects with other locations</p>
+        </div>
+        
+        <div class="sidebar-content">
+            <div id="location-info">
+                <div class="location-title">
+                    <h2 id="location-name">Location A</h2>
+                    <span class="visits-badge" id="location-visits">150 visits</span>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-visits">150</div>
+                        <div class="stat-label">Total Visits</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-sentiment">0.25</div>
+                        <div class="stat-label">Avg. Sentiment</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="positive-combinations-count">4</div>
+                        <div class="stat-label">Positive Combos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="negative-combinations-count">2</div>
+                        <div class="stat-label">Negative Combos</div>
+                    </div>
+                </div>
+                
+                <p class="description" id="location-description">This is a description of the selected location and its significance.</p>
+                
+                <div class="info-section">
+                    <h2>Top 5 Positive Combinations</h2>
+                    <ul class="combination-list" id="positive-combinations">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h2>Top 5 Negative Combinations</h2>
+                    <ul class="combination-list" id="negative-combinations">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </div>
+                
+                <button class="clear-btn" id="clear-selection">Clear Selection</button>
+            </div>
+            
+            <div id="no-data" class="no-data-message">
+                <h3>Select a location to see details</h3>
+                <p>Click on any location marker on the map to view its details and combination effects with other locations.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([22.35, 114.1], 11);
+        
+        // Add the requested light theme tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '©OpenStreetMap, ©CartoDB'
+        }).addTo(map);
+        
+        // Create marker cluster group
+        const markers = L.layerGroup().addTo(map);
+        
+        // Create a layer group for the lines
+        const linesLayer = L.layerGroup().addTo(map);
+        
+        // Store references to all markers
+        const locationMarkers = {};
+        
+        // Function to get color based on sentiment value
+        function getColorForSentiment(sentiment) {
+            if (sentiment > 0) return '#48bb78'; // Bright green
+            return '#f56565'; // Red for negative
+        }
+        
+        // Function to reset all markers to inactive state
+        function resetMarkersToInactive() {
+            for (const locationId in locationMarkers) {
+                locationMarkers[locationId].setStyle({
+                    fillColor: '#a0aec0',
+                    color: 'transparent',
+                    fillOpacity: 0.7
+                });
+            }
+        }
+        
+        // Function to create custom circle markers
+        function createCustomMarker(locationId, data) {
+            // Calculate marker size based on visits (with a minimum and maximum size)
+            const baseSize = 10;
+            const size = Math.min(baseSize + (data.visits / 20), 25);
+            
+            const marker = L.circleMarker(data.latlng, {
+                radius: size,
+                fillColor: '#a0aec0', // Grey by default
+                color: 'transparent', // No outline
+                weight: 0,
+                opacity: 1,
+                fillOpacity: 0.7
+            });
+            
+            // Add label to marker
+            marker.bindTooltip(`${locationId} (${data.visits} visits)`, {
+                permanent: false,
+                direction: 'top',
+                className: 'map-tooltip'
+            });
+            
+            marker.addTo(markers);
+            
+            // Store reference to the marker
+            locationMarkers[locationId] = marker;
+            
+            // Add click event
+            marker.on('click', function() {
+                // Reset all markers to inactive state
+                resetMarkersToInactive();
+                
+                // Change the clicked marker to selected color
+                marker.setStyle({
+                    fillColor: '#4299e1',
+                    fillOpacity: 1
+                });
+                
+                // Add pulse animation
+                marker.getElement().classList.add('pulse');
+                setTimeout(() => {
+                    if (marker.getElement()) {
+                        marker.getElement().classList.remove('pulse');
+                    }
+                }, 500);
+                
+                // Clear previous lines
+                linesLayer.clearLayers();
+                
+                // Update sidebar
+                document.getElementById('location-name').textContent = locationId;
+                document.getElementById('location-visits').textContent = `${data.visits} visits`;
+                document.getElementById('total-visits').textContent = data.visits;
+                document.getElementById('location-description').textContent = data.description;
+                
+                // Calculate and display average sentiment
+                const avgSentiment = data.avg_sentiment;
+                document.getElementById('avg-sentiment').textContent = avgSentiment.toFixed(2);
+                document.getElementById('avg-sentiment').className = 'stat-value ' + 
+                    (avgSentiment >= 0 ? 'positive-sentiment' : 'negative-sentiment');
+                
+                // Clear previous combinations
+                const positiveList = document.getElementById('positive-combinations');
+                const negativeList = document.getElementById('negative-combinations');
+                positiveList.innerHTML = '';
+                negativeList.innerHTML = '';
+                
+                // Create arrays for positive and negative combinations
+                const positiveCombinations = [];
+                const negativeCombinations = [];
+                
+                // Process combinations
+                for (const [otherLocation, comboData] of Object.entries(data.combinations)) {
+                    if (comboData.sentiment >= 0) {
+                        positiveCombinations.push({ 
+                            location: otherLocation, 
+                            sentiment: comboData.sentiment,
+                            traffic: comboData.traffic
+                        });
+                    } else {
+                        negativeCombinations.push({ 
+                            location: otherLocation, 
+                            sentiment: comboData.sentiment,
+                            traffic: comboData.traffic
+                        });
+                    }
+                    
+                    // Draw line to other location
+                    if (locations[otherLocation]) {
+                        // Calculate line width based on traffic
+                        const lineWidth = 2 + (comboData.traffic / 20);
+                        
+                        const line = L.polyline([data.latlng, locations[otherLocation].latlng], {
+                            color: getColorForSentiment(comboData.sentiment),
+                            weight: lineWidth,
+                            opacity: 1
+                        }).addTo(linesLayer);
+                        
+                        // Add tooltip to line
+                        line.bindTooltip(
+                            `With ${otherLocation}: ${comboData.sentiment > 0 ? '+' : ''}${comboData.sentiment.toFixed(2)} (${comboData.traffic} visits)`,
+                            { permanent: false, direction: 'center' }
+                        );
+                        
+                        // Change the connected marker color based on sentiment
+                        if (locationMarkers[otherLocation]) {
+                            locationMarkers[otherLocation].setStyle({
+                                fillColor: getColorForSentiment(comboData.sentiment),
+                                fillOpacity: 1
+                            });
+                        }
+                    }
+                }
+                
+                // Update combination counts
+                document.getElementById('positive-combinations-count').textContent = positiveCombinations.length;
+                document.getElementById('negative-combinations-count').textContent = negativeCombinations.length;
+                
+                // Sort combinations by absolute value of sentiment
+                positiveCombinations.sort((a, b) => Math.abs(b.sentiment) - Math.abs(a.sentiment));
+                negativeCombinations.sort((a, b) => Math.abs(b.sentiment) - Math.abs(a.sentiment));
+                
+                // Display top 5 positive combinations
+                const topPositive = positiveCombinations.slice(0, 5);
+                topPositive.forEach(combo => {
+                    const li = document.createElement('li');
+                    li.className = 'combination-item positive';
+                    li.innerHTML = `
+                        <span>With ${combo.location} (${combo.traffic} visits)</span>
+                        <span class="sentiment-value">+${combo.sentiment.toFixed(2)}</span>
+                    `;
+                    positiveList.appendChild(li);
+                });
+                
+                // Display top 5 negative combinations
+                const topNegative = negativeCombinations.slice(0, 5);
+                topNegative.forEach(combo => {
+                    const li = document.createElement('li');
+                    li.className = 'combination-item negative';
+                    li.innerHTML = `
+                        <span>With ${combo.location} (${combo.traffic} visits)</span>
+                        <span class="sentiment-value">${combo.sentiment.toFixed(2)}</span>
+                    `;
+                    negativeList.appendChild(li);
+                });
+                
+                // Show the location info and hide the no-data message
+                document.getElementById('location-info').style.display = 'block';
+                document.getElementById('no-data').style.display = 'none';
+            });
+        }
+        
+        // Sample data for demonstration
+        const locations = {
+  "Victoria Peak": {
+    "latlng": [
+      22.2758835,
+      114.145532
+    ],
+    "visits": 362,
+    "description": "city",
+    "avg_sentiment": 0.464698708234675,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.09117737571349292,
+        "traffic": 102
+      },
+      "Ngong Ping": {
+        "sentiment": -0.06407770015065718,
+        "traffic": 35
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.07779418723072754,
+        "traffic": 18
+      },
+      "Tai Po": {
+        "sentiment": -0.024427689985333813,
+        "traffic": 17
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.07544950318408519,
+        "traffic": 65
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.06772938679162041,
+        "traffic": 19
+      },
+      "Lantau Island": {
+        "sentiment": -0.07941417270590863,
+        "traffic": 43
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.0006398964218819489,
+        "traffic": 29
+      },
+      "Lamma Island": {
+        "sentiment": -0.13035805864350808,
+        "traffic": 8
+      },
+      "Kowloon": {
+        "sentiment": 0.02820499359505917,
+        "traffic": 5
+      },
+      "Museum of Art": {
+        "sentiment": -0.04054049951347168,
+        "traffic": 12
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": -0.01511819966224936,
+        "traffic": 12
+      },
+      "Harbour City": {
+        "sentiment": -0.17034458054357277,
+        "traffic": 7
+      },
+      "Hong Kong Park": {
+        "sentiment": -0.12947861534806202,
+        "traffic": 11
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.009021151481049925,
+        "traffic": 24
+      },
+      "The Peninsula": {
+        "sentiment": -0.16779384644268786,
+        "traffic": 10
+      },
+      "Tai O": {
+        "sentiment": -0.036395623660638594,
+        "traffic": 18
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.0622439501835495,
+        "traffic": 70
+      },
+      "iSQUARE": {
+        "sentiment": -0.027183728475029804,
+        "traffic": 7
+      },
+      "Sky 100": {
+        "sentiment": -0.08329443799796465,
+        "traffic": 28
+      },
+      "The Peak Tower": {
+        "sentiment": -0.07370741304669222,
+        "traffic": 38
+      },
+      "The Peak Tram": {
+        "sentiment": -0.05252394467360827,
+        "traffic": 102
+      },
+      "Madame Tussauds": {
+        "sentiment": -0.17730967592051378,
+        "traffic": 13
+      },
+      "Central": {
+        "sentiment": -0.03144244915442363,
+        "traffic": 47
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.023647216474694283,
+        "traffic": 20
+      },
+      "SOGO": {
+        "sentiment": -0.028856218532742058,
+        "traffic": 6
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.0724439318565437,
+        "traffic": 31
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.10482554886649778,
+        "traffic": 21
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": -0.037563432888569316,
+        "traffic": 19
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.013758605052311274,
+        "traffic": 18
+      },
+      "Mong Kok": {
+        "sentiment": -0.03775906454756442,
+        "traffic": 16
+      },
+      "Ocean Park": {
+        "sentiment": -0.0031603982809088834,
+        "traffic": 17
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.041335805729959006,
+        "traffic": 19
+      },
+      "Lan Fong Yuen": {
+        "sentiment": -0.011007613583649906,
+        "traffic": 9
+      },
+      "Wong Tai Sin Temple": {
+        "sentiment": 0.012205083962917307,
+        "traffic": 10
+      },
+      "Tai Tam Reservoir": {
+        "sentiment": -0.0579856692944987,
+        "traffic": 5
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.13144254891109025,
+        "traffic": 13
+      },
+      "Ladies' Market": {
+        "sentiment": 0.006861443531703576,
+        "traffic": 5
+      },
+      "Choi Hung Estate": {
+        "sentiment": -0.00010472279164341208,
+        "traffic": 8
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.11095622399141407,
+        "traffic": 10
+      },
+      "Temple Street Night Market": {
+        "sentiment": 0.007174934227791835,
+        "traffic": 6
+      },
+      "The Ritz-Carlton": {
+        "sentiment": -0.056235559548034574,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": -0.07850586052623952,
+        "traffic": 13
+      },
+      "Wan Chai": {
+        "sentiment": -0.05370315831119475,
+        "traffic": 7
+      },
+      "Repulse Bay": {
+        "sentiment": -0.049587273363653504,
+        "traffic": 6
+      },
+      "Hong Kong Island": {
+        "sentiment": -0.005807738206382301,
+        "traffic": 9
+      },
+      "Lan Kwai Fong": {
+        "sentiment": -0.05515845360824532,
+        "traffic": 9
+      },
+      "Central-Mid-Levels Escalators": {
+        "sentiment": -0.006684389298660899,
+        "traffic": 9
+      },
+      "Man Mo Temple": {
+        "sentiment": -0.039728767708614256,
+        "traffic": 12
+      },
+      "Temple St": {
+        "sentiment": 0.014457487801417904,
+        "traffic": 9
+      },
+      "Yat Lok Restaurant": {
+        "sentiment": 0.010557128102055191,
+        "traffic": 5
+      },
+      "Hong Kong Science Museum": {
+        "sentiment": 0.012552504598520082,
+        "traffic": 5
+      },
+      "ifc mall": {
+        "sentiment": -0.01543946516103339,
+        "traffic": 5
+      },
+      "Central Market": {
+        "sentiment": -0.07700543929113383,
+        "traffic": 6
+      },
+      "Tai Kwun": {
+        "sentiment": -0.05097307705907981,
+        "traffic": 6
+      },
+      "Monster Building": {
+        "sentiment": 0.10638546512288147,
+        "traffic": 8
+      }
+    }
+  },
+  "Hong Kong Disneyland": {
+    "latlng": [
+      22.3129666,
+      114.0412819
+    ],
+    "visits": 674,
+    "description": "entertainment",
+    "avg_sentiment": 0.5825934671369016,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": -0.09117737571349292,
+        "traffic": 102
+      },
+      "Ngong Ping": {
+        "sentiment": -0.10918819007527794,
+        "traffic": 65
+      },
+      "Sky 100": {
+        "sentiment": -0.05532240772993131,
+        "traffic": 13
+      },
+      "Ocean Park": {
+        "sentiment": -0.06366966702729168,
+        "traffic": 81
+      },
+      "Hong Kong Science Museum": {
+        "sentiment": 0.011296354741814967,
+        "traffic": 11
+      },
+      "Central": {
+        "sentiment": -0.04413473374059397,
+        "traffic": 60
+      },
+      "Lantau Island": {
+        "sentiment": -0.1243822816251727,
+        "traffic": 79
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.010812354147757096,
+        "traffic": 240
+      },
+      "Sunny Bay Station": {
+        "sentiment": -0.0003808137385163819,
+        "traffic": 11
+      },
+      "Adventureland": {
+        "sentiment": -0.1049461525576948,
+        "traffic": 10
+      },
+      "Disney's Hollywood Hotel": {
+        "sentiment": -0.037765819827418924,
+        "traffic": 18
+      },
+      "Causeway Bay": {
+        "sentiment": -0.10531878641847577,
+        "traffic": 17
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.10861165156909187,
+        "traffic": 60
+      },
+      "Mystic Manor": {
+        "sentiment": 0.09585940525419051,
+        "traffic": 8
+      },
+      "Toy Story Land": {
+        "sentiment": -0.1277953861963481,
+        "traffic": 13
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.017757442985507167,
+        "traffic": 26
+      },
+      "Mong Kok": {
+        "sentiment": -0.11178004076828882,
+        "traffic": 33
+      },
+      "Temple St": {
+        "sentiment": -0.08161483738612536,
+        "traffic": 11
+      },
+      "Lan Kwai Fong": {
+        "sentiment": -0.14250763532464655,
+        "traffic": 10
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.07790445080866379,
+        "traffic": 46
+      },
+      "ICHIRAN": {
+        "sentiment": -0.10339963788831454,
+        "traffic": 7
+      },
+      "Harbour City": {
+        "sentiment": -0.18924343997975127,
+        "traffic": 5
+      },
+      "Lai King": {
+        "sentiment": -0.08515096077407364,
+        "traffic": 8
+      },
+      "Tung Chung": {
+        "sentiment": -0.2325485906157237,
+        "traffic": 5
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": -0.07156069851553531,
+        "traffic": 18
+      },
+      "Happy Valley Racecourse": {
+        "sentiment": -0.3003669097540465,
+        "traffic": 6
+      },
+      "Ladies' Market": {
+        "sentiment": -0.051239450216083095,
+        "traffic": 5
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.13010354919111006,
+        "traffic": 24
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.08277434190128839,
+        "traffic": 22
+      },
+      "The Peak Tram": {
+        "sentiment": -0.05622778040654322,
+        "traffic": 45
+      },
+      "The Peak Tower": {
+        "sentiment": 0.01413783936112219,
+        "traffic": 13
+      },
+      "Tomorrowland": {
+        "sentiment": -0.07940142574083203,
+        "traffic": 18
+      },
+      "Lamma Island": {
+        "sentiment": -0.14009230388692223,
+        "traffic": 5
+      },
+      "Madame Tussauds": {
+        "sentiment": -0.1747064455575183,
+        "traffic": 10
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.10227367177000221,
+        "traffic": 91
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.01977678414237446,
+        "traffic": 44
+      },
+      "Tai O": {
+        "sentiment": -0.10772598582311489,
+        "traffic": 11
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.09005997817635922,
+        "traffic": 39
+      },
+      "Yaumatei Tin Hau Temple": {
+        "sentiment": -0.03886761697406263,
+        "traffic": 9
+      },
+      "Victoria Park": {
+        "sentiment": -0.07314205562498925,
+        "traffic": 7
+      },
+      "M+": {
+        "sentiment": -0.061668977392958735,
+        "traffic": 10
+      },
+      "Man Mo Temple": {
+        "sentiment": -0.10582936058933581,
+        "traffic": 10
+      },
+      "Lan Fong Yuen": {
+        "sentiment": -0.0438962633428387,
+        "traffic": 6
+      },
+      "Citygate Outlets": {
+        "sentiment": -0.02830121312065065,
+        "traffic": 6
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.009473545492433148,
+        "traffic": 19
+      },
+      "iSQUARE": {
+        "sentiment": -0.09013191200402604,
+        "traffic": 18
+      },
+      "Old Hong Kong": {
+        "sentiment": -0.05659115366264659,
+        "traffic": 8
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": -0.05974590545453439,
+        "traffic": 27
+      },
+      "Cheung Hing Kee Shanghai Pan Fried Buns": {
+        "sentiment": -0.09578977396524976,
+        "traffic": 5
+      },
+      "The Peninsula": {
+        "sentiment": -0.09300589775877534,
+        "traffic": 23
+      },
+      "Monster Building": {
+        "sentiment": 0.06712198890147758,
+        "traffic": 8
+      },
+      "Choi Hung Estate": {
+        "sentiment": -0.03182831357129343,
+        "traffic": 7
+      },
+      "The Hong Kong Tourism Board Kowloon Visitor Centre": {
+        "sentiment": -0.007879168804678927,
+        "traffic": 5
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": -0.12557881665152165,
+        "traffic": 37
+      },
+      "Tai Po": {
+        "sentiment": -0.143430824834787,
+        "traffic": 15
+      },
+      "Mong Kok Night Market": {
+        "sentiment": -0.09104508054732972,
+        "traffic": 5
+      },
+      "Temple Street Night Market": {
+        "sentiment": -0.07586286960575052,
+        "traffic": 7
+      },
+      "Hong Kong Park": {
+        "sentiment": -0.1380504340151792,
+        "traffic": 8
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.13869431295690052,
+        "traffic": 14
+      },
+      "Chi Lin Nunnery": {
+        "sentiment": -0.12212637485266283,
+        "traffic": 7
+      },
+      "Clock Tower": {
+        "sentiment": -0.048218852010126545,
+        "traffic": 9
+      },
+      "Hong Kong Island": {
+        "sentiment": -0.13819853399048573,
+        "traffic": 6
+      },
+      "Tsuen Wan": {
+        "sentiment": -0.08097838645335456,
+        "traffic": 7
+      },
+      "Nathan Rd": {
+        "sentiment": -0.07828642145180724,
+        "traffic": 6
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.05463695035867999,
+        "traffic": 6
+      },
+      "Museum of Art": {
+        "sentiment": -0.04323615496846432,
+        "traffic": 14
+      },
+      "ifc mall": {
+        "sentiment": 0.05436654665263916,
+        "traffic": 6
+      },
+      "Sha Tin Che Kung Temple": {
+        "sentiment": -0.12745925775906194,
+        "traffic": 9
+      },
+      "Kowloon": {
+        "sentiment": -0.062035102098995674,
+        "traffic": 6
+      },
+      "LEGOLAND Discovery Centre": {
+        "sentiment": -0.1841763510726569,
+        "traffic": 9
+      },
+      "Chungking Mansions": {
+        "sentiment": -0.020385860656790173,
+        "traffic": 7
+      },
+      "Kennedy Town": {
+        "sentiment": -0.06508738350228495,
+        "traffic": 8
+      },
+      "Wong Tai Sin Temple": {
+        "sentiment": -0.06334941560037251,
+        "traffic": 7
+      },
+      "Tai Tam Reservoir": {
+        "sentiment": -0.1063051529416733,
+        "traffic": 6
+      },
+      "World of Frozen": {
+        "sentiment": -0.06998386795120046,
+        "traffic": 27
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.10638513914949256,
+        "traffic": 18
+      },
+      "Big Grizzly Mountain Runaway Mine Cars": {
+        "sentiment": -0.07223411882542138,
+        "traffic": 8
+      },
+      "Central-Mid-Levels Escalators": {
+        "sentiment": -0.004345316996129033,
+        "traffic": 6
+      },
+      "1881 Heritage": {
+        "sentiment": -0.13888898713210493,
+        "traffic": 5
+      },
+      "Tai Kwun": {
+        "sentiment": -0.09139813342856633,
+        "traffic": 6
+      },
+      "Sneakers Street": {
+        "sentiment": -0.060020182775626846,
+        "traffic": 6
+      },
+      "K11 ARTMALL": {
+        "sentiment": -0.11811613288151679,
+        "traffic": 7
+      }
+    }
+  },
+  "Hong Kong-Zhuhai-Macao Bridge": {
+    "latlng": [
+      22.3146569,
+      113.9473807
+    ],
+    "visits": 53,
+    "description": "city",
+    "avg_sentiment": 0.32564245283018867,
+    "combinations": {
+      "Tsing Ma Bridge": {
+        "sentiment": -0.03430348440504549,
+        "traffic": 7
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.07156069851553531,
+        "traffic": 18
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.040338784970403815,
+        "traffic": 23
+      },
+      "Ngong Ping": {
+        "sentiment": 0.06539267380449613,
+        "traffic": 11
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.06734678205164148,
+        "traffic": 11
+      },
+      "Lantau Island": {
+        "sentiment": 0.007508308350594076,
+        "traffic": 16
+      },
+      "Ngong Ping 360": {
+        "sentiment": 0.09630228587672017,
+        "traffic": 11
+      },
+      "Hong Kong Macau Ferry Terminal": {
+        "sentiment": 0.002062355014342504,
+        "traffic": 5
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.16598207095216697,
+        "traffic": 9
+      },
+      "Po Lin Monastery": {
+        "sentiment": 0.019142707363888352,
+        "traffic": 7
+      },
+      "Tai O": {
+        "sentiment": 0.0387502983513392,
+        "traffic": 6
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.13343395678638512,
+        "traffic": 7
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.05280688241772733,
+        "traffic": 6
+      }
+    }
+  },
+  "Tsing Ma Bridge": {
+    "latlng": [
+      22.3511503,
+      114.0733443
+    ],
+    "visits": 88,
+    "description": "city",
+    "avg_sentiment": 0.33975045454545455,
+    "combinations": {
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": -0.03430348440504549,
+        "traffic": 7
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.009376428728391518,
+        "traffic": 40
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.09758578181270705,
+        "traffic": 11
+      },
+      "Ngong Ping 360": {
+        "sentiment": 0.028049340528185657,
+        "traffic": 6
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.1023764376030937,
+        "traffic": 5
+      },
+      "Lantau Island": {
+        "sentiment": -0.03103108727409367,
+        "traffic": 15
+      },
+      "Ngong Ping": {
+        "sentiment": -0.011902573465020591,
+        "traffic": 8
+      },
+      "Victoria Peak": {
+        "sentiment": -0.037563432888569316,
+        "traffic": 19
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.01854560378377187,
+        "traffic": 7
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.031633301446870384,
+        "traffic": 8
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.03949294025065465,
+        "traffic": 12
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.12557881665152165,
+        "traffic": 37
+      },
+      "Central": {
+        "sentiment": 0.05455201590128074,
+        "traffic": 9
+      },
+      "The Peak Tram": {
+        "sentiment": 0.03187162607015587,
+        "traffic": 5
+      },
+      "Tai O": {
+        "sentiment": 0.05481863220533374,
+        "traffic": 5
+      }
+    }
+  },
+  "Ngong Ping": {
+    "latlng": [
+      22.2560986,
+      113.9053189
+    ],
+    "visits": 179,
+    "description": "area",
+    "avg_sentiment": 0.4852361080074487,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.10918819007527794,
+        "traffic": 65
+      },
+      "Victoria Peak": {
+        "sentiment": -0.06407770015065718,
+        "traffic": 35
+      },
+      "Lantau Island": {
+        "sentiment": -0.0976585753366958,
+        "traffic": 82
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.04437471815356218,
+        "traffic": 61
+      },
+      "Ocean Park": {
+        "sentiment": -0.04193646785475554,
+        "traffic": 21
+      },
+      "Tai Po": {
+        "sentiment": -0.05079900777483193,
+        "traffic": 18
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.07480852634317647,
+        "traffic": 69
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.022424380014134316,
+        "traffic": 41
+      },
+      "Mong Kok": {
+        "sentiment": -0.010401913262242135,
+        "traffic": 12
+      },
+      "Central": {
+        "sentiment": -0.008996736070849179,
+        "traffic": 12
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.030089624208453285,
+        "traffic": 5
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.028470953825760106,
+        "traffic": 19
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.06853695235804516,
+        "traffic": 5
+      },
+      "Tai O": {
+        "sentiment": -0.06709808711205473,
+        "traffic": 18
+      },
+      "Tung Chung": {
+        "sentiment": -0.04595236264540778,
+        "traffic": 9
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.04144146840271926,
+        "traffic": 37
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.10062894160728196,
+        "traffic": 47
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.1576866673238507,
+        "traffic": 5
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": -0.011902573465020591,
+        "traffic": 8
+      },
+      "The Peak Tram": {
+        "sentiment": -0.04409623382923278,
+        "traffic": 18
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.02167651986322096,
+        "traffic": 7
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.03665307767079159,
+        "traffic": 5
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": 0.06539267380449613,
+        "traffic": 11
+      },
+      "Old Hong Kong": {
+        "sentiment": -0.052604241025774934,
+        "traffic": 5
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.11257525272900622,
+        "traffic": 10
+      },
+      "Sky 100": {
+        "sentiment": -0.0650577759777666,
+        "traffic": 8
+      },
+      "Ngong Ping Cable Car Station": {
+        "sentiment": 0.06853208411812374,
+        "traffic": 5
+      },
+      "Citygate Outlets": {
+        "sentiment": -0.0550780396571941,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": -0.031217184187152313,
+        "traffic": 6
+      },
+      "The Peak Tower": {
+        "sentiment": 0.022199515969344403,
+        "traffic": 10
+      }
+    }
+  },
+  "Victoria Harbour": {
+    "latlng": [
+      22.3074457936953,
+      114.167710150583
+    ],
+    "visits": 299,
+    "description": "city",
+    "avg_sentiment": 0.4491886990985483,
+    "combinations": {
+      "Kowloon Park": {
+        "sentiment": -0.14902781539038734,
+        "traffic": 5
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.08512061433724771,
+        "traffic": 28
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.058420970024641514,
+        "traffic": 10
+      },
+      "Causeway Bay": {
+        "sentiment": -0.07540275731602016,
+        "traffic": 11
+      },
+      "Tai Po": {
+        "sentiment": -0.038318901806283036,
+        "traffic": 5
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.030776198811310496,
+        "traffic": 12
+      },
+      "Lantau Island": {
+        "sentiment": -0.06716461894596903,
+        "traffic": 25
+      },
+      "Victoria Peak": {
+        "sentiment": -0.07544950318408519,
+        "traffic": 65
+      },
+      "Central": {
+        "sentiment": -0.03602050887935575,
+        "traffic": 37
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.008505205201265525,
+        "traffic": 86
+      },
+      "Tai O": {
+        "sentiment": -0.07853771659590152,
+        "traffic": 14
+      },
+      "ifc mall": {
+        "sentiment": -0.05013638905283256,
+        "traffic": 10
+      },
+      "Museum of Art": {
+        "sentiment": -0.08238965191539771,
+        "traffic": 16
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": -0.0613997482842088,
+        "traffic": 27
+      },
+      "Harbour City": {
+        "sentiment": -0.21977370259138018,
+        "traffic": 6
+      },
+      "Hong Kong Park": {
+        "sentiment": -0.10709760355857398,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.046092495223386196,
+        "traffic": 36
+      },
+      "The Peninsula": {
+        "sentiment": -0.1275249046088856,
+        "traffic": 25
+      },
+      "The Peak Tram": {
+        "sentiment": -0.04606537938242588,
+        "traffic": 26
+      },
+      "Sky 100": {
+        "sentiment": -0.12032726042830341,
+        "traffic": 9
+      },
+      "Hong Kong Macau Ferry Terminal": {
+        "sentiment": 0.012379740171352304,
+        "traffic": 5
+      },
+      "Mong Kok": {
+        "sentiment": -0.029150860341421194,
+        "traffic": 17
+      },
+      "Ngong Ping": {
+        "sentiment": -0.028470953825760106,
+        "traffic": 19
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.05640500235313403,
+        "traffic": 34
+      },
+      "Temple St": {
+        "sentiment": -0.031993928522991225,
+        "traffic": 9
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": -0.03949294025065465,
+        "traffic": 12
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.10227367177000221,
+        "traffic": 91
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.026499345335257444,
+        "traffic": 15
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.04733497655394647,
+        "traffic": 12
+      },
+      "Choi Hung Estate": {
+        "sentiment": -0.04626130615205754,
+        "traffic": 10
+      },
+      "Ladies' Market": {
+        "sentiment": -0.07496143417279874,
+        "traffic": 5
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.06691955786163399,
+        "traffic": 9
+      },
+      "Temple Street Night Market": {
+        "sentiment": -0.09911879031168765,
+        "traffic": 6
+      },
+      "Wan Chai": {
+        "sentiment": 0.00522677514295147,
+        "traffic": 9
+      },
+      "Hong Kong Island": {
+        "sentiment": -0.1057647526364832,
+        "traffic": 6
+      },
+      "Kowloon": {
+        "sentiment": 0.012151277912328867,
+        "traffic": 6
+      },
+      "Cheung Hing Kee Shanghai Pan Fried Buns": {
+        "sentiment": -0.1291185437700702,
+        "traffic": 5
+      },
+      "Lan Fong Yuen": {
+        "sentiment": -0.026723169853293705,
+        "traffic": 7
+      },
+      "Lan Kwai Fong": {
+        "sentiment": -0.11256173425193461,
+        "traffic": 5
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": -0.16598207095216697,
+        "traffic": 9
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.099172445829256,
+        "traffic": 17
+      },
+      "Clock Tower": {
+        "sentiment": 0.0075043535355221935,
+        "traffic": 11
+      },
+      "Nathan Rd": {
+        "sentiment": -0.0919072041593787,
+        "traffic": 6
+      },
+      "Hong Kong Science Museum": {
+        "sentiment": -0.04419335533856913,
+        "traffic": 7
+      },
+      "Chungking Mansions": {
+        "sentiment": -0.055111935764707666,
+        "traffic": 6
+      },
+      "M+": {
+        "sentiment": -0.04066186778049078,
+        "traffic": 10
+      },
+      "Ocean Park": {
+        "sentiment": -0.05381015484552497,
+        "traffic": 9
+      },
+      "Wong Tai Sin Temple": {
+        "sentiment": -0.00045692816211407986,
+        "traffic": 9
+      },
+      "K11 ARTMALL": {
+        "sentiment": 0.046152917983907485,
+        "traffic": 11
+      },
+      "Man Mo Temple": {
+        "sentiment": -0.13826658987479024,
+        "traffic": 9
+      },
+      "Hong Kong Convention and Exhibition Centre": {
+        "sentiment": -0.03371906544643297,
+        "traffic": 6
+      },
+      "Tsim Sha Tsui Station": {
+        "sentiment": -0.03205025404339865,
+        "traffic": 5
+      },
+      "Hyatt Centric": {
+        "sentiment": -0.0276177094939136,
+        "traffic": 5
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.10688664084958799,
+        "traffic": 6
+      },
+      "Sneakers Street": {
+        "sentiment": -0.041012719875337465,
+        "traffic": 6
+      },
+      "The Peak Tower": {
+        "sentiment": -0.029206386118836677,
+        "traffic": 11
+      },
+      "Monster Building": {
+        "sentiment": 0.0009829940916260952,
+        "traffic": 11
+      },
+      "LEGOLAND Discovery Centre": {
+        "sentiment": -0.13143227571832714,
+        "traffic": 6
+      },
+      "Kennedy Town": {
+        "sentiment": -0.11282811559682075,
+        "traffic": 5
+      }
+    }
+  },
+  "1881 Heritage": {
+    "latlng": [
+      22.2954731,
+      114.1699524
+    ],
+    "visits": 20,
+    "description": "shopping",
+    "avg_sentiment": 0.4390258333333333,
+    "combinations": {
+      "Tsim Sha Tsui": {
+        "sentiment": -0.009804975193840835,
+        "traffic": 6
+      },
+      "The Peninsula": {
+        "sentiment": 0.007911443315399233,
+        "traffic": 7
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.010189390631511391,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.13888898713210493,
+        "traffic": 5
+      }
+    }
+  },
+  "Tai Mo Shan": {
+    "latlng": [
+      22.4088464,
+      114.1379499
+    ],
+    "visits": 51,
+    "description": "outdoor",
+    "avg_sentiment": 0.48808137254901957,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": -0.07779418723072754,
+        "traffic": 18
+      },
+      "Tai Po": {
+        "sentiment": 0.0033073389615960215,
+        "traffic": 8
+      },
+      "Lantau Island": {
+        "sentiment": -0.11069364992328792,
+        "traffic": 25
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.05941569980395905,
+        "traffic": 12
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.11468741436613272,
+        "traffic": 8
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.11391455441338574,
+        "traffic": 13
+      },
+      "Dragon's Back": {
+        "sentiment": -0.0348049724148402,
+        "traffic": 6
+      },
+      "Tai O": {
+        "sentiment": -0.05131128860557046,
+        "traffic": 11
+      },
+      "Ngong Ping": {
+        "sentiment": -0.11257525272900622,
+        "traffic": 10
+      },
+      "The Peak Tram": {
+        "sentiment": -0.08910855229444858,
+        "traffic": 7
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.01666643002744515,
+        "traffic": 6
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.095499701956218,
+        "traffic": 8
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.05463695035867999,
+        "traffic": 6
+      }
+    }
+  },
+  "Tai Po": {
+    "latlng": [
+      22.4423282,
+      114.165521
+    ],
+    "visits": 69,
+    "description": "area",
+    "avg_sentiment": 0.4174713768115942,
+    "combinations": {
+      "Tai Mo Shan": {
+        "sentiment": 0.0033073389615960215,
+        "traffic": 8
+      },
+      "Victoria Peak": {
+        "sentiment": -0.024427689985333813,
+        "traffic": 17
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.038318901806283036,
+        "traffic": 5
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.05727738541476932,
+        "traffic": 27
+      },
+      "Lantau Island": {
+        "sentiment": -0.0928719127821654,
+        "traffic": 33
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.03922711266033803,
+        "traffic": 20
+      },
+      "Ngong Ping": {
+        "sentiment": -0.05079900777483193,
+        "traffic": 18
+      },
+      "Tsz Shan Monastery": {
+        "sentiment": -0.04483608376789147,
+        "traffic": 6
+      },
+      "Tai O": {
+        "sentiment": -0.015962889147517197,
+        "traffic": 15
+      },
+      "Tung Chung": {
+        "sentiment": -0.08295238234401824,
+        "traffic": 6
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.00681156084504243,
+        "traffic": 11
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.05957541805964687,
+        "traffic": 12
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.005452125393780271,
+        "traffic": 11
+      },
+      "Wong Tai Sin Temple": {
+        "sentiment": -0.029278797462100447,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.143430824834787,
+        "traffic": 15
+      },
+      "Yaumatei Tin Hau Temple": {
+        "sentiment": -0.035714162113748484,
+        "traffic": 5
+      }
+    }
+  },
+  "Kowloon Park": {
+    "latlng": [
+      22.3003928,
+      114.1707929
+    ],
+    "visits": 17,
+    "description": "city",
+    "avg_sentiment": 0.4984583333333332,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.14902781539038734,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.06573606022345511,
+        "traffic": 5
+      },
+      "Hong Kong Park": {
+        "sentiment": -0.08878478956050419,
+        "traffic": 5
+      }
+    }
+  },
+  "Avenue Of Stars": {
+    "latlng": [
+      22.2959455,
+      114.1768095
+    ],
+    "visits": 73,
+    "description": "city",
+    "avg_sentiment": 0.4674961415525114,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.08512061433724771,
+        "traffic": 28
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.04582241108100542,
+        "traffic": 7
+      },
+      "Causeway Bay": {
+        "sentiment": -0.0298045818587926,
+        "traffic": 5
+      },
+      "Mong Kok": {
+        "sentiment": 0.056117798316020845,
+        "traffic": 9
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.03409203171807213,
+        "traffic": 16
+      },
+      "Ocean Park": {
+        "sentiment": 0.0782162154095908,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.08277434190128839,
+        "traffic": 22
+      },
+      "Central": {
+        "sentiment": 0.014723472900372635,
+        "traffic": 16
+      },
+      "The Peak Tram": {
+        "sentiment": 0.01085286836665712,
+        "traffic": 16
+      },
+      "Victoria Peak": {
+        "sentiment": -0.041335805729959006,
+        "traffic": 19
+      },
+      "The Peak Tower": {
+        "sentiment": 0.022582290393749958,
+        "traffic": 7
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.04549926457295226,
+        "traffic": 14
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.043943759952065335,
+        "traffic": 8
+      },
+      "Ngong Ping": {
+        "sentiment": 0.02167651986322096,
+        "traffic": 7
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": -0.06396583559951027,
+        "traffic": 8
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.027978603757445517,
+        "traffic": 26
+      },
+      "Wong Tai Sin Temple": {
+        "sentiment": 0.03451351855388951,
+        "traffic": 6
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.055215255084496206,
+        "traffic": 6
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.02544487263115801,
+        "traffic": 6
+      },
+      "Temple Street Night Market": {
+        "sentiment": -0.0816808301971913,
+        "traffic": 5
+      },
+      "The Peninsula": {
+        "sentiment": -0.06601346937466432,
+        "traffic": 9
+      },
+      "Harbour City": {
+        "sentiment": -0.14245436590152,
+        "traffic": 5
+      },
+      "Lan Fong Yuen": {
+        "sentiment": -0.04285063538203963,
+        "traffic": 5
+      },
+      "Monster Building": {
+        "sentiment": 0.014181514047009472,
+        "traffic": 6
+      }
+    }
+  },
+  "Ngong Ping Village": {
+    "latlng": [
+      22.2561853,
+      113.9029888
+    ],
+    "visits": 95,
+    "description": "cultural",
+    "avg_sentiment": 0.3161927894736842,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": 0.058420970024641514,
+        "traffic": 10
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.04582241108100542,
+        "traffic": 7
+      },
+      "Lantau Island": {
+        "sentiment": -0.05786108505404671,
+        "traffic": 49
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.012900322374693343,
+        "traffic": 43
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.05376509392249827,
+        "traffic": 37
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.11468741436613272,
+        "traffic": 8
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.020867288389233515,
+        "traffic": 44
+      },
+      "Ngong Ping": {
+        "sentiment": -0.022424380014134316,
+        "traffic": 41
+      },
+      "Mong Kok": {
+        "sentiment": 0.0774612888793579,
+        "traffic": 11
+      },
+      "Central": {
+        "sentiment": 0.04850864852324372,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.08037335060416911,
+        "traffic": 10
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.017757442985507167,
+        "traffic": 26
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.02880300162138629,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.013758605052311274,
+        "traffic": 18
+      },
+      "Tai Po": {
+        "sentiment": 0.005452125393780271,
+        "traffic": 11
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.04934898526062161,
+        "traffic": 5
+      },
+      "Sky 100": {
+        "sentiment": -0.015994996902807024,
+        "traffic": 5
+      },
+      "The Peak Tram": {
+        "sentiment": 0.054770200013372274,
+        "traffic": 10
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": 0.13343395678638512,
+        "traffic": 7
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.1257168898890656,
+        "traffic": 16
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.10909413997121467,
+        "traffic": 5
+      },
+      "Citygate Outlets": {
+        "sentiment": 0.045365565188252896,
+        "traffic": 5
+      },
+      "Tai O": {
+        "sentiment": -0.03499577886536389,
+        "traffic": 12
+      }
+    }
+  },
+  "Causeway Bay": {
+    "latlng": [
+      22.2859787,
+      114.1914919
+    ],
+    "visits": 105,
+    "description": "area",
+    "avg_sentiment": 0.26537746031746023,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.07540275731602016,
+        "traffic": 11
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.0298045818587926,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.10531878641847577,
+        "traffic": 17
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.08209167075769548,
+        "traffic": 18
+      },
+      "Mong Kok": {
+        "sentiment": 0.02121911186174818,
+        "traffic": 18
+      },
+      "Ladies' Market": {
+        "sentiment": 0.041726824078177606,
+        "traffic": 5
+      },
+      "Central": {
+        "sentiment": 0.027882059202312175,
+        "traffic": 29
+      },
+      "Wan Chai": {
+        "sentiment": 0.0946785212712679,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.07850586052623952,
+        "traffic": 13
+      },
+      "The Peak Tram": {
+        "sentiment": -0.027254834334144402,
+        "traffic": 8
+      },
+      "The Peak Tower": {
+        "sentiment": -0.07226983744982213,
+        "traffic": 5
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.019004048916135687,
+        "traffic": 9
+      },
+      "Times Square": {
+        "sentiment": 0.03182566452491716,
+        "traffic": 6
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.053103806862936094,
+        "traffic": 22
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.04023448782267359,
+        "traffic": 5
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.049914502420162696,
+        "traffic": 5
+      },
+      "Ngong Ping": {
+        "sentiment": -0.031217184187152313,
+        "traffic": 6
+      },
+      "Yat Lok Restaurant": {
+        "sentiment": 0.004035927291845566,
+        "traffic": 7
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.00816521145103904,
+        "traffic": 11
+      },
+      "Tai Kwun": {
+        "sentiment": 0.02812145703646669,
+        "traffic": 6
+      },
+      "Jordan": {
+        "sentiment": 0.007100770092023085,
+        "traffic": 5
+      },
+      "Admiralty": {
+        "sentiment": 0.07201809725574353,
+        "traffic": 5
+      }
+    }
+  },
+  "Repulse Bay": {
+    "latlng": [
+      22.2345043,
+      114.1952039
+    ],
+    "visits": 12,
+    "description": "natural",
+    "avg_sentiment": 0.49223750000000005,
+    "combinations": {
+      "Tai O": {
+        "sentiment": -0.041620846786659144,
+        "traffic": 6
+      },
+      "Victoria Peak": {
+        "sentiment": -0.049587273363653504,
+        "traffic": 6
+      }
+    }
+  },
+  "Sky 100": {
+    "latlng": [
+      22.3034464,
+      114.1603497
+    ],
+    "visits": 56,
+    "description": "city",
+    "avg_sentiment": 0.27048265306122443,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.05532240772993131,
+        "traffic": 13
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.059161194420863206,
+        "traffic": 11
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.12032726042830341,
+        "traffic": 9
+      },
+      "Victoria Peak": {
+        "sentiment": -0.08329443799796465,
+        "traffic": 28
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.043613410725637146,
+        "traffic": 6
+      },
+      "The Peak Tower": {
+        "sentiment": -0.15279933040584273,
+        "traffic": 5
+      },
+      "Central": {
+        "sentiment": 0.0030187242892349086,
+        "traffic": 5
+      },
+      "The Peak Tram": {
+        "sentiment": -0.019596100041485993,
+        "traffic": 13
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.1421474630222016,
+        "traffic": 8
+      },
+      "Ngong Ping": {
+        "sentiment": -0.0650577759777666,
+        "traffic": 8
+      },
+      "Lantau Island": {
+        "sentiment": -0.11681156613063783,
+        "traffic": 6
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.015994996902807024,
+        "traffic": 5
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.08981943312684004,
+        "traffic": 6
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.0995925404015136,
+        "traffic": 6
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.12041452417159008,
+        "traffic": 5
+      }
+    }
+  },
+  "Sham Shui Po": {
+    "latlng": [
+      22.3285899,
+      114.1602846
+    ],
+    "visits": 15,
+    "description": "area",
+    "avg_sentiment": 0.21394916666666666,
+    "combinations": {
+      "Central": {
+        "sentiment": 0.10983775517701584,
+        "traffic": 6
+      }
+    }
+  },
+  "Central": {
+    "latlng": [
+      22.2799907,
+      114.1587983
+    ],
+    "visits": 239,
+    "description": "area",
+    "avg_sentiment": 0.22871280552083895,
+    "combinations": {
+      "Sham Shui Po": {
+        "sentiment": 0.10983775517701584,
+        "traffic": 6
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.03602050887935575,
+        "traffic": 37
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.05885093577391272,
+        "traffic": 52
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.04413473374059397,
+        "traffic": 60
+      },
+      "Lantau Island": {
+        "sentiment": -0.019988931401082256,
+        "traffic": 17
+      },
+      "ifc mall": {
+        "sentiment": 0.05001561487087109,
+        "traffic": 7
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.058265214269248584,
+        "traffic": 23
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.04729245862529069,
+        "traffic": 10
+      },
+      "Ngong Ping": {
+        "sentiment": -0.008996736070849179,
+        "traffic": 12
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.04850864852324372,
+        "traffic": 5
+      },
+      "Mong Kok": {
+        "sentiment": 0.03807663042615998,
+        "traffic": 32
+      },
+      "Lan Kwai Fong": {
+        "sentiment": -0.0649002319065111,
+        "traffic": 10
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.044220471236062965,
+        "traffic": 38
+      },
+      "The Peak Tram": {
+        "sentiment": -0.0009458736023304823,
+        "traffic": 21
+      },
+      "Victoria Peak": {
+        "sentiment": -0.03144244915442363,
+        "traffic": 47
+      },
+      "Madame Tussauds": {
+        "sentiment": -0.1349864694712831,
+        "traffic": 8
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.015295596302450523,
+        "traffic": 6
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.038526385602971454,
+        "traffic": 9
+      },
+      "Hong Kong Park": {
+        "sentiment": -0.06544033323910099,
+        "traffic": 6
+      },
+      "Ocean Park": {
+        "sentiment": -0.022144954015303735,
+        "traffic": 8
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.014723472900372635,
+        "traffic": 16
+      },
+      "The Peak Tower": {
+        "sentiment": 0.009816439240927628,
+        "traffic": 11
+      },
+      "Choi Hung Estate": {
+        "sentiment": 0.0051821122132938435,
+        "traffic": 6
+      },
+      "The Peninsula": {
+        "sentiment": -0.048264062805973965,
+        "traffic": 16
+      },
+      "Wan Chai": {
+        "sentiment": 0.06886788570138443,
+        "traffic": 15
+      },
+      "Stone Slab Street": {
+        "sentiment": 0.038604475249845206,
+        "traffic": 5
+      },
+      "Museum of Art": {
+        "sentiment": -0.023115808851693953,
+        "traffic": 12
+      },
+      "Jordan": {
+        "sentiment": 0.04619735717113338,
+        "traffic": 8
+      },
+      "St John's Cathedral": {
+        "sentiment": -0.07976306062396153,
+        "traffic": 6
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": 0.05455201590128074,
+        "traffic": 9
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.08327027985673399,
+        "traffic": 8
+      },
+      "Causeway Bay": {
+        "sentiment": 0.027882059202312175,
+        "traffic": 29
+      },
+      "Lan Fong Yuen": {
+        "sentiment": 0.1000963590204933,
+        "traffic": 10
+      },
+      "Sky 100": {
+        "sentiment": 0.0030187242892349086,
+        "traffic": 5
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.07526495468467659,
+        "traffic": 11
+      },
+      "SOGO": {
+        "sentiment": 0.024658413428296486,
+        "traffic": 9
+      },
+      "M+": {
+        "sentiment": 0.021550204562004002,
+        "traffic": 6
+      },
+      "Yat Lok Restaurant": {
+        "sentiment": 0.03522201259944642,
+        "traffic": 10
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": 0.011874499851358699,
+        "traffic": 19
+      },
+      "Tai Kwun": {
+        "sentiment": -0.023806640636170714,
+        "traffic": 13
+      },
+      "Central Market": {
+        "sentiment": -0.011675859894537689,
+        "traffic": 9
+      },
+      "Central-Mid-Levels Escalators": {
+        "sentiment": 0.08891065550547295,
+        "traffic": 7
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.06328708637518532,
+        "traffic": 9
+      },
+      "Kowloon": {
+        "sentiment": 0.025823105593662233,
+        "traffic": 8
+      },
+      "Man Mo Temple": {
+        "sentiment": -0.14918890390096057,
+        "traffic": 6
+      },
+      "Happy Valley Racecourse": {
+        "sentiment": -0.11548221766641409,
+        "traffic": 5
+      },
+      "Admiralty": {
+        "sentiment": 0.11462102905360258,
+        "traffic": 5
+      },
+      "Sneakers Street": {
+        "sentiment": 0.027971124786528308,
+        "traffic": 5
+      }
+    }
+  },
+  "Lantau Island": {
+    "latlng": [
+      22.2664984,
+      113.941751
+    ],
+    "visits": 257,
+    "description": "natural",
+    "avg_sentiment": 0.5100010418807305,
+    "combinations": {
+      "Ngong Ping": {
+        "sentiment": -0.0976585753366958,
+        "traffic": 82
+      },
+      "Tai Po": {
+        "sentiment": -0.0928719127821654,
+        "traffic": 33
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.06716461894596903,
+        "traffic": 25
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.10573906363711616,
+        "traffic": 77
+      },
+      "Victoria Peak": {
+        "sentiment": -0.07941417270590863,
+        "traffic": 43
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.06594323280389253,
+        "traffic": 89
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.05786108505404671,
+        "traffic": 49
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.11069364992328792,
+        "traffic": 25
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.1243822816251727,
+        "traffic": 79
+      },
+      "Central": {
+        "sentiment": -0.019988931401082256,
+        "traffic": 17
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.10693298193914323,
+        "traffic": 73
+      },
+      "Tung Chung": {
+        "sentiment": -0.08463590444585316,
+        "traffic": 12
+      },
+      "The Peak Tram": {
+        "sentiment": -0.03716157221598317,
+        "traffic": 12
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.041314533030248166,
+        "traffic": 51
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": -0.04827504422640496,
+        "traffic": 5
+      },
+      "Tai O": {
+        "sentiment": -0.09443297974473834,
+        "traffic": 33
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.14367415040763,
+        "traffic": 11
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": -0.03103108727409367,
+        "traffic": 15
+      },
+      "Ocean Park": {
+        "sentiment": -0.08020789539081115,
+        "traffic": 9
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": 0.007508308350594076,
+        "traffic": 16
+      },
+      "Tsz Shan Monastery": {
+        "sentiment": -0.15071706572833565,
+        "traffic": 8
+      },
+      "Mong Kok": {
+        "sentiment": -0.032624751562931036,
+        "traffic": 9
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.15671448245205594,
+        "traffic": 9
+      },
+      "Citygate Outlets": {
+        "sentiment": -0.0005313380100993026,
+        "traffic": 7
+      },
+      "The Peak Tower": {
+        "sentiment": -0.023695500302485694,
+        "traffic": 6
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.07100438266581474,
+        "traffic": 7
+      },
+      "Tai Tam Reservoir": {
+        "sentiment": -0.22228219355541726,
+        "traffic": 5
+      },
+      "Sky 100": {
+        "sentiment": -0.11681156613063783,
+        "traffic": 6
+      },
+      "Tung Chung Station": {
+        "sentiment": -0.05895796284099929,
+        "traffic": 5
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.14230509282437004,
+        "traffic": 5
+      },
+      "Museum of Art": {
+        "sentiment": -0.11318681177673078,
+        "traffic": 5
+      }
+    }
+  },
+  "Hong Kong Observation Wheel": {
+    "latlng": [
+      22.2853075,
+      114.1615851
+    ],
+    "visits": 101,
+    "description": "entertainment",
+    "avg_sentiment": 0.49912094959495945,
+    "combinations": {
+      "Central": {
+        "sentiment": -0.058265214269248584,
+        "traffic": 23
+      },
+      "ifc mall": {
+        "sentiment": -0.07258677788747209,
+        "traffic": 5
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.15747221674862644,
+        "traffic": 6
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": -0.1023764376030937,
+        "traffic": 5
+      },
+      "Lantau Island": {
+        "sentiment": -0.14367415040763,
+        "traffic": 11
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.02880300162138629,
+        "traffic": 5
+      },
+      "Ngong Ping": {
+        "sentiment": -0.1576866673238507,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.10482554886649778,
+        "traffic": 21
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.053292585903247924,
+        "traffic": 9
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.02926933605484617,
+        "traffic": 17
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.13010354919111006,
+        "traffic": 24
+      },
+      "Central Ferry Pier": {
+        "sentiment": 0.005956152946167821,
+        "traffic": 6
+      },
+      "The Peak Tram": {
+        "sentiment": -0.06323852355413188,
+        "traffic": 14
+      },
+      "The Peak Tower": {
+        "sentiment": -0.08461051995682296,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -2.3607053825006304e-05,
+        "traffic": 22
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.099172445829256,
+        "traffic": 17
+      },
+      "The Peninsula": {
+        "sentiment": -0.15377809134876622,
+        "traffic": 9
+      },
+      "Sky 100": {
+        "sentiment": -0.12041452417159008,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": -0.049914502420162696,
+        "traffic": 5
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.07488256456106414,
+        "traffic": 6
+      }
+    }
+  },
+  "Wan Chai": {
+    "latlng": [
+      22.276022,
+      114.1751471
+    ],
+    "visits": 50,
+    "description": "area",
+    "avg_sentiment": 0.17778499459459457,
+    "combinations": {
+      "Mong Kok": {
+        "sentiment": -0.010578946400140968,
+        "traffic": 8
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.028276111210953057,
+        "traffic": 9
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.033671200281944286,
+        "traffic": 12
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.0018277739465050956,
+        "traffic": 10
+      },
+      "Central": {
+        "sentiment": 0.06886788570138443,
+        "traffic": 15
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.06495894980377946,
+        "traffic": 6
+      },
+      "Tai O": {
+        "sentiment": -0.017239280356897785,
+        "traffic": 5
+      },
+      "Victoria Harbour": {
+        "sentiment": 0.00522677514295147,
+        "traffic": 9
+      },
+      "Causeway Bay": {
+        "sentiment": 0.0946785212712679,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.05370315831119475,
+        "traffic": 7
+      }
+    }
+  },
+  "Times Square": {
+    "latlng": [
+      22.278151,
+      114.1821136
+    ],
+    "visits": 18,
+    "description": "shopping",
+    "avg_sentiment": 0.28932499999999994,
+    "combinations": {
+      "Causeway Bay": {
+        "sentiment": 0.03182566452491716,
+        "traffic": 6
+      }
+    }
+  },
+  "Po Lin Monastery": {
+    "latlng": [
+      22.2554932,
+      113.9080796
+    ],
+    "visits": 146,
+    "description": "religion",
+    "avg_sentiment": 0.4663347089041095,
+    "combinations": {
+      "Tai Po": {
+        "sentiment": -0.05727738541476932,
+        "traffic": 27
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.030776198811310496,
+        "traffic": 12
+      },
+      "Lantau Island": {
+        "sentiment": -0.10573906363711616,
+        "traffic": 77
+      },
+      "Victoria Peak": {
+        "sentiment": -0.06772938679162041,
+        "traffic": 19
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.07540154431613297,
+        "traffic": 55
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.05376509392249827,
+        "traffic": 37
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.11391455441338574,
+        "traffic": 13
+      },
+      "Tung Chung": {
+        "sentiment": -0.12920264777763393,
+        "traffic": 8
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.10873611588834016,
+        "traffic": 38
+      },
+      "Central": {
+        "sentiment": -0.038526385602971454,
+        "traffic": 9
+      },
+      "The Peak Tram": {
+        "sentiment": -0.04146091622590473,
+        "traffic": 12
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.03269155169867596,
+        "traffic": 30
+      },
+      "Chi Lin Nunnery": {
+        "sentiment": -0.016953581119397113,
+        "traffic": 8
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.0822054825472804,
+        "traffic": 15
+      },
+      "Tai O": {
+        "sentiment": -0.08267522524289722,
+        "traffic": 18
+      },
+      "Ngong Ping": {
+        "sentiment": -0.10062894160728196,
+        "traffic": 47
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": -0.031633301446870384,
+        "traffic": 8
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.09005997817635922,
+        "traffic": 39
+      },
+      "Ocean Park": {
+        "sentiment": -0.08522457663343277,
+        "traffic": 8
+      },
+      "Mong Kok": {
+        "sentiment": 0.01654230018447882,
+        "traffic": 9
+      },
+      "Museum of Art": {
+        "sentiment": 0.018545730183858227,
+        "traffic": 7
+      },
+      "Sky 100": {
+        "sentiment": -0.08981943312684004,
+        "traffic": 6
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": 0.019142707363888352,
+        "traffic": 7
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.017674432617806803,
+        "traffic": 5
+      },
+      "Tsz Shan Monastery": {
+        "sentiment": -0.15089278325648933,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.08978194562329635,
+        "traffic": 5
+      }
+    }
+  },
+  "Mong Kok Station": {
+    "latlng": [
+      22.3194068,
+      114.1692081
+    ],
+    "visits": 13,
+    "description": "transit",
+    "avg_sentiment": 0.054141538461538456,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.19913742002156706,
+        "traffic": 6
+      }
+    }
+  },
+  "Tian Tan Buddha": {
+    "latlng": [
+      22.2539847,
+      113.904984
+    ],
+    "visits": 150,
+    "description": "religion",
+    "avg_sentiment": 0.5489048661193213,
+    "combinations": {
+      "Lantau Island": {
+        "sentiment": -0.06594323280389253,
+        "traffic": 89
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.012900322374693343,
+        "traffic": 43
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.07540154431613297,
+        "traffic": 55
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.05941569980395905,
+        "traffic": 12
+      },
+      "Ngong Ping": {
+        "sentiment": -0.04437471815356218,
+        "traffic": 61
+      },
+      "Victoria Peak": {
+        "sentiment": 0.0006398964218819489,
+        "traffic": 29
+      },
+      "Tai Po": {
+        "sentiment": -0.03922711266033803,
+        "traffic": 20
+      },
+      "Tsz Shan Monastery": {
+        "sentiment": -0.07140143199117066,
+        "traffic": 6
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.07106303587583783,
+        "traffic": 52
+      },
+      "Tung Chung": {
+        "sentiment": -0.08599469356971404,
+        "traffic": 8
+      },
+      "Central": {
+        "sentiment": 0.015295596302450523,
+        "traffic": 6
+      },
+      "The Peak Tram": {
+        "sentiment": 0.012809927541983157,
+        "traffic": 12
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.07199284033945247,
+        "traffic": 30
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.019909356861663386,
+        "traffic": 5
+      },
+      "Tai O": {
+        "sentiment": -0.060876838627918005,
+        "traffic": 21
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.053292585903247924,
+        "traffic": 9
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": 0.01854560378377187,
+        "traffic": 7
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.01977678414237446,
+        "traffic": 44
+      },
+      "Victoria Harbour": {
+        "sentiment": 0.026499345335257444,
+        "traffic": 15
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.09438439039390213,
+        "traffic": 8
+      },
+      "Ocean Park": {
+        "sentiment": 0.030007273441823232,
+        "traffic": 9
+      },
+      "Citygate Outlets": {
+        "sentiment": 0.0330097493931794,
+        "traffic": 7
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.059534083891243685,
+        "traffic": 5
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": 0.06734678205164148,
+        "traffic": 11
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.02544487263115801,
+        "traffic": 6
+      },
+      "Mong Kok": {
+        "sentiment": 0.05048494713672119,
+        "traffic": 6
+      },
+      "The Peak Tower": {
+        "sentiment": 0.033179609005942814,
+        "traffic": 6
+      },
+      "Sky 100": {
+        "sentiment": -0.0995925404015136,
+        "traffic": 6
+      }
+    }
+  },
+  "Hong Kong International Airport": {
+    "latlng": [
+      22.3134736,
+      113.9137283
+    ],
+    "visits": 497,
+    "description": "transit",
+    "avg_sentiment": 0.19932523888809872,
+    "combinations": {
+      "Central": {
+        "sentiment": 0.05885093577391272,
+        "traffic": 52
+      },
+      "Victoria Harbour": {
+        "sentiment": 0.008505205201265525,
+        "traffic": 86
+      },
+      "Nathan Rd": {
+        "sentiment": 0.11809676464794296,
+        "traffic": 13
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.010812354147757096,
+        "traffic": 240
+      },
+      "Sunny Bay Station": {
+        "sentiment": 0.1096118551727977,
+        "traffic": 9
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": -0.009376428728391518,
+        "traffic": 40
+      },
+      "The Peak Tram": {
+        "sentiment": 0.06357035301330625,
+        "traffic": 32
+      },
+      "Causeway Bay": {
+        "sentiment": 0.08209167075769548,
+        "traffic": 18
+      },
+      "The Peninsula": {
+        "sentiment": 0.00016756804144524295,
+        "traffic": 21
+      },
+      "iSQUARE": {
+        "sentiment": 0.07051408895132,
+        "traffic": 16
+      },
+      "Sky 100": {
+        "sentiment": 0.059161194420863206,
+        "traffic": 11
+      },
+      "Victoria Peak": {
+        "sentiment": 0.0622439501835495,
+        "traffic": 70
+      },
+      "Hong Kong Station": {
+        "sentiment": 0.03908765919724753,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.03825424958982342,
+        "traffic": 50
+      },
+      "Harbour City": {
+        "sentiment": -0.05070388236983177,
+        "traffic": 8
+      },
+      "Mong Kok": {
+        "sentiment": 0.07426800234390757,
+        "traffic": 19
+      },
+      "Lai King": {
+        "sentiment": 0.1471219385503014,
+        "traffic": 5
+      },
+      "Tung Chung": {
+        "sentiment": -0.04122746059930591,
+        "traffic": 6
+      },
+      "Ngong Ping 360": {
+        "sentiment": 0.04996298975047685,
+        "traffic": 39
+      },
+      "Lantau Island": {
+        "sentiment": 0.041314533030248166,
+        "traffic": 51
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.07199284033945247,
+        "traffic": 30
+      },
+      "Po Lin Monastery": {
+        "sentiment": 0.03269155169867596,
+        "traffic": 30
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": 0.040338784970403815,
+        "traffic": 23
+      },
+      "Clock Tower": {
+        "sentiment": 0.088852361523735,
+        "traffic": 8
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.10028013545763996,
+        "traffic": 19
+      },
+      "Tai O": {
+        "sentiment": 0.004175011433478277,
+        "traffic": 11
+      },
+      "Ngong Ping": {
+        "sentiment": 0.04144146840271926,
+        "traffic": 37
+      },
+      "Tai Po": {
+        "sentiment": -0.00681156084504243,
+        "traffic": 11
+      },
+      "Victoria Park": {
+        "sentiment": -0.00602817859996202,
+        "traffic": 5
+      },
+      "Temple St": {
+        "sentiment": 0.032600514185166005,
+        "traffic": 8
+      },
+      "Tsing Yi": {
+        "sentiment": -0.021480551149528505,
+        "traffic": 7
+      },
+      "Wan Chai": {
+        "sentiment": 0.028276111210953057,
+        "traffic": 9
+      },
+      "Ocean Park": {
+        "sentiment": 0.12676864521193743,
+        "traffic": 31
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -2.3607053825006304e-05,
+        "traffic": 22
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.04549926457295226,
+        "traffic": 14
+      },
+      "The Peak Tower": {
+        "sentiment": 0.09982407145913318,
+        "traffic": 9
+      },
+      "Lamma Island": {
+        "sentiment": 0.03750597349335838,
+        "traffic": 6
+      },
+      "Madame Tussauds": {
+        "sentiment": -0.051670547677633766,
+        "traffic": 8
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": 0.01536912060081968,
+        "traffic": 20
+      },
+      "North Point": {
+        "sentiment": 0.009765120446863612,
+        "traffic": 5
+      },
+      "The Hong Kong Tourism Board Kowloon Visitor Centre": {
+        "sentiment": 0.0583207588803327,
+        "traffic": 7
+      },
+      "Hong Kong Convention and Exhibition Centre": {
+        "sentiment": -0.029349098839311933,
+        "traffic": 6
+      },
+      "Cheung Hing Kee Shanghai Pan Fried Buns": {
+        "sentiment": 0.015658713073274804,
+        "traffic": 5
+      },
+      "Man Mo Temple": {
+        "sentiment": 0.032387782735007406,
+        "traffic": 7
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.12600798514413541,
+        "traffic": 18
+      },
+      "1881 Heritage": {
+        "sentiment": 0.010189390631511391,
+        "traffic": 5
+      },
+      "Tsuen Wan": {
+        "sentiment": 0.07221679271368768,
+        "traffic": 6
+      },
+      "Lan Fong Yuen": {
+        "sentiment": 0.16418794815426466,
+        "traffic": 6
+      },
+      "Lan Kwai Fong": {
+        "sentiment": 0.0074511527973066035,
+        "traffic": 5
+      },
+      "AsiaWorld-Expo": {
+        "sentiment": -0.07185741203982303,
+        "traffic": 6
+      },
+      "Tsim Sha Tsui Station": {
+        "sentiment": 0.01266811751244057,
+        "traffic": 6
+      },
+      "Sha Tin Che Kung Temple": {
+        "sentiment": 0.08411481995267629,
+        "traffic": 9
+      },
+      "ifc mall": {
+        "sentiment": 0.11472934667774286,
+        "traffic": 7
+      },
+      "M+": {
+        "sentiment": 0.0887417252708732,
+        "traffic": 10
+      },
+      "Mong Kok Station": {
+        "sentiment": 0.19913742002156706,
+        "traffic": 6
+      },
+      "Sneakers Street": {
+        "sentiment": 0.17700269304250735,
+        "traffic": 6
+      },
+      "Citygate Outlets": {
+        "sentiment": 0.18126298199193314,
+        "traffic": 8
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.01666643002744515,
+        "traffic": 6
+      },
+      "SOGO": {
+        "sentiment": -0.009941373945488137,
+        "traffic": 9
+      },
+      "Hong Kong Island": {
+        "sentiment": -0.014412671132584303,
+        "traffic": 5
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.1257168898890656,
+        "traffic": 16
+      },
+      "Kowloon": {
+        "sentiment": -0.02170769540634887,
+        "traffic": 10
+      },
+      "DON DON DONKI ": {
+        "sentiment": -0.06604024828805538,
+        "traffic": 5
+      },
+      "Chungking Mansions": {
+        "sentiment": 0.04971451040116922,
+        "traffic": 7
+      },
+      "LEGOLAND Discovery Centre": {
+        "sentiment": 0.03998143802873117,
+        "traffic": 6
+      },
+      "Museum of Art": {
+        "sentiment": 0.09922028226299169,
+        "traffic": 10
+      },
+      "K11 ARTMALL": {
+        "sentiment": 0.022961022304224303,
+        "traffic": 5
+      },
+      "Panda Hotel": {
+        "sentiment": 0.27824675530761434,
+        "traffic": 5
+      },
+      "Hong Kong Macau Ferry Terminal": {
+        "sentiment": 0.0330873722727515,
+        "traffic": 6
+      },
+      "Tai Kwun": {
+        "sentiment": 0.0679604330810935,
+        "traffic": 5
+      }
+    }
+  },
+  "Ocean Park": {
+    "latlng": [
+      22.2346359,
+      114.1721746
+    ],
+    "visits": 99,
+    "description": "entertainment",
+    "avg_sentiment": 0.41862938583404435,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.06366966702729168,
+        "traffic": 81
+      },
+      "Ngong Ping": {
+        "sentiment": -0.04193646785475554,
+        "traffic": 21
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.03155842871502296,
+        "traffic": 24
+      },
+      "Mong Kok": {
+        "sentiment": 0.0357282941683676,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.07444753354939988,
+        "traffic": 5
+      },
+      "Central": {
+        "sentiment": -0.022144954015303735,
+        "traffic": 8
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.0782162154095908,
+        "traffic": 5
+      },
+      "The Peak Tram": {
+        "sentiment": 0.0614377222217023,
+        "traffic": 6
+      },
+      "Victoria Peak": {
+        "sentiment": -0.0031603982809088834,
+        "traffic": 17
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.12676864521193743,
+        "traffic": 31
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.030007273441823232,
+        "traffic": 9
+      },
+      "Old Hong Kong": {
+        "sentiment": -0.05742631536590274,
+        "traffic": 9
+      },
+      "Lantau Island": {
+        "sentiment": -0.08020789539081115,
+        "traffic": 9
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.08522457663343277,
+        "traffic": 8
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.05381015484552497,
+        "traffic": 9
+      }
+    }
+  },
+  "Hong Kong Science Museum": {
+    "latlng": [
+      22.3010111,
+      114.177655
+    ],
+    "visits": 25,
+    "description": "cultural",
+    "avg_sentiment": 0.1682168,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": 0.011296354741814967,
+        "traffic": 11
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.04419335533856913,
+        "traffic": 7
+      },
+      "Victoria Peak": {
+        "sentiment": 0.012552504598520082,
+        "traffic": 5
+      }
+    }
+  },
+  "Tai O": {
+    "latlng": [
+      22.2523195,
+      113.8661195
+    ],
+    "visits": 90,
+    "description": "area",
+    "avg_sentiment": 0.402641295414462,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.07853771659590152,
+        "traffic": 14
+      },
+      "Victoria Peak": {
+        "sentiment": -0.036395623660638594,
+        "traffic": 18
+      },
+      "Lamma Island": {
+        "sentiment": -0.07325718151088516,
+        "traffic": 9
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.060876838627918005,
+        "traffic": 21
+      },
+      "Tung Chung": {
+        "sentiment": -0.06902767338699692,
+        "traffic": 5
+      },
+      "Lantau Island": {
+        "sentiment": -0.09443297974473834,
+        "traffic": 33
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.004175011433478277,
+        "traffic": 11
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.07387117860205983,
+        "traffic": 16
+      },
+      "Ngong Ping": {
+        "sentiment": -0.06709808711205473,
+        "traffic": 18
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.08267522524289722,
+        "traffic": 18
+      },
+      "Tai Po": {
+        "sentiment": -0.015962889147517197,
+        "traffic": 15
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.10772598582311489,
+        "traffic": 11
+      },
+      "Dragon's Back": {
+        "sentiment": 0.01117257323776453,
+        "traffic": 6
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.05131128860557046,
+        "traffic": 11
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.012740862826444044,
+        "traffic": 5
+      },
+      "Wan Chai": {
+        "sentiment": -0.017239280356897785,
+        "traffic": 5
+      },
+      "Tung Chung Station": {
+        "sentiment": -0.003195536426159079,
+        "traffic": 5
+      },
+      "Repulse Bay": {
+        "sentiment": -0.041620846786659144,
+        "traffic": 6
+      },
+      "The Peak Tram": {
+        "sentiment": 0.007811092089852856,
+        "traffic": 5
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": 0.0387502983513392,
+        "traffic": 6
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": 0.05481863220533374,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.047547973299092834,
+        "traffic": 5
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.03499577886536389,
+        "traffic": 12
+      }
+    }
+  },
+  "Yau Ma Tei": {
+    "latlng": [
+      22.3068537,
+      114.1714423
+    ],
+    "visits": 17,
+    "description": "area",
+    "avg_sentiment": 0.18343823529411765,
+    "combinations": {
+      "Tsim Sha Tsui": {
+        "sentiment": 0.15780159579667621,
+        "traffic": 5
+      },
+      "Temple St": {
+        "sentiment": 0.023249484158901837,
+        "traffic": 6
+      }
+    }
+  },
+  "Tsz Shan Monastery": {
+    "latlng": [
+      22.474148,
+      114.205792
+    ],
+    "visits": 16,
+    "description": "religion",
+    "avg_sentiment": 0.4712666666666666,
+    "combinations": {
+      "Tian Tan Buddha": {
+        "sentiment": -0.07140143199117066,
+        "traffic": 6
+      },
+      "Tai Po": {
+        "sentiment": -0.04483608376789147,
+        "traffic": 6
+      },
+      "Lantau Island": {
+        "sentiment": -0.15071706572833565,
+        "traffic": 8
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.15089278325648933,
+        "traffic": 5
+      }
+    }
+  },
+  "Lamma Island": {
+    "latlng": [
+      22.2000056,
+      114.1350173
+    ],
+    "visits": 27,
+    "description": "natural",
+    "avg_sentiment": 0.5135144620811287,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": -0.13035805864350808,
+        "traffic": 8
+      },
+      "Tai O": {
+        "sentiment": -0.07325718151088516,
+        "traffic": 9
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.03750597349335838,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.14009230388692223,
+        "traffic": 5
+      }
+    }
+  },
+  "Kowloon": {
+    "latlng": [
+      22.3185673,
+      114.1796057
+    ],
+    "visits": 39,
+    "description": "area",
+    "avg_sentiment": 0.22844084249084246,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": 0.02820499359505917,
+        "traffic": 5
+      },
+      "Nathan Rd": {
+        "sentiment": -0.06693849118840105,
+        "traffic": 5
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.06158146209424188,
+        "traffic": 5
+      },
+      "Hong Kong Island": {
+        "sentiment": 0.013571223991062897,
+        "traffic": 5
+      },
+      "Victoria Harbour": {
+        "sentiment": 0.012151277912328867,
+        "traffic": 6
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.02170769540634887,
+        "traffic": 10
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.018545086808708894,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.062035102098995674,
+        "traffic": 6
+      },
+      "Central": {
+        "sentiment": 0.025823105593662233,
+        "traffic": 8
+      },
+      "Mong Kok": {
+        "sentiment": -0.030181516800338384,
+        "traffic": 6
+      }
+    }
+  },
+  "SOGO": {
+    "latlng": [
+      22.2804272,
+      114.1843032
+    ],
+    "visits": 29,
+    "description": "shopping",
+    "avg_sentiment": 0.1202465517241379,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": -0.028856218532742058,
+        "traffic": 6
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.009941373945488137,
+        "traffic": 9
+      },
+      "Central": {
+        "sentiment": 0.024658413428296486,
+        "traffic": 9
+      }
+    }
+  },
+  "ifc mall": {
+    "latlng": [
+      22.28588,
+      114.158131
+    ],
+    "visits": 31,
+    "description": "shopping",
+    "avg_sentiment": 0.3144096774193548,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.05013638905283256,
+        "traffic": 10
+      },
+      "Central": {
+        "sentiment": 0.05001561487087109,
+        "traffic": 7
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.07258677788747209,
+        "traffic": 5
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.05690030909111598,
+        "traffic": 7
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.005172196487820113,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.11472934667774286,
+        "traffic": 7
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": 0.05436654665263916,
+        "traffic": 6
+      },
+      "Victoria Peak": {
+        "sentiment": -0.01543946516103339,
+        "traffic": 5
+      }
+    }
+  },
+  "Nathan Rd": {
+    "latlng": [
+      22.3109155,
+      114.1710157
+    ],
+    "visits": 31,
+    "description": "city",
+    "avg_sentiment": 0.09926774193548388,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.11809676464794296,
+        "traffic": 13
+      },
+      "Kowloon": {
+        "sentiment": -0.06693849118840105,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.07828642145180724,
+        "traffic": 6
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.0919072041593787,
+        "traffic": 6
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.01815088087854117,
+        "traffic": 8
+      },
+      "Chungking Mansions": {
+        "sentiment": 0.09990335660617426,
+        "traffic": 5
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.026880710597831304,
+        "traffic": 6
+      }
+    }
+  },
+  "Museum of Art": {
+    "latlng": [
+      22.2936055,
+      114.1721324
+    ],
+    "visits": 46,
+    "description": "cultural",
+    "avg_sentiment": 0.2216089371980676,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.08238965191539771,
+        "traffic": 16
+      },
+      "Victoria Peak": {
+        "sentiment": -0.04054049951347168,
+        "traffic": 12
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.03353753327084617,
+        "traffic": 5
+      },
+      "The Peninsula": {
+        "sentiment": -0.008697725154512548,
+        "traffic": 5
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.07127123179081947,
+        "traffic": 6
+      },
+      "Central": {
+        "sentiment": -0.023115808851693953,
+        "traffic": 12
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.04323615496846432,
+        "traffic": 14
+      },
+      "Po Lin Monastery": {
+        "sentiment": 0.018545730183858227,
+        "traffic": 7
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.09922028226299169,
+        "traffic": 10
+      },
+      "Lantau Island": {
+        "sentiment": -0.11318681177673078,
+        "traffic": 5
+      }
+    }
+  },
+  "Hong Kong Cultural Centre": {
+    "latlng": [
+      22.2938496,
+      114.1703232
+    ],
+    "visits": 68,
+    "description": "cultural",
+    "avg_sentiment": 0.2460294563279857,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.0613997482842088,
+        "traffic": 27
+      },
+      "Museum of Art": {
+        "sentiment": 0.03353753327084617,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.01511819966224936,
+        "traffic": 12
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.06656799221140902,
+        "traffic": 11
+      },
+      "The Peninsula": {
+        "sentiment": 0.04288597514741299,
+        "traffic": 9
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.019909356861663386,
+        "traffic": 5
+      },
+      "Lantau Island": {
+        "sentiment": -0.04827504422640496,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.10028013545763996,
+        "traffic": 19
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.00946993492241698,
+        "traffic": 6
+      },
+      "Ngong Ping": {
+        "sentiment": 0.06853695235804516,
+        "traffic": 5
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.06396583559951027,
+        "traffic": 8
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.03313571349382615,
+        "traffic": 11
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.05974590545453439,
+        "traffic": 27
+      },
+      "Central": {
+        "sentiment": 0.07526495468467659,
+        "traffic": 11
+      },
+      "Nathan Rd": {
+        "sentiment": 0.026880710597831304,
+        "traffic": 6
+      },
+      "Clock Tower": {
+        "sentiment": 0.08859731409112521,
+        "traffic": 8
+      },
+      "M+": {
+        "sentiment": 0.04799749588023286,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": 0.04023448782267359,
+        "traffic": 5
+      },
+      "The Peak Tower": {
+        "sentiment": 0.029291957826784006,
+        "traffic": 6
+      },
+      "The Peak Tram": {
+        "sentiment": 0.008939151163057513,
+        "traffic": 5
+      }
+    }
+  },
+  "Harbour City": {
+    "latlng": [
+      22.2953381,
+      114.1688303
+    ],
+    "visits": 21,
+    "description": "shopping",
+    "avg_sentiment": 0.4648134920634921,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.21977370259138018,
+        "traffic": 6
+      },
+      "Victoria Peak": {
+        "sentiment": -0.17034458054357277,
+        "traffic": 7
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.05776743561500149,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.18924343997975127,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.05070388236983177,
+        "traffic": 8
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.14245436590152,
+        "traffic": 5
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.07321665148883709,
+        "traffic": 5
+      }
+    }
+  },
+  "Hong Kong Park": {
+    "latlng": [
+      22.2769477,
+      114.1608187
+    ],
+    "visits": 37,
+    "description": "city",
+    "avg_sentiment": 0.43407072072072056,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.10709760355857398,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.12947861534806202,
+        "traffic": 11
+      },
+      "Central": {
+        "sentiment": -0.06544033323910099,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.1380504340151792,
+        "traffic": 8
+      },
+      "The Peak Tram": {
+        "sentiment": -0.06584048083471832,
+        "traffic": 6
+      },
+      "Kowloon Park": {
+        "sentiment": -0.08878478956050419,
+        "traffic": 5
+      }
+    }
+  },
+  "Tsim Sha Tsui": {
+    "latlng": [
+      22.2988123,
+      114.1721746
+    ],
+    "visits": 186,
+    "description": "area",
+    "avg_sentiment": 0.2511812463924964,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.046092495223386196,
+        "traffic": 36
+      },
+      "Victoria Peak": {
+        "sentiment": 0.009021151481049925,
+        "traffic": 24
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.06656799221140902,
+        "traffic": 11
+      },
+      "Harbour City": {
+        "sentiment": -0.05776743561500149,
+        "traffic": 6
+      },
+      "The Peninsula": {
+        "sentiment": -0.07484202861567589,
+        "traffic": 15
+      },
+      "Ngong Ping": {
+        "sentiment": 0.030089624208453285,
+        "traffic": 5
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.08037335060416911,
+        "traffic": 10
+      },
+      "Mong Kok": {
+        "sentiment": 0.1037558534505445,
+        "traffic": 28
+      },
+      "Temple St": {
+        "sentiment": 0.01409935073907225,
+        "traffic": 7
+      },
+      "Lan Kwai Fong": {
+        "sentiment": -0.08972580188736146,
+        "traffic": 8
+      },
+      "Central": {
+        "sentiment": 0.044220471236062965,
+        "traffic": 38
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.07790445080866379,
+        "traffic": 46
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.03825424958982342,
+        "traffic": 50
+      },
+      "1881 Heritage": {
+        "sentiment": -0.009804975193840835,
+        "traffic": 6
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.007078606244584444,
+        "traffic": 23
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": -0.09758578181270705,
+        "traffic": 11
+      },
+      "Wan Chai": {
+        "sentiment": 0.033671200281944286,
+        "traffic": 12
+      },
+      "Ocean Park": {
+        "sentiment": 0.07444753354939988,
+        "traffic": 5
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.02926933605484617,
+        "traffic": 17
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.03409203171807213,
+        "traffic": 16
+      },
+      "The Peak Tram": {
+        "sentiment": 0.07979860666849145,
+        "traffic": 12
+      },
+      "The Peak Tower": {
+        "sentiment": 0.08188819978152405,
+        "traffic": 7
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.056085447566140846,
+        "traffic": 6
+      },
+      "Lan Fong Yuen": {
+        "sentiment": -0.01669688062527571,
+        "traffic": 5
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.09438439039390213,
+        "traffic": 8
+      },
+      "Kowloon Park": {
+        "sentiment": -0.06573606022345511,
+        "traffic": 5
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.0009833071667400492,
+        "traffic": 14
+      },
+      "Choi Hung Estate": {
+        "sentiment": 0.11656436508983473,
+        "traffic": 8
+      },
+      "Man Mo Temple": {
+        "sentiment": 0.0005627291479735064,
+        "traffic": 5
+      },
+      "ifc mall": {
+        "sentiment": 0.005172196487820113,
+        "traffic": 5
+      },
+      "M+": {
+        "sentiment": 0.027622765763470548,
+        "traffic": 9
+      },
+      "Sneakers Street": {
+        "sentiment": 0.056297499162425234,
+        "traffic": 7
+      },
+      "Lantau Island": {
+        "sentiment": -0.07100438266581474,
+        "traffic": 7
+      },
+      "Yau Ma Tei": {
+        "sentiment": 0.15780159579667621,
+        "traffic": 5
+      },
+      "Nathan Rd": {
+        "sentiment": 0.01815088087854117,
+        "traffic": 8
+      },
+      "Clock Tower": {
+        "sentiment": 0.08378731774239083,
+        "traffic": 6
+      },
+      "Kowloon": {
+        "sentiment": -0.018545086808708894,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": 0.053103806862936094,
+        "traffic": 22
+      },
+      "Cheung Hing Kee Shanghai Pan Fried Buns": {
+        "sentiment": 0.0525253809700424,
+        "traffic": 7
+      },
+      "Chungking Mansions": {
+        "sentiment": 0.08275793913952757,
+        "traffic": 7
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": -0.05280688241772733,
+        "traffic": 6
+      },
+      "Tai O": {
+        "sentiment": 0.047547973299092834,
+        "traffic": 5
+      },
+      "Hong Kong Macau Ferry Terminal": {
+        "sentiment": -0.031716792129225596,
+        "traffic": 5
+      },
+      "Yat Lok Restaurant": {
+        "sentiment": 0.009402498339305704,
+        "traffic": 5
+      },
+      "K11 ARTMALL": {
+        "sentiment": 0.03662821692145553,
+        "traffic": 8
+      },
+      "Admiralty": {
+        "sentiment": 0.1464132227808034,
+        "traffic": 5
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.08978194562329635,
+        "traffic": 5
+      },
+      "Jordan": {
+        "sentiment": 0.07635044107162858,
+        "traffic": 5
+      }
+    }
+  },
+  "The Peninsula": {
+    "latlng": [
+      22.2951024,
+      114.1718537
+    ],
+    "visits": 93,
+    "description": "hotel",
+    "avg_sentiment": 0.3618350716845878,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.1275249046088856,
+        "traffic": 25
+      },
+      "Museum of Art": {
+        "sentiment": -0.008697725154512548,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.16779384644268786,
+        "traffic": 10
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.04288597514741299,
+        "traffic": 9
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.07484202861567589,
+        "traffic": 15
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.00016756804144524295,
+        "traffic": 21
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.015550699052558315,
+        "traffic": 10
+      },
+      "1881 Heritage": {
+        "sentiment": 0.007911443315399233,
+        "traffic": 7
+      },
+      "Mong Kok": {
+        "sentiment": -0.0949772768216053,
+        "traffic": 6
+      },
+      "Central": {
+        "sentiment": -0.048264062805973965,
+        "traffic": 16
+      },
+      "The Peak Tram": {
+        "sentiment": -0.03406857896818463,
+        "traffic": 8
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.09300589775877534,
+        "traffic": 23
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.15377809134876622,
+        "traffic": 9
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.06601346937466432,
+        "traffic": 9
+      }
+    }
+  },
+  "Sunny Bay Station": {
+    "latlng": [
+      22.331731,
+      114.0289607
+    ],
+    "visits": 17,
+    "description": "transit",
+    "avg_sentiment": 0.23958823529411763,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.0003808137385163819,
+        "traffic": 11
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.1096118551727977,
+        "traffic": 9
+      }
+    }
+  },
+  "The Peak Tram": {
+    "latlng": [
+      22.2776827,
+      114.1591909
+    ],
+    "visits": 169,
+    "description": "entertainment",
+    "avg_sentiment": 0.29660872287968437,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.04606537938242588,
+        "traffic": 26
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.06357035301330625,
+        "traffic": 32
+      },
+      "Victoria Peak": {
+        "sentiment": -0.05252394467360827,
+        "traffic": 102
+      },
+      "Madame Tussauds": {
+        "sentiment": -0.11681008816526571,
+        "traffic": 14
+      },
+      "Central": {
+        "sentiment": -0.0009458736023304823,
+        "traffic": 21
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.024202369944470156,
+        "traffic": 17
+      },
+      "Lantau Island": {
+        "sentiment": -0.03716157221598317,
+        "traffic": 12
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.012809927541983157,
+        "traffic": 12
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.04146091622590473,
+        "traffic": 12
+      },
+      "Mong Kok": {
+        "sentiment": 0.1272311143709285,
+        "traffic": 9
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.07979860666849145,
+        "traffic": 12
+      },
+      "Ocean Park": {
+        "sentiment": 0.0614377222217023,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.05622778040654322,
+        "traffic": 45
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.06323852355413188,
+        "traffic": 14
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.01085286836665712,
+        "traffic": 16
+      },
+      "The Peak Tower": {
+        "sentiment": -0.011574450263880282,
+        "traffic": 25
+      },
+      "Ngong Ping": {
+        "sentiment": -0.04409623382923278,
+        "traffic": 18
+      },
+      "The Peninsula": {
+        "sentiment": -0.03406857896818463,
+        "traffic": 8
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.07819294784610176,
+        "traffic": 5
+      },
+      "Tai O": {
+        "sentiment": 0.007811092089852856,
+        "traffic": 5
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": 0.03187162607015587,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": -0.027254834334144402,
+        "traffic": 8
+      },
+      "Hong Kong Park": {
+        "sentiment": -0.06584048083471832,
+        "traffic": 6
+      },
+      "Sky 100": {
+        "sentiment": -0.019596100041485993,
+        "traffic": 13
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.08910855229444858,
+        "traffic": 7
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.03832617309759238,
+        "traffic": 6
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.08005252799290229,
+        "traffic": 11
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.054770200013372274,
+        "traffic": 10
+      },
+      "Temple St": {
+        "sentiment": 0.05752437285517629,
+        "traffic": 5
+      },
+      "Lan Fong Yuen": {
+        "sentiment": 0.05380848274584651,
+        "traffic": 6
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.008939151163057513,
+        "traffic": 5
+      },
+      "Central-Mid-Levels Escalators": {
+        "sentiment": 0.14477168707358928,
+        "traffic": 5
+      }
+    }
+  },
+  "Adventureland": {
+    "latlng": [
+      22.3112911,
+      114.0418289
+    ],
+    "visits": 10,
+    "description": "entertainment",
+    "avg_sentiment": 0.59163,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.1049461525576948,
+        "traffic": 10
+      }
+    }
+  },
+  "Temple Street Night Market": {
+    "latlng": [
+      22.3065185,
+      114.1699805
+    ],
+    "visits": 25,
+    "description": "shopping",
+    "avg_sentiment": 0.4335601333333333,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.09911879031168765,
+        "traffic": 6
+      },
+      "Victoria Peak": {
+        "sentiment": 0.007174934227791835,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.07586286960575052,
+        "traffic": 7
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.0816808301971913,
+        "traffic": 5
+      }
+    }
+  },
+  "Disney's Hollywood Hotel": {
+    "latlng": [
+      22.3081194,
+      114.0440642
+    ],
+    "visits": 18,
+    "description": "hotel",
+    "avg_sentiment": 0.3563597859547858,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.037765819827418924,
+        "traffic": 18
+      }
+    }
+  },
+  "Hong Kong Convention and Exhibition Centre": {
+    "latlng": [
+      22.2833754,
+      114.1731385
+    ],
+    "visits": 19,
+    "description": "city",
+    "avg_sentiment": 0.2597421052631579,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": -0.029349098839311933,
+        "traffic": 6
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.03371906544643297,
+        "traffic": 6
+      }
+    }
+  },
+  "Australia Dairy Company": {
+    "latlng": [
+      22.304628,
+      114.1705439
+    ],
+    "visits": 25,
+    "description": "dining",
+    "avg_sentiment": 0.12856439999999997,
+    "combinations": {
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.08471739113317237,
+        "traffic": 5
+      }
+    }
+  },
+  "Mong Kok Night Market": {
+    "latlng": [
+      22.3180557,
+      114.1708472
+    ],
+    "visits": 8,
+    "description": "shopping",
+    "avg_sentiment": 0.50745375,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.09104508054732972,
+        "traffic": 5
+      }
+    }
+  },
+  "Hong Kong Island": {
+    "latlng": [
+      22.2587586,
+      114.1910696
+    ],
+    "visits": 32,
+    "description": "natural",
+    "avg_sentiment": 0.2982265624999999,
+    "combinations": {
+      "Kowloon": {
+        "sentiment": 0.013571223991062897,
+        "traffic": 5
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.1057647526364832,
+        "traffic": 6
+      },
+      "Victoria Peak": {
+        "sentiment": -0.005807738206382301,
+        "traffic": 9
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.014412671132584303,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.13819853399048573,
+        "traffic": 6
+      }
+    }
+  },
+  "Ngong Ping 360": {
+    "latlng": [
+      22.2563163,
+      113.9014163
+    ],
+    "visits": 155,
+    "description": "entertainment",
+    "avg_sentiment": 0.4743725983102918,
+    "combinations": {
+      "Ocean Park": {
+        "sentiment": -0.03155842871502296,
+        "traffic": 24
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.10861165156909187,
+        "traffic": 60
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.07106303587583783,
+        "traffic": 52
+      },
+      "Lantau Island": {
+        "sentiment": -0.10693298193914323,
+        "traffic": 73
+      },
+      "Ngong Ping": {
+        "sentiment": -0.07480852634317647,
+        "traffic": 69
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.020867288389233515,
+        "traffic": 44
+      },
+      "Mong Kok": {
+        "sentiment": -0.011145094136624423,
+        "traffic": 12
+      },
+      "Central": {
+        "sentiment": -0.04729245862529069,
+        "traffic": 10
+      },
+      "Tung Chung": {
+        "sentiment": -0.03191713064753429,
+        "traffic": 10
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.10873611588834016,
+        "traffic": 38
+      },
+      "The Peak Tram": {
+        "sentiment": -0.024202369944470156,
+        "traffic": 17
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.04996298975047685,
+        "traffic": 39
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": -0.00946993492241698,
+        "traffic": 6
+      },
+      "Tai O": {
+        "sentiment": -0.07387117860205983,
+        "traffic": 16
+      },
+      "Tai Po": {
+        "sentiment": -0.05957541805964687,
+        "traffic": 12
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.15747221674862644,
+        "traffic": 6
+      },
+      "Tsing Ma Bridge": {
+        "sentiment": 0.028049340528185657,
+        "traffic": 6
+      },
+      "Victoria Peak": {
+        "sentiment": -0.0724439318565437,
+        "traffic": 31
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.04733497655394647,
+        "traffic": 12
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": 0.09630228587672017,
+        "traffic": 11
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.055215255084496206,
+        "traffic": 6
+      },
+      "Tai Mo Shan": {
+        "sentiment": -0.095499701956218,
+        "traffic": 8
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.04252207805449162,
+        "traffic": 5
+      },
+      "The Peak Tower": {
+        "sentiment": -0.0024661367089017744,
+        "traffic": 7
+      },
+      "Sky 100": {
+        "sentiment": -0.1421474630222016,
+        "traffic": 8
+      },
+      "Citygate Outlets": {
+        "sentiment": 0.06564518172618793,
+        "traffic": 5
+      }
+    }
+  },
+  "Mystic Manor": {
+    "latlng": [
+      22.3099697,
+      114.0409612
+    ],
+    "visits": 8,
+    "description": "entertainment",
+    "avg_sentiment": 0.27839583333333323,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": 0.09585940525419051,
+        "traffic": 8
+      }
+    }
+  },
+  "Toy Story Land": {
+    "latlng": [
+      22.3103855,
+      114.0396959
+    ],
+    "visits": 13,
+    "description": "entertainment",
+    "avg_sentiment": 0.5718730769230768,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.1277953861963481,
+        "traffic": 13
+      },
+      "Tomorrowland": {
+        "sentiment": -0.08011855900413933,
+        "traffic": 5
+      }
+    }
+  },
+  "Monster Building": {
+    "latlng": [
+      22.2842028,
+      114.2123028
+    ],
+    "visits": 30,
+    "description": "city",
+    "avg_sentiment": 0.20771294294294287,
+    "combinations": {
+      "Choi Hung Estate": {
+        "sentiment": 0.12151316635732319,
+        "traffic": 10
+      },
+      "Tai Kwun": {
+        "sentiment": 0.024423116544961498,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": 0.06712198890147758,
+        "traffic": 8
+      },
+      "Victoria Harbour": {
+        "sentiment": 0.0009829940916260952,
+        "traffic": 11
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.014181514047009472,
+        "traffic": 6
+      },
+      "Victoria Peak": {
+        "sentiment": 0.10638546512288147,
+        "traffic": 8
+      }
+    }
+  },
+  "iSQUARE": {
+    "latlng": [
+      22.297025,
+      114.1718959
+    ],
+    "visits": 30,
+    "description": "shopping",
+    "avg_sentiment": 0.16274833333333333,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.07051408895132,
+        "traffic": 16
+      },
+      "Victoria Peak": {
+        "sentiment": -0.027183728475029804,
+        "traffic": 7
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.09013191200402604,
+        "traffic": 18
+      }
+    }
+  },
+  "The Peak Tower": {
+    "latlng": [
+      22.2712192,
+      114.1502415
+    ],
+    "visits": 60,
+    "description": "city",
+    "avg_sentiment": 0.3861150656565656,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": -0.07370741304669222,
+        "traffic": 38
+      },
+      "Mong Kok": {
+        "sentiment": 0.08835979196517948,
+        "traffic": 7
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.08188819978152405,
+        "traffic": 7
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": 0.01413783936112219,
+        "traffic": 13
+      },
+      "Central": {
+        "sentiment": 0.009816439240927628,
+        "traffic": 11
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.08461051995682296,
+        "traffic": 5
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.022582290393749958,
+        "traffic": 7
+      },
+      "The Peak Tram": {
+        "sentiment": -0.011574450263880282,
+        "traffic": 25
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.09982407145913318,
+        "traffic": 9
+      },
+      "Madame Tussauds": {
+        "sentiment": -0.11585886848904967,
+        "traffic": 5
+      },
+      "Sky 100": {
+        "sentiment": -0.15279933040584273,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": -0.07226983744982213,
+        "traffic": 5
+      },
+      "Lantau Island": {
+        "sentiment": -0.023695500302485694,
+        "traffic": 6
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.0024661367089017744,
+        "traffic": 7
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.033179609005942814,
+        "traffic": 6
+      },
+      "Ngong Ping": {
+        "sentiment": 0.022199515969344403,
+        "traffic": 10
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.029206386118836677,
+        "traffic": 11
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.029291957826784006,
+        "traffic": 6
+      }
+    }
+  },
+  "Mong Kok": {
+    "latlng": [
+      22.3203648,
+      114.169773
+    ],
+    "visits": 100,
+    "description": "area",
+    "avg_sentiment": 0.29887164569597063,
+    "combinations": {
+      "Ngong Ping 360": {
+        "sentiment": -0.011145094136624423,
+        "traffic": 12
+      },
+      "Ngong Ping": {
+        "sentiment": -0.010401913262242135,
+        "traffic": 12
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.0774612888793579,
+        "traffic": 11
+      },
+      "Central": {
+        "sentiment": 0.03807663042615998,
+        "traffic": 32
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.1037558534505445,
+        "traffic": 28
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.11178004076828882,
+        "traffic": 33
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.07426800234390757,
+        "traffic": 19
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.029150860341421194,
+        "traffic": 17
+      },
+      "Wan Chai": {
+        "sentiment": -0.010578946400140968,
+        "traffic": 8
+      },
+      "Ocean Park": {
+        "sentiment": 0.0357282941683676,
+        "traffic": 5
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.056117798316020845,
+        "traffic": 9
+      },
+      "The Peak Tram": {
+        "sentiment": 0.1272311143709285,
+        "traffic": 9
+      },
+      "Victoria Peak": {
+        "sentiment": -0.03775906454756442,
+        "traffic": 16
+      },
+      "The Peak Tower": {
+        "sentiment": 0.08835979196517948,
+        "traffic": 7
+      },
+      "Choi Hung Estate": {
+        "sentiment": 0.04267635725169117,
+        "traffic": 8
+      },
+      "The Peninsula": {
+        "sentiment": -0.0949772768216053,
+        "traffic": 6
+      },
+      "Ladies' Market": {
+        "sentiment": -0.01340246429451132,
+        "traffic": 9
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.04226643522909986,
+        "traffic": 7
+      },
+      "Lantau Island": {
+        "sentiment": -0.032624751562931036,
+        "traffic": 9
+      },
+      "Causeway Bay": {
+        "sentiment": 0.02121911186174818,
+        "traffic": 18
+      },
+      "Sneakers Street": {
+        "sentiment": 0.014277923943976263,
+        "traffic": 8
+      },
+      "Po Lin Monastery": {
+        "sentiment": 0.01654230018447882,
+        "traffic": 9
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.05048494713672119,
+        "traffic": 6
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.0907798783601512,
+        "traffic": 7
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": 0.00039570842960237916,
+        "traffic": 9
+      },
+      "Jordan": {
+        "sentiment": 0.06555387962542969,
+        "traffic": 5
+      },
+      "Kowloon": {
+        "sentiment": -0.030181516800338384,
+        "traffic": 6
+      }
+    }
+  },
+  "Temple St": {
+    "latlng": [
+      22.3073082,
+      114.1702215
+    ],
+    "visits": 44,
+    "description": "city",
+    "avg_sentiment": 0.2657071969696969,
+    "combinations": {
+      "Tsim Sha Tsui": {
+        "sentiment": 0.01409935073907225,
+        "traffic": 7
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.08161483738612536,
+        "traffic": 11
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.031993928522991225,
+        "traffic": 9
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.032600514185166005,
+        "traffic": 8
+      },
+      "Victoria Peak": {
+        "sentiment": 0.014457487801417904,
+        "traffic": 9
+      },
+      "The Peak Tram": {
+        "sentiment": 0.05752437285517629,
+        "traffic": 5
+      },
+      "Yau Ma Tei": {
+        "sentiment": 0.023249484158901837,
+        "traffic": 6
+      }
+    }
+  },
+  "Lan Kwai Fong": {
+    "latlng": [
+      22.2809846,
+      114.1556541
+    ],
+    "visits": 26,
+    "description": "cultural",
+    "avg_sentiment": 0.3931102564102564,
+    "combinations": {
+      "Central": {
+        "sentiment": -0.0649002319065111,
+        "traffic": 10
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.08972580188736146,
+        "traffic": 8
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.14250763532464655,
+        "traffic": 10
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.0074511527973066035,
+        "traffic": 5
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.11256173425193461,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.05515845360824532,
+        "traffic": 9
+      }
+    }
+  },
+  "Hong Kong Macau Ferry Terminal": {
+    "latlng": [
+      22.2896835,
+      114.1523423
+    ],
+    "visits": 21,
+    "description": "transit",
+    "avg_sentiment": 0.14965714285714285,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": 0.012379740171352304,
+        "traffic": 5
+      },
+      "Hong Kong-Zhuhai-Macao Bridge": {
+        "sentiment": 0.002062355014342504,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.031716792129225596,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.0330873722727515,
+        "traffic": 6
+      }
+    }
+  },
+  "Hong Kong Station": {
+    "latlng": [
+      22.284681,
+      114.158177
+    ],
+    "visits": 9,
+    "description": "transit",
+    "avg_sentiment": 0.07646666666666666,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.03908765919724753,
+        "traffic": 5
+      }
+    }
+  },
+  "ICHIRAN": {
+    "latlng": [
+      22.2804835,
+      114.1813642
+    ],
+    "visits": 15,
+    "description": "dining",
+    "avg_sentiment": 0.38985888888888887,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.10339963788831454,
+        "traffic": 7
+      }
+    }
+  },
+  "K11 MUSEA": {
+    "latlng": [
+      22.2941573,
+      114.1739272
+    ],
+    "visits": 92,
+    "description": "shopping",
+    "avg_sentiment": 0.34312166666666666,
+    "combinations": {
+      "Tsim Sha Tsui": {
+        "sentiment": -0.007078606244584444,
+        "traffic": 23
+      },
+      "Victoria Peak": {
+        "sentiment": 0.023647216474694283,
+        "traffic": 20
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.05640500235313403,
+        "traffic": 34
+      },
+      "Sky 100": {
+        "sentiment": -0.043613410725637146,
+        "traffic": 6
+      },
+      "The Peninsula": {
+        "sentiment": -0.015550699052558315,
+        "traffic": 10
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.03313571349382615,
+        "traffic": 11
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.027978603757445517,
+        "traffic": 26
+      },
+      "ifc mall": {
+        "sentiment": 0.05690030909111598,
+        "traffic": 7
+      },
+      "Lan Fong Yuen": {
+        "sentiment": 0.07198525738449317,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.009473545492433148,
+        "traffic": 19
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.059534083891243685,
+        "traffic": 5
+      },
+      "K11 ARTMALL": {
+        "sentiment": 0.012789575181227817,
+        "traffic": 6
+      },
+      "Museum of Art": {
+        "sentiment": -0.07127123179081947,
+        "traffic": 6
+      },
+      "Kowloon": {
+        "sentiment": 0.06158146209424188,
+        "traffic": 5
+      },
+      "Wan Chai": {
+        "sentiment": 0.06495894980377946,
+        "traffic": 6
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.061627779928654744,
+        "traffic": 9
+      },
+      "Tai O": {
+        "sentiment": 0.012740862826444044,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.12600798514413541,
+        "traffic": 18
+      },
+      "Causeway Bay": {
+        "sentiment": 0.019004048916135687,
+        "traffic": 9
+      },
+      "The Peak Tram": {
+        "sentiment": 0.08005252799290229,
+        "traffic": 11
+      },
+      "Clock Tower": {
+        "sentiment": 0.05635846892781751,
+        "traffic": 6
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.10909413997121467,
+        "traffic": 5
+      },
+      "Po Lin Monastery": {
+        "sentiment": 0.017674432617806803,
+        "traffic": 5
+      },
+      "Mong Kok": {
+        "sentiment": 0.0907798783601512,
+        "traffic": 7
+      },
+      "Central": {
+        "sentiment": 0.06328708637518532,
+        "traffic": 9
+      },
+      "Harbour City": {
+        "sentiment": -0.07321665148883709,
+        "traffic": 5
+      },
+      "Hong Kong Observation Wheel": {
+        "sentiment": -0.07488256456106414,
+        "traffic": 6
+      }
+    }
+  },
+  "Madame Tussauds": {
+    "latlng": [
+      22.2711973,
+      114.1497382
+    ],
+    "visits": 24,
+    "description": "cultural",
+    "avg_sentiment": 0.43371770833333323,
+    "combinations": {
+      "The Peak Tram": {
+        "sentiment": -0.11681008816526571,
+        "traffic": 14
+      },
+      "Victoria Peak": {
+        "sentiment": -0.17730967592051378,
+        "traffic": 13
+      },
+      "Central": {
+        "sentiment": -0.1349864694712831,
+        "traffic": 8
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.051670547677633766,
+        "traffic": 8
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.1747064455575183,
+        "traffic": 10
+      },
+      "The Peak Tower": {
+        "sentiment": -0.11585886848904967,
+        "traffic": 5
+      }
+    }
+  },
+  "Lai King": {
+    "latlng": [
+      22.3472644,
+      114.1279688
+    ],
+    "visits": 11,
+    "description": "area",
+    "avg_sentiment": 0.29971818181818183,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.08515096077407364,
+        "traffic": 8
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.1471219385503014,
+        "traffic": 5
+      }
+    }
+  },
+  "Tung Chung": {
+    "latlng": [
+      22.2873743,
+      113.9425086
+    ],
+    "visits": 20,
+    "description": "area",
+    "avg_sentiment": 0.28863249999999996,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.2325485906157237,
+        "traffic": 5
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.03191713064753429,
+        "traffic": 10
+      },
+      "Lantau Island": {
+        "sentiment": -0.08463590444585316,
+        "traffic": 12
+      },
+      "Tian Tan Buddha": {
+        "sentiment": -0.08599469356971404,
+        "traffic": 8
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.12920264777763393,
+        "traffic": 8
+      },
+      "Hong Kong International Airport": {
+        "sentiment": -0.04122746059930591,
+        "traffic": 6
+      },
+      "Tai O": {
+        "sentiment": -0.06902767338699692,
+        "traffic": 5
+      },
+      "Ngong Ping": {
+        "sentiment": -0.04595236264540778,
+        "traffic": 9
+      },
+      "Tai Po": {
+        "sentiment": -0.08295238234401824,
+        "traffic": 6
+      }
+    }
+  },
+  "Bakehouse (Wan Chai)": {
+    "latlng": [
+      22.2758732,
+      114.1713876
+    ],
+    "visits": 99,
+    "description": "dining",
+    "avg_sentiment": 0.4017196512746512,
+    "combinations": {
+      "Kai Kai Dessert": {
+        "sentiment": -0.008284401265129937,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.01536912060081968,
+        "traffic": 20
+      },
+      "Australia Dairy Company": {
+        "sentiment": -0.08471739113317237,
+        "traffic": 5
+      },
+      "Wan Chai": {
+        "sentiment": -0.0018277739465050956,
+        "traffic": 10
+      },
+      "The Peak Tram": {
+        "sentiment": -0.07819294784610176,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.13144254891109025,
+        "traffic": 13
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.0009833071667400492,
+        "traffic": 14
+      },
+      "Mon Kee Caf\ufffd\ufffd": {
+        "sentiment": -0.002707644083693922,
+        "traffic": 5
+      },
+      "K11 MUSEA": {
+        "sentiment": -0.061627779928654744,
+        "traffic": 9
+      },
+      "Sneakers Street": {
+        "sentiment": 0.007991894253556708,
+        "traffic": 5
+      },
+      "Tsim Chai Kee Noodle": {
+        "sentiment": 0.00289980094298255,
+        "traffic": 5
+      },
+      "Halfway Coffee": {
+        "sentiment": -0.0526397649176988,
+        "traffic": 5
+      },
+      "Choi Hung Estate": {
+        "sentiment": -0.019051264572297433,
+        "traffic": 5
+      },
+      "Yat Lok Restaurant": {
+        "sentiment": 0.023721233569534508,
+        "traffic": 10
+      },
+      "Central": {
+        "sentiment": 0.011874499851358699,
+        "traffic": 19
+      },
+      "Causeway Bay": {
+        "sentiment": -0.00816521145103904,
+        "traffic": 11
+      },
+      "Mong Kok": {
+        "sentiment": 0.00039570842960237916,
+        "traffic": 9
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.10638513914949256,
+        "traffic": 18
+      },
+      "Lan Fong Yuen": {
+        "sentiment": -0.02346308008658011,
+        "traffic": 5
+      },
+      "Kam Wah Cafe & Cake Shop": {
+        "sentiment": -0.024326296008933976,
+        "traffic": 8
+      },
+      "Cheung Hing Kee Shanghai Pan Fried Buns": {
+        "sentiment": 0.12874775041625033,
+        "traffic": 5
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.10688664084958799,
+        "traffic": 6
+      },
+      "Lantau Island": {
+        "sentiment": -0.14230509282437004,
+        "traffic": 5
+      },
+      "Vission Bakery": {
+        "sentiment": 0.01302302814210718,
+        "traffic": 6
+      }
+    }
+  },
+  "Kai Kai Dessert": {
+    "latlng": [
+      22.3065554,
+      114.1710799
+    ],
+    "visits": 15,
+    "description": "dining",
+    "avg_sentiment": 0.314915,
+    "combinations": {
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.008284401265129937,
+        "traffic": 5
+      }
+    }
+  },
+  "Clock Tower": {
+    "latlng": [
+      22.2935624,
+      114.1695528
+    ],
+    "visits": 24,
+    "description": "cultural",
+    "avg_sentiment": 0.30529791666666667,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.088852361523735,
+        "traffic": 8
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.048218852010126545,
+        "traffic": 9
+      },
+      "Victoria Harbour": {
+        "sentiment": 0.0075043535355221935,
+        "traffic": 11
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.08378731774239083,
+        "traffic": 6
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.08859731409112521,
+        "traffic": 8
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.05635846892781751,
+        "traffic": 6
+      }
+    }
+  },
+  "Chi Lin Nunnery": {
+    "latlng": [
+      22.340498,
+      114.2050575
+    ],
+    "visits": 21,
+    "description": "religion",
+    "avg_sentiment": 0.4847369047619048,
+    "combinations": {
+      "Po Lin Monastery": {
+        "sentiment": -0.016953581119397113,
+        "traffic": 8
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.09099937580803659,
+        "traffic": 13
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.12212637485266283,
+        "traffic": 7
+      }
+    }
+  },
+  "Nan Lian Garden": {
+    "latlng": [
+      22.3396114,
+      114.2045149
+    ],
+    "visits": 43,
+    "description": "cultural",
+    "avg_sentiment": 0.5699329180509412,
+    "combinations": {
+      "Chi Lin Nunnery": {
+        "sentiment": -0.09099937580803659,
+        "traffic": 13
+      },
+      "Po Lin Monastery": {
+        "sentiment": -0.0822054825472804,
+        "traffic": 15
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.043943759952065335,
+        "traffic": 8
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.056085447566140846,
+        "traffic": 6
+      },
+      "Ngong Ping": {
+        "sentiment": -0.03665307767079159,
+        "traffic": 5
+      },
+      "Mong Kok": {
+        "sentiment": -0.04226643522909986,
+        "traffic": 7
+      },
+      "Choi Hung Estate": {
+        "sentiment": -0.0675771464246313,
+        "traffic": 5
+      },
+      "Lantau Island": {
+        "sentiment": -0.15671448245205594,
+        "traffic": 9
+      },
+      "Central": {
+        "sentiment": -0.08327027985673399,
+        "traffic": 8
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.06691955786163399,
+        "traffic": 9
+      },
+      "Victoria Peak": {
+        "sentiment": -0.11095622399141407,
+        "traffic": 10
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.13869431295690052,
+        "traffic": 14
+      },
+      "The Peak Tram": {
+        "sentiment": -0.03832617309759238,
+        "traffic": 6
+      },
+      "Ngong Ping 360": {
+        "sentiment": -0.04252207805449162,
+        "traffic": 5
+      },
+      "Ngong Ping Village": {
+        "sentiment": -0.04934898526062161,
+        "traffic": 5
+      },
+      "Man Mo Temple": {
+        "sentiment": -0.0352895891946992,
+        "traffic": 5
+      },
+      "Wong Tai Sin Temple": {
+        "sentiment": -0.005317656642108004,
+        "traffic": 5
+      }
+    }
+  },
+  "Happy Valley Racecourse": {
+    "latlng": [
+      22.2718214,
+      114.1806169
+    ],
+    "visits": 16,
+    "description": "entertainment",
+    "avg_sentiment": 0.295588988095238,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.3003669097540465,
+        "traffic": 6
+      },
+      "Central": {
+        "sentiment": -0.11548221766641409,
+        "traffic": 5
+      }
+    }
+  },
+  "Ladies' Market": {
+    "latlng": [
+      22.3210731,
+      114.1701978
+    ],
+    "visits": 24,
+    "description": "shopping",
+    "avg_sentiment": 0.1587100694444444,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.051239450216083095,
+        "traffic": 5
+      },
+      "Mong Kok": {
+        "sentiment": -0.01340246429451132,
+        "traffic": 9
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.07496143417279874,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": 0.041726824078177606,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": 0.006861443531703576,
+        "traffic": 5
+      },
+      "Sneakers Street": {
+        "sentiment": 0.09297385500075019,
+        "traffic": 5
+      }
+    }
+  },
+  "Yat Lok Restaurant": {
+    "latlng": [
+      22.2824828,
+      114.1552917
+    ],
+    "visits": 32,
+    "description": "dining",
+    "avg_sentiment": 0.22651526041666656,
+    "combinations": {
+      "Kam Wah Cafe & Cake Shop": {
+        "sentiment": 0.06248618972975282,
+        "traffic": 5
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": 0.023721233569534508,
+        "traffic": 10
+      },
+      "Victoria Peak": {
+        "sentiment": 0.010557128102055191,
+        "traffic": 5
+      },
+      "Central": {
+        "sentiment": 0.03522201259944642,
+        "traffic": 10
+      },
+      "Causeway Bay": {
+        "sentiment": 0.004035927291845566,
+        "traffic": 7
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.009402498339305704,
+        "traffic": 5
+      }
+    }
+  },
+  "Victoria Park": {
+    "latlng": [
+      22.2823565,
+      114.1886969
+    ],
+    "visits": 19,
+    "description": "city",
+    "avg_sentiment": 0.49887894736842103,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": -0.00602817859996202,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.07314205562498925,
+        "traffic": 7
+      }
+    }
+  },
+  "K11 ARTMALL": {
+    "latlng": [
+      22.297525,
+      114.1736355
+    ],
+    "visits": 26,
+    "description": "shopping",
+    "avg_sentiment": 0.387031282051282,
+    "combinations": {
+      "K11 MUSEA": {
+        "sentiment": 0.012789575181227817,
+        "traffic": 6
+      },
+      "Victoria Harbour": {
+        "sentiment": 0.046152917983907485,
+        "traffic": 11
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.022961022304224303,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.03662821692145553,
+        "traffic": 8
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.11811613288151679,
+        "traffic": 7
+      }
+    }
+  },
+  "Choi Hung Estate": {
+    "latlng": [
+      22.3360834,
+      114.2056135
+    ],
+    "visits": 30,
+    "description": "city",
+    "avg_sentiment": 0.29062611111111103,
+    "combinations": {
+      "Monster Building": {
+        "sentiment": 0.12151316635732319,
+        "traffic": 10
+      },
+      "Mong Kok": {
+        "sentiment": 0.04267635725169117,
+        "traffic": 8
+      },
+      "Central": {
+        "sentiment": 0.0051821122132938435,
+        "traffic": 6
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.04626130615205754,
+        "traffic": 10
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.03182831357129343,
+        "traffic": 7
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.0675771464246313,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.00010472279164341208,
+        "traffic": 8
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.11656436508983473,
+        "traffic": 8
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.019051264572297433,
+        "traffic": 5
+      }
+    }
+  },
+  "Kennedy Town": {
+    "latlng": [
+      22.2822235,
+      114.1292619
+    ],
+    "visits": 28,
+    "description": "area",
+    "avg_sentiment": 0.1196502976190476,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.06508738350228495,
+        "traffic": 8
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.11282811559682075,
+        "traffic": 5
+      }
+    }
+  },
+  "Dragon's Back": {
+    "latlng": [
+      22.2369295,
+      114.2432252
+    ],
+    "visits": 12,
+    "description": "outdoor",
+    "avg_sentiment": 0.4763199999999999,
+    "combinations": {
+      "Tai Mo Shan": {
+        "sentiment": -0.0348049724148402,
+        "traffic": 6
+      },
+      "Tai O": {
+        "sentiment": 0.01117257323776453,
+        "traffic": 6
+      }
+    }
+  },
+  "Tsing Yi": {
+    "latlng": [
+      22.3474872,
+      114.1023164
+    ],
+    "visits": 14,
+    "description": "natural",
+    "avg_sentiment": 0.2381142857142857,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": -0.021480551149528505,
+        "traffic": 7
+      }
+    }
+  },
+  "Central Ferry Pier": {
+    "latlng": [
+      22.286342,
+      114.1613751
+    ],
+    "visits": 14,
+    "description": "transit",
+    "avg_sentiment": 0.28537142857142855,
+    "combinations": {
+      "Hong Kong Observation Wheel": {
+        "sentiment": 0.005956152946167821,
+        "traffic": 6
+      }
+    }
+  },
+  "Tomorrowland": {
+    "latlng": [
+      22.3132677,
+      114.0418622
+    ],
+    "visits": 18,
+    "description": "entertainment",
+    "avg_sentiment": 0.46043611111111116,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.07940142574083203,
+        "traffic": 18
+      },
+      "Toy Story Land": {
+        "sentiment": -0.08011855900413933,
+        "traffic": 5
+      }
+    }
+  },
+  "The Ritz-Carlton": {
+    "latlng": [
+      22.3034032,
+      114.1601907
+    ],
+    "visits": 16,
+    "description": "hotel",
+    "avg_sentiment": 0.36276875,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": -0.056235559548034574,
+        "traffic": 5
+      }
+    }
+  },
+  "North Point": {
+    "latlng": [
+      22.2884683,
+      114.192803
+    ],
+    "visits": 18,
+    "description": "area",
+    "avg_sentiment": 0.16993425925925923,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.009765120446863612,
+        "traffic": 5
+      }
+    }
+  },
+  "Tai Kwun": {
+    "latlng": [
+      22.2811686,
+      114.154023
+    ],
+    "visits": 27,
+    "description": "cultural",
+    "avg_sentiment": 0.16913372134038795,
+    "combinations": {
+      "Monster Building": {
+        "sentiment": 0.024423116544961498,
+        "traffic": 5
+      },
+      "Central": {
+        "sentiment": -0.023806640636170714,
+        "traffic": 13
+      },
+      "Victoria Prison": {
+        "sentiment": 0.038342017912070654,
+        "traffic": 6
+      },
+      "Victoria Peak": {
+        "sentiment": -0.05097307705907981,
+        "traffic": 6
+      },
+      "Central-Mid-Levels Escalators": {
+        "sentiment": 0.0653494668335443,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.0679604330810935,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": 0.02812145703646669,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.09139813342856633,
+        "traffic": 6
+      }
+    }
+  },
+  "The Hong Kong Tourism Board Kowloon Visitor Centre": {
+    "latlng": [
+      22.315492,
+      113.935044
+    ],
+    "visits": 12,
+    "description": "city",
+    "avg_sentiment": 0.25443333333333334,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.0583207588803327,
+        "traffic": 7
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.007879168804678927,
+        "traffic": 5
+      }
+    }
+  },
+  "Wong Tai Sin Temple": {
+    "latlng": [
+      22.3427257,
+      114.1932582
+    ],
+    "visits": 26,
+    "description": "religion",
+    "avg_sentiment": 0.41601705128205124,
+    "combinations": {
+      "Tai Po": {
+        "sentiment": -0.029278797462100447,
+        "traffic": 5
+      },
+      "Hung Hom Kwun Yum Temple": {
+        "sentiment": -0.0414382456140354,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": 0.012205083962917307,
+        "traffic": 10
+      },
+      "Avenue Of Stars": {
+        "sentiment": 0.03451351855388951,
+        "traffic": 6
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.00045692816211407986,
+        "traffic": 9
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.06334941560037251,
+        "traffic": 7
+      },
+      "Man Mo Temple": {
+        "sentiment": 0.05226966635745215,
+        "traffic": 7
+      },
+      "Yaumatei Tin Hau Temple": {
+        "sentiment": 0.02692329083338385,
+        "traffic": 7
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.005317656642108004,
+        "traffic": 5
+      }
+    }
+  },
+  "Hung Hom Kwun Yum Temple": {
+    "latlng": [
+      22.3079801,
+      114.1857452
+    ],
+    "visits": 6,
+    "description": "religion",
+    "avg_sentiment": 0.4298444444444443,
+    "combinations": {
+      "Wong Tai Sin Temple": {
+        "sentiment": -0.0414382456140354,
+        "traffic": 5
+      }
+    }
+  },
+  "Yaumatei Tin Hau Temple": {
+    "latlng": [
+      22.2821859,
+      114.1927491
+    ],
+    "visits": 25,
+    "description": "religion",
+    "avg_sentiment": 0.3544566666666666,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.03886761697406263,
+        "traffic": 9
+      },
+      "Wong Tai Sin Temple": {
+        "sentiment": 0.02692329083338385,
+        "traffic": 7
+      },
+      "Sha Tin Che Kung Temple": {
+        "sentiment": 0.012472557767377246,
+        "traffic": 5
+      },
+      "Tai Po": {
+        "sentiment": -0.035714162113748484,
+        "traffic": 5
+      }
+    }
+  },
+  "Mon Kee Caf\ufffd\ufffd": {
+    "latlng": [
+      22.2885139,
+      114.2101093
+    ],
+    "visits": 9,
+    "description": "dining",
+    "avg_sentiment": 0.20105111111111112,
+    "combinations": {
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.002707644083693922,
+        "traffic": 5
+      }
+    }
+  },
+  "Jordan": {
+    "latlng": [
+      22.3059608,
+      114.1715157
+    ],
+    "visits": 17,
+    "description": "area",
+    "avg_sentiment": 0.2776697326203208,
+    "combinations": {
+      "Central": {
+        "sentiment": 0.04619735717113338,
+        "traffic": 8
+      },
+      "Causeway Bay": {
+        "sentiment": 0.007100770092023085,
+        "traffic": 5
+      },
+      "Mong Kok": {
+        "sentiment": 0.06555387962542969,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.07635044107162858,
+        "traffic": 5
+      }
+    }
+  },
+  "Lan Fong Yuen": {
+    "latlng": [
+      22.2827177,
+      114.1537154
+    ],
+    "visits": 38,
+    "description": "dining",
+    "avg_sentiment": 0.21295,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": -0.011007613583649906,
+        "traffic": 9
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.0438962633428387,
+        "traffic": 6
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": -0.01669688062527571,
+        "traffic": 5
+      },
+      "K11 MUSEA": {
+        "sentiment": 0.07198525738449317,
+        "traffic": 6
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.16418794815426466,
+        "traffic": 6
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.026723169853293705,
+        "traffic": 7
+      },
+      "Central": {
+        "sentiment": 0.1000963590204933,
+        "traffic": 10
+      },
+      "Avenue Of Stars": {
+        "sentiment": -0.04285063538203963,
+        "traffic": 5
+      },
+      "The Peak Tram": {
+        "sentiment": 0.05380848274584651,
+        "traffic": 6
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.02346308008658011,
+        "traffic": 5
+      }
+    }
+  },
+  "Stone Slab Street": {
+    "latlng": [
+      22.2836173,
+      114.1564438
+    ],
+    "visits": 11,
+    "description": "city",
+    "avg_sentiment": 0.14851363636363626,
+    "combinations": {
+      "Central": {
+        "sentiment": 0.038604475249845206,
+        "traffic": 5
+      }
+    }
+  },
+  "M+": {
+    "latlng": [
+      22.3005044,
+      114.159495
+    ],
+    "visits": 24,
+    "description": "cultural",
+    "avg_sentiment": 0.2105590972222221,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.061668977392958735,
+        "traffic": 10
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.027622765763470548,
+        "traffic": 9
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.0887417252708732,
+        "traffic": 10
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.04066186778049078,
+        "traffic": 10
+      },
+      "West Kowloon Art Park": {
+        "sentiment": -0.07300258188590415,
+        "traffic": 5
+      },
+      "Hong Kong Cultural Centre": {
+        "sentiment": 0.04799749588023286,
+        "traffic": 5
+      },
+      "Central": {
+        "sentiment": 0.021550204562004002,
+        "traffic": 6
+      }
+    }
+  },
+  "Man Mo Temple": {
+    "latlng": [
+      22.2839729,
+      114.1501999
+    ],
+    "visits": 38,
+    "description": "religion",
+    "avg_sentiment": 0.44829780701754385,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.10582936058933581,
+        "traffic": 10
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.032387782735007406,
+        "traffic": 7
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.0005627291479735064,
+        "traffic": 5
+      },
+      "Victoria Peak": {
+        "sentiment": -0.039728767708614256,
+        "traffic": 12
+      },
+      "Wong Tai Sin Temple": {
+        "sentiment": 0.05226966635745215,
+        "traffic": 7
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.13826658987479024,
+        "traffic": 9
+      },
+      "Nan Lian Garden": {
+        "sentiment": -0.0352895891946992,
+        "traffic": 5
+      },
+      "Central": {
+        "sentiment": -0.14918890390096057,
+        "traffic": 6
+      }
+    }
+  },
+  "Central Market": {
+    "latlng": [
+      22.2843902,
+      114.1556287
+    ],
+    "visits": 17,
+    "description": "shopping",
+    "avg_sentiment": 0.26737549019607837,
+    "combinations": {
+      "Central": {
+        "sentiment": -0.011675859894537689,
+        "traffic": 9
+      },
+      "Victoria Peak": {
+        "sentiment": -0.07700543929113383,
+        "traffic": 6
+      }
+    }
+  },
+  "Citygate Outlets": {
+    "latlng": [
+      22.289733,
+      113.9412938
+    ],
+    "visits": 16,
+    "description": "shopping",
+    "avg_sentiment": 0.11221979166666662,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.02830121312065065,
+        "traffic": 6
+      },
+      "Tian Tan Buddha": {
+        "sentiment": 0.0330097493931794,
+        "traffic": 7
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.18126298199193314,
+        "traffic": 8
+      },
+      "Lantau Island": {
+        "sentiment": -0.0005313380100993026,
+        "traffic": 7
+      },
+      "Ngong Ping Village": {
+        "sentiment": 0.045365565188252896,
+        "traffic": 5
+      },
+      "Ngong Ping": {
+        "sentiment": -0.0550780396571941,
+        "traffic": 5
+      },
+      "Ngong Ping 360": {
+        "sentiment": 0.06564518172618793,
+        "traffic": 5
+      }
+    }
+  },
+  "Tai Tam Reservoir": {
+    "latlng": [
+      22.2515681,
+      114.2130899
+    ],
+    "visits": 17,
+    "description": "natural",
+    "avg_sentiment": 0.6000441176470588,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": -0.0579856692944987,
+        "traffic": 5
+      },
+      "Lantau Island": {
+        "sentiment": -0.22228219355541726,
+        "traffic": 5
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.1063051529416733,
+        "traffic": 6
+      }
+    }
+  },
+  "Old Hong Kong": {
+    "latlng": [
+      22.2461407,
+      114.1764989
+    ],
+    "visits": 12,
+    "description": "city",
+    "avg_sentiment": 0.4852625,
+    "combinations": {
+      "Ocean Park": {
+        "sentiment": -0.05742631536590274,
+        "traffic": 9
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.05659115366264659,
+        "traffic": 8
+      },
+      "Ngong Ping": {
+        "sentiment": -0.052604241025774934,
+        "traffic": 5
+      }
+    }
+  },
+  "Cheung Hing Kee Shanghai Pan Fried Buns": {
+    "latlng": [
+      22.2976589,
+      114.1716428
+    ],
+    "visits": 18,
+    "description": "dining",
+    "avg_sentiment": 0.360274537037037,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.09578977396524976,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.015658713073274804,
+        "traffic": 5
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.1291185437700702,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.0525253809700424,
+        "traffic": 7
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": 0.12874775041625033,
+        "traffic": 5
+      }
+    }
+  },
+  "Halfway Coffee": {
+    "latlng": [
+      22.2847563,
+      114.1497161
+    ],
+    "visits": 14,
+    "description": "dining",
+    "avg_sentiment": 0.33197833333333326,
+    "combinations": {
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.0526397649176988,
+        "traffic": 5
+      }
+    }
+  },
+  "St John's Cathedral": {
+    "latlng": [
+      22.2787367,
+      114.1597309
+    ],
+    "visits": 10,
+    "description": "religion",
+    "avg_sentiment": 0.39466999999999997,
+    "combinations": {
+      "Central": {
+        "sentiment": -0.07976306062396153,
+        "traffic": 6
+      }
+    }
+  },
+  "Tung Chung Station": {
+    "latlng": [
+      22.2891835,
+      113.9412863
+    ],
+    "visits": 12,
+    "description": "transit",
+    "avg_sentiment": 0.11417499999999998,
+    "combinations": {
+      "Tai O": {
+        "sentiment": -0.003195536426159079,
+        "traffic": 5
+      },
+      "Lantau Island": {
+        "sentiment": -0.05895796284099929,
+        "traffic": 5
+      }
+    }
+  },
+  "Admiralty": {
+    "latlng": [
+      22.2796357,
+      114.1654865
+    ],
+    "visits": 9,
+    "description": "area",
+    "avg_sentiment": 0.34603174603174597,
+    "combinations": {
+      "Central": {
+        "sentiment": 0.11462102905360258,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.1464132227808034,
+        "traffic": 5
+      },
+      "Causeway Bay": {
+        "sentiment": 0.07201809725574353,
+        "traffic": 5
+      }
+    }
+  },
+  "Tsim Sha Tsui Station": {
+    "latlng": [
+      22.2977271,
+      114.1721665
+    ],
+    "visits": 14,
+    "description": "transit",
+    "avg_sentiment": 0.2649142857142857,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.01266811751244057,
+        "traffic": 6
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.03205025404339865,
+        "traffic": 5
+      }
+    }
+  },
+  "Tsim Chai Kee Noodle": {
+    "latlng": [
+      22.2829866,
+      114.1544898
+    ],
+    "visits": 12,
+    "description": "dining",
+    "avg_sentiment": 0.18567499999999992,
+    "combinations": {
+      "Bakehouse (Wan Chai)": {
+        "sentiment": 0.00289980094298255,
+        "traffic": 5
+      }
+    }
+  },
+  "Tsuen Wan": {
+    "latlng": [
+      22.3699122,
+      114.1144306
+    ],
+    "visits": 18,
+    "description": "area",
+    "avg_sentiment": 0.1215092592592592,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.07221679271368768,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.08097838645335456,
+        "traffic": 7
+      }
+    }
+  },
+  "AsiaWorld-Expo": {
+    "latlng": [
+      22.321343,
+      113.943288
+    ],
+    "visits": 10,
+    "description": "city",
+    "avg_sentiment": 0.17384,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": -0.07185741203982303,
+        "traffic": 6
+      }
+    }
+  },
+  "Chungking Mansions": {
+    "latlng": [
+      22.2963031,
+      114.1723905
+    ],
+    "visits": 25,
+    "description": "city",
+    "avg_sentiment": 0.07836399999999999,
+    "combinations": {
+      "Nathan Rd": {
+        "sentiment": 0.09990335660617426,
+        "traffic": 5
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.04971451040116922,
+        "traffic": 7
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.055111935764707666,
+        "traffic": 6
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.08275793913952757,
+        "traffic": 7
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.020385860656790173,
+        "traffic": 7
+      }
+    }
+  },
+  "Sha Tin Che Kung Temple": {
+    "latlng": [
+      22.373419,
+      114.182831
+    ],
+    "visits": 18,
+    "description": "religion",
+    "avg_sentiment": 0.3813912037037037,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.08411481995267629,
+        "traffic": 9
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.12745925775906194,
+        "traffic": 9
+      },
+      "Yaumatei Tin Hau Temple": {
+        "sentiment": 0.012472557767377246,
+        "traffic": 5
+      }
+    }
+  },
+  "Sneakers Street": {
+    "latlng": [
+      22.3187397,
+      114.1711656
+    ],
+    "visits": 17,
+    "description": "shopping",
+    "avg_sentiment": 0.24869568627450978,
+    "combinations": {
+      "Bakehouse (Wan Chai)": {
+        "sentiment": 0.007991894253556708,
+        "traffic": 5
+      },
+      "Tsim Sha Tsui": {
+        "sentiment": 0.056297499162425234,
+        "traffic": 7
+      },
+      "Hong Kong International Airport": {
+        "sentiment": 0.17700269304250735,
+        "traffic": 6
+      },
+      "Mong Kok": {
+        "sentiment": 0.014277923943976263,
+        "traffic": 8
+      },
+      "Ladies' Market": {
+        "sentiment": 0.09297385500075019,
+        "traffic": 5
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.041012719875337465,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.060020182775626846,
+        "traffic": 6
+      },
+      "Central": {
+        "sentiment": 0.027971124786528308,
+        "traffic": 5
+      }
+    }
+  },
+  "Central-Mid-Levels Escalators": {
+    "latlng": [
+      22.2838464,
+      114.1549689
+    ],
+    "visits": 18,
+    "description": "city",
+    "avg_sentiment": 0.03177222222222222,
+    "combinations": {
+      "Victoria Peak": {
+        "sentiment": -0.006684389298660899,
+        "traffic": 9
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.004345316996129033,
+        "traffic": 6
+      },
+      "Central": {
+        "sentiment": 0.08891065550547295,
+        "traffic": 7
+      },
+      "Tai Kwun": {
+        "sentiment": 0.0653494668335443,
+        "traffic": 5
+      },
+      "The Peak Tram": {
+        "sentiment": 0.14477168707358928,
+        "traffic": 5
+      }
+    }
+  },
+  "Ngong Ping Cable Car Station": {
+    "latlng": [
+      22.2903229,
+      113.938519
+    ],
+    "visits": 6,
+    "description": "entertainment",
+    "avg_sentiment": 0.15415833333333331,
+    "combinations": {
+      "Ngong Ping": {
+        "sentiment": 0.06853208411812374,
+        "traffic": 5
+      }
+    }
+  },
+  "DON DON DONKI ": {
+    "latlng": [
+      22.3003007,
+      114.172355
+    ],
+    "visits": 11,
+    "description": "shopping",
+    "avg_sentiment": 0.3791606060606059,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": -0.06604024828805538,
+        "traffic": 5
+      }
+    }
+  },
+  "West Kowloon Art Park": {
+    "latlng": [
+      22.2991007,
+      114.1551603
+    ],
+    "visits": 7,
+    "description": "cultural",
+    "avg_sentiment": 0.5039809523809523,
+    "combinations": {
+      "M+": {
+        "sentiment": -0.07300258188590415,
+        "traffic": 5
+      }
+    }
+  },
+  "LEGOLAND Discovery Centre": {
+    "latlng": [
+      22.2942962,
+      114.1729583
+    ],
+    "visits": 14,
+    "description": "entertainment",
+    "avg_sentiment": 0.475247619047619,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.03998143802873117,
+        "traffic": 6
+      },
+      "Hong Kong Disneyland": {
+        "sentiment": -0.1841763510726569,
+        "traffic": 9
+      },
+      "Victoria Harbour": {
+        "sentiment": -0.13143227571832714,
+        "traffic": 6
+      }
+    }
+  },
+  "Kam Wah Cafe & Cake Shop": {
+    "latlng": [
+      22.3222738,
+      114.1697189
+    ],
+    "visits": 18,
+    "description": "dining",
+    "avg_sentiment": 0.2992900793650793,
+    "combinations": {
+      "Yat Lok Restaurant": {
+        "sentiment": 0.06248618972975282,
+        "traffic": 5
+      },
+      "Bakehouse (Wan Chai)": {
+        "sentiment": -0.024326296008933976,
+        "traffic": 8
+      }
+    }
+  },
+  "Hyatt Centric": {
+    "latlng": [
+      22.292768,
+      114.1989849
+    ],
+    "visits": 9,
+    "description": "hotel",
+    "avg_sentiment": 0.426481984126984,
+    "combinations": {
+      "Victoria Harbour": {
+        "sentiment": -0.0276177094939136,
+        "traffic": 5
+      }
+    }
+  },
+  "World of Frozen": {
+    "latlng": [
+      22.31241,
+      114.0388401
+    ],
+    "visits": 27,
+    "description": "entertainment",
+    "avg_sentiment": 0.5815518518518519,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.06998386795120046,
+        "traffic": 27
+      }
+    }
+  },
+  "Panda Hotel": {
+    "latlng": [
+      22.368988,
+      114.120796
+    ],
+    "visits": 5,
+    "description": "hotel",
+    "avg_sentiment": -0.06597,
+    "combinations": {
+      "Hong Kong International Airport": {
+        "sentiment": 0.27824675530761434,
+        "traffic": 5
+      }
+    }
+  },
+  "Victoria Prison": {
+    "latlng": [
+      22.2809373,
+      114.1537198
+    ],
+    "visits": 6,
+    "description": "cultural",
+    "avg_sentiment": -0.014036111111111286,
+    "combinations": {
+      "Tai Kwun": {
+        "sentiment": 0.038342017912070654,
+        "traffic": 6
+      }
+    }
+  },
+  "Big Grizzly Mountain Runaway Mine Cars": {
+    "latlng": [
+      22.3099001,
+      114.0422037
+    ],
+    "visits": 8,
+    "description": "entertainment",
+    "avg_sentiment": 0.490878125,
+    "combinations": {
+      "Hong Kong Disneyland": {
+        "sentiment": -0.07223411882542138,
+        "traffic": 8
+      }
+    }
+  },
+  "Vission Bakery": {
+    "latlng": [
+      22.2818843,
+      114.1531348
+    ],
+    "visits": 13,
+    "description": "dining",
+    "avg_sentiment": 0.49091346153846155,
+    "combinations": {
+      "Bakehouse (Wan Chai)": {
+        "sentiment": 0.01302302814210718,
+        "traffic": 6
+      }
+    }
+  }
+};
+        
+        // Add markers for all locations
+        for (const [locationId, data] of Object.entries(locations)) {
+            createCustomMarker(locationId, data);
+        }
+        
+        // Fit map to show all markers
+        const bounds = [];
+        for (const locationId in locations) {
+            bounds.push(locations[locationId].latlng);
+        }
+        map.fitBounds(bounds);
+        
+        // Clear selection button handler
+        document.getElementById('clear-selection').addEventListener('click', function() {
+            // Clear lines
+            linesLayer.clearLayers();
+            
+            // Reset all markers
+            resetMarkersToInactive();
+            
+            // Hide location info and show no-data message
+            document.getElementById('location-info').style.display = 'none';
+            document.getElementById('no-data').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
