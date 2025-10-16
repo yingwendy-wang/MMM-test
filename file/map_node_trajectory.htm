@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hong Kong Trajectory Visualization</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+        #map-container {
+            flex: 3;
+            position: relative;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        #control-panel {
+            flex: 1;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            overflow-y: auto;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            min-width: 300px;
+        }
+        .control-section {
+            margin-bottom: 25px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+        h2 {
+            margin-top: 0;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+        .filter-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #reset-btn {
+            background-color: #95a5a6;
+            color: white;
+        }
+        #reset-btn:hover {
+            background-color: #7f8c8d;
+        }
+        .trajectory-info {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        .trajectory-info:hover {
+            transform: translateY(-2px);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .trajectory-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3498db;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .trajectory-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+        .trajectory-item.active {
+            background-color: rgba(52, 152, 219, 0.3);
+            border-left-color: #3498db;
+        }
+        .frequency {
+            float: right;
+            font-weight: bold;
+            color: #2ecc71;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+        #info-panel {
+            margin-top: 20px;
+        }
+        #details {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 200px;
+            backdrop-filter: blur(5px);
+        }
+        .location-visit {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .location-visit:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .location-name {
+            font-weight: bold;
+        }
+        .visit-count {
+            color: #ECF0F1;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            background-color: rgba(231, 76, 60, 0.2);
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info-header {
+            color: #ECF0F1;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .detail-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+        .detail-value {
+            color: #ECF0F1;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+    <div id="control-panel">
+        <div class="control-section">
+            <h2>Trajectory Controls</h2>
+            <div class="filter-group">
+                <label for="k-select">Trajectory Length:</label>
+                <select id="k-select">
+                    <option value="2">2-node trajectories</option>
+                    <option value="3">3-node trajectories</option>
+                    <option value="4">4-node trajectories</option>
+                    <option value="5">5-node trajectories</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="top-n">Show Top:</label>
+                <select id="top-n">
+                    <option value="5">Top 5</option>
+                    <option value="10">Top 10</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button id="reset-btn">Reset View</button>
+            </div>
+        </div>
+        
+        <div class="control-section">
+            <h2>Popular Trajectories</h2>
+            <div id="trajectory-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading trajectories...
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-section">
+            <h2>Information Panel</h2>
+            <div id="details">
+                <p>Select a trajectory to see details here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // URLs for the data - REPLACE THESE WITH YOUR ACTUAL URLs
+        const TRAJECTORY_DATA_URL = 'https://raw.githubusercontent.com/yingwendy-wang/MMM-test/refs/heads/main/data/data_trajectory_20251016.csv';
+        const LOCATION_DATA_URL = 'https://raw.githubusercontent.com/yingwendy-wang/MMM-test/refs/heads/main/data/data_locations_20251016.csv';
+
+        // Beautiful color palette for trajectories
+        const colorPalette = [
+            '#3498db', '#2ecc71', '#9b59b6', '#e67e22', '#1abc9c',
+            '#f1c40f', '#e74c3c', '#34495e', '#16a085', '#27ae60',
+            '#2980b9', '#8e44ad', '#d35400', '#c0392b', '#7f8c8d'
+        ];
+
+        // Initialize map centered on Hong Kong
+        const map = L.map('map').setView([22.35, 114.1], 11);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+        // Variables to store current visualization state
+        let currentK = 2;
+        let currentTopN = 5;
+        let markers = [];
+        let polylines = [];
+        let trajectoryData = {};
+        let highlightedTrajectory = null;
+        let rawData = [];
+        let locationCoords = {};
+        let locationVisitCounts = {};
+
+        // Function to parse CSV data with better error handling
+        function parseCSV(csvText, isTrajectoryData = false) {
+            try {
+                const lines = csvText.split('\n').filter(line => line.trim() !== '');
+                if (lines.length < 2) {
+                    throw new Error('CSV file is empty or has no data rows');
+                }
+                
+                const headers = lines[0].split(',').map(header => header.trim());
+                const result = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const obj = {};
+                    let currentLine = lines[i];
+                    
+                    // Handle quoted fields that might contain commas
+                    const regex = /(".*?"|[^",]+)(?=\s*,|\s*$)/g;
+                    const matches = [];
+                    let match;
+                    
+                    while ((match = regex.exec(currentLine)) !== null) {
+                        matches.push(match[0].trim());
+                    }
+                    
+                    for (let j = 0; j < headers.length && j < matches.length; j++) {
+                        let value = matches[j];
+                        
+                        // Remove surrounding quotes if present
+                        if (value.startsWith('"') && value.endsWith('"')) {
+                            value = value.substring(1, value.length - 1);
+                        }
+                        
+                        // Special handling for trajectory data
+                        if (isTrajectoryData && headers[j] === 'trajectory') {
+                            // Parse the array string format like "['loc a', 'loc b', 'loc c']"
+                            try {
+                                // Remove brackets and split by comma
+                                const cleanValue = value.replace(/[\[\]']/g, '');
+                                const locations = cleanValue.split(',').map(loc => loc.trim()).filter(loc => loc !== '');
+                                obj[headers[j]] = locations;
+                            } catch (e) {
+                                console.error('Error parsing trajectory:', value, e);
+                                obj[headers[j]] = [];
+                            }
+                        } else {
+                            obj[headers[j]] = value;
+                        }
+                    }
+                    
+                    result.push(obj);
+                }
+                
+                console.log(`Parsed ${result.length} rows from CSV`);
+                return result;
+            } catch (error) {
+                console.error('Error parsing CSV:', error);
+                throw error;
+            }
+        }
+
+        // Function to load data from GitHub with better error handling
+        async function loadData() {
+            try {
+                document.getElementById('trajectory-list').innerHTML = 
+                    '<div class="loading"><div class="spinner"></div>Loading data...</div>';
+                
+                console.log('Loading trajectory data from:', TRAJECTORY_DATA_URL);
+                const trajectoryResponse = await fetch(TRAJECTORY_DATA_URL);
+                if (!trajectoryResponse.ok) {
+                    throw new Error(`Failed to fetch trajectory data: ${trajectoryResponse.status}`);
+                }
+                const trajectoryCSV = await trajectoryResponse.text();
+                console.log('Trajectory CSV loaded, first 500 chars:', trajectoryCSV.substring(0, 500));
+                
+                rawData = parseCSV(trajectoryCSV, true);
+                console.log('Parsed trajectory data:', rawData);
+                
+                console.log('Loading location data from:', LOCATION_DATA_URL);
+                const locationResponse = await fetch(LOCATION_DATA_URL);
+                if (!locationResponse.ok) {
+                    throw new Error(`Failed to fetch location data: ${locationResponse.status}`);
+                }
+                const locationCSV = await locationResponse.text();
+                console.log('Location CSV loaded, first 500 chars:', locationCSV.substring(0, 500));
+                
+                const locationData = parseCSV(locationCSV, false);
+                console.log('Parsed location data:', locationData);
+                
+                // Convert location data to coordinate dictionary
+                locationCoords = {};
+                locationData.forEach(location => {
+                    if (location.location && location.lat && location.lng) {
+                        locationCoords[location.location] = [
+                            parseFloat(location.lat), 
+                            parseFloat(location.lng)
+                        ];
+                    }
+                });
+                console.log('Location coordinates:', locationCoords);
+                
+                // Calculate location visit counts
+                calculateLocationVisitCounts();
+                
+                // Initialize trajectory data
+                initializeTrajectoryData();
+                
+                // Update visualization
+                updateMap(currentK, currentTopN);
+                updateTrajectoryList(currentK, currentTopN);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('trajectory-list').innerHTML = 
+                    `<div class="error">Error loading data: ${error.message}. Please check the console for details.</div>`;
+                document.getElementById('details').innerHTML = 
+                    `<div class="error">Failed to load data. Please check:<br>
+                    1. The GitHub URLs are correct and accessible<br>
+                    2. There are no CORS restrictions<br>
+                    3. The CSV format matches the expected structure</div>`;
+            }
+        }
+
+        // Function to calculate how many times each location appears in trajectories
+        function calculateLocationVisitCounts() {
+            locationVisitCounts = {};
+            
+            rawData.forEach(item => {
+                if (item.trajectory && Array.isArray(item.trajectory)) {
+                    item.trajectory.forEach(location => {
+                        if (!locationVisitCounts[location]) {
+                            locationVisitCounts[location] = 0;
+                        }
+                        locationVisitCounts[location]++;
+                    });
+                }
+            });
+            
+            console.log('Location visit counts:', locationVisitCounts);
+        }
+
+        // Function to generate k-node trajectories (order-agnostic)
+        function generateKNodeTrajectories(k) {
+            const trajectoryCounts = {};
+            
+            rawData.forEach(item => {
+                if (!item.trajectory || !Array.isArray(item.trajectory)) {
+                    console.warn('Invalid trajectory data:', item);
+                    return;
+                }
+                
+                const trajectory = item.trajectory;
+                
+                // Generate all possible k-node sequences from this trajectory
+                for (let i = 0; i <= trajectory.length - k; i++) {
+                    // Create a sorted key to make order irrelevant
+                    const kNodeSequence = trajectory.slice(i, i + k).sort();
+                    const sequenceKey = kNodeSequence.join(' → ');
+                    
+                    if (!trajectoryCounts[sequenceKey]) {
+                        trajectoryCounts[sequenceKey] = {
+                            count: 0,
+                            sequences: [],
+                            locations: kNodeSequence,
+                            originalOrder: trajectory.slice(i, i + k) // Keep original for visualization
+                        };
+                    }
+                    
+                    trajectoryCounts[sequenceKey].count++;
+                    trajectoryCounts[sequenceKey].sequences.push(item.id);
+                }
+            });
+            
+            console.log(`Generated ${Object.keys(trajectoryCounts).length} ${k}-node trajectories`);
+            return trajectoryCounts;
+        }
+
+        // Function to calculate the shortest path between locations for visualization
+        function calculateShortestPath(locations) {
+            // For now, we'll use the original order from the data
+            // In a more advanced implementation, you could calculate the actual shortest path
+            return locations;
+        }
+
+        // Function to update the trajectory list in the control panel
+        function updateTrajectoryList(k, topN) {
+            const trajectoryList = document.getElementById('trajectory-list');
+            
+            if (!trajectoryData[k] || Object.keys(trajectoryData[k]).length === 0) {
+                trajectoryList.innerHTML = '<div class="loading">No trajectory data available</div>';
+                return;
+            }
+            
+            const trajectories = Object.entries(trajectoryData[k])
+                .sort((a, b) => b[1].count - a[1].count)
+                .slice(0, topN);
+            
+            if (trajectories.length === 0) {
+                trajectoryList.innerHTML = '<div class="loading">No trajectories found</div>';
+                return;
+            }
+            
+            let html = '';
+            trajectories.forEach(([trajectory, data], index) => {
+                const isActive = highlightedTrajectory === trajectory;
+                const displayTrajectory = trajectory.length > 40 ? 
+                    trajectory.substring(0, 37) + '...' : trajectory;
+                
+                html += `
+                    <div class="trajectory-item ${isActive ? 'active' : ''}" 
+                         title="${trajectory}" 
+                         data-trajectory="${trajectory}"
+                         data-index="${index}">
+                        <span>${displayTrajectory}</span>
+                        <span class="frequency">${data.count}</span>
+                    </div>
+                `;
+            });
+            
+            trajectoryList.innerHTML = html;
+            
+            // Add click event listeners
+            trajectoryList.querySelectorAll('.trajectory-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const trajectory = item.getAttribute('data-trajectory');
+                    const index = parseInt(item.getAttribute('data-index'));
+                    const data = trajectoryData[k][trajectory];
+                    highlightTrajectory(trajectory, data, index);
+                });
+            });
+        }
+
+        // Function to highlight a trajectory on the map
+        function highlightTrajectory(trajectory, data, colorIndex) {
+            // Clear any existing highlights
+            clearHighlights();
+            
+            // Set the current highlighted trajectory
+            highlightedTrajectory = trajectory;
+            
+            // Update the trajectory list to show active item
+            updateTrajectoryList(currentK, currentTopN);
+            
+            // Highlight the trajectory
+            const locations = data.locations;
+            const shortestPath = calculateShortestPath(locations);
+            
+            // Create a polyline for the trajectory with highlight color
+            const latLngs = shortestPath.map(loc => {
+                if (!locationCoords[loc]) {
+                    console.warn(`Coordinates not found for location: ${loc}`);
+                    return null;
+                }
+                return L.latLng(locationCoords[loc]);
+            }).filter(coord => coord !== null); // Filter out invalid coordinates
+            
+            if (latLngs.length < 2) {
+                console.error('Not enough valid coordinates for trajectory:', trajectory);
+                return;
+            }
+            
+            const polyline = L.polyline(latLngs, {
+                color: colorPalette[colorIndex % colorPalette.length],
+                weight: 8,
+                opacity: 0.9,
+                className: 'highlighted-trajectory'
+            }).addTo(map);
+            
+            // Add pulse animation
+            polyline._path.style.animation = 'pulse 2s infinite';
+            
+            // Fit map to show the entire trajectory
+            map.fitBounds(polyline.getBounds());
+            
+            // Update information panel
+            const details = document.getElementById('details');
+            
+            // Create location visit details
+            let locationDetails = '';
+            data.locations.forEach(location => {
+                const visitCount = locationVisitCounts[location] || 0;
+                locationDetails += `
+                    <div class="location-visit">
+                        <span class="location-name">${location}</span>
+                        <span class="visit-count">${visitCount} visits</span>
+                    </div>
+                `;
+            });
+            
+            details.innerHTML = `
+                <h3 class="info-header">Trajectory Details</h3>
+                <div class="detail-item">
+                    <span class="detail-value">${trajectory}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Frequency:</span>
+                    <span class="detail-value">${data.count}</span>
+                </div>
+                <h4 style="margin-top: 15px; margin-bottom: 10px; color: #ECF0F1;">Location Visits</h4>
+                ${locationDetails}
+            `;
+            
+            // Store for later removal
+            polylines.push(polyline);
+        }
+
+        // Function to reset the view
+        function resetView() {
+            // Clear any highlighted trajectory
+            clearHighlights();
+            
+            // Reset to default values
+            currentK = 2;
+            currentTopN = 5;
+            
+            // Update UI elements to reflect default values
+            document.getElementById('k-select').value = currentK;
+            document.getElementById('top-n').value = currentTopN;
+            
+            // Update the visualization
+            updateMap(currentK, currentTopN);
+            updateTrajectoryList(currentK, currentTopN);
+            
+            // Reset information panel
+            document.getElementById('details').innerHTML = '<p>Select a trajectory to see details here.</p>';
+            
+            // Reset map view to Hong Kong
+            map.setView([22.35, 114.1], 11);
+        }
+
+        // Function to clear highlights from the map
+        function clearHighlights() {
+            polylines.forEach(polyline => {
+                if (polyline._path && polyline._path.style) {
+                    polyline._path.style.animation = '';
+                }
+                map.removeLayer(polyline);
+            });
+            polylines = [];
+            highlightedTrajectory = null;
+        }
+
+        // Function to update the map visualization
+        function updateMap(k, topN) {
+            // Clear existing markers and polylines
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            clearHighlights();
+            
+            // Get top trajectories for the current k
+            const topTrajectories = Object.entries(trajectoryData[k])
+                .sort((a, b) => b[1].count - a[1].count)
+                .slice(0, topN);
+            
+            if (topTrajectories.length === 0) return;
+            
+            // Create a set of all locations in top trajectories
+            const allLocations = new Set();
+            topTrajectories.forEach(([_, data]) => {
+                data.locations.forEach(loc => allLocations.add(loc));
+            });
+            
+            // Add polylines for each trajectory with width based on frequency
+            const maxCount = Math.max(...topTrajectories.map(([_, data]) => data.count));
+            
+            topTrajectories.forEach(([trajectory, data], index) => {
+                const locations = data.locations;
+                const shortestPath = calculateShortestPath(locations);
+                const latLngs = shortestPath.map(loc => {
+                    if (!locationCoords[loc]) return null;
+                    return L.latLng(locationCoords[loc]);
+                }).filter(coord => coord !== null); // Filter out invalid coordinates
+                
+                if (latLngs.length < 2) return; // Skip if not enough valid coordinates
+                
+                // Calculate line width based on frequency (normalized to maxCount)
+                const lineWidth = 2 + (data.count / maxCount) * 10;
+                
+                const polyline = L.polyline(latLngs, {
+                    color: colorPalette[index % colorPalette.length],
+                    weight: lineWidth,
+                    opacity: 0.7
+                }).addTo(map);
+                
+                // Add popup with trajectory information
+                polyline.bindPopup(`
+                    <h3>${trajectory}</h3>
+                    <p><strong>Frequency:</strong> ${data.count}</p>
+                `);
+                
+                // Add click event to show details in information panel and highlight
+                polyline.on('click', () => {
+                    highlightTrajectory(trajectory, data, index);
+                });
+                
+                polylines.push(polyline);
+            });
+            
+            // Add markers for each location (after lines so they appear on top)
+            allLocations.forEach(location => {
+                if (!locationCoords[location]) return; // Skip if no coordinates
+                
+                const marker = L.circleMarker(locationCoords[location], {
+                    radius: 12,
+                    fillColor: '#2c3e50',
+                    color: '#ecf0f1',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(map);
+                
+                // Add popup with location information
+                const visitCount = locationVisitCounts[location] || 0;
+                marker.bindPopup(`
+                    <h3>${location}</h3>
+                    <p>Visits: ${visitCount}</p>
+                    <p>Coordinates: ${locationCoords[location][0].toFixed(4)}, ${locationCoords[location][1].toFixed(4)}</p>
+                `);
+                
+                // Add click event to show details in information panel
+                marker.on('click', () => {
+                    const details = document.getElementById('details');
+                    details.innerHTML = `
+                        <h3 class="info-header">Location Details</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Location:</span>
+                            <span class="detail-value">${location}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Visits:</span>
+                            <span class="detail-value">${visitCount}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Coordinates:</span>
+                            <span class="detail-value">${locationCoords[location][0].toFixed(4)}, ${locationCoords[location][1].toFixed(4)}</span>
+                        </div>
+                    `;
+                });
+                
+                markers.push(marker);
+            });
+        }
+
+        // Initialize trajectory data for all k values
+        function initializeTrajectoryData() {
+            trajectoryData = {};
+            for (let k = 2; k <= 5; k++) {
+                trajectoryData[k] = generateKNodeTrajectories(k);
+            }
+        }
+
+        // Add CSS for pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { opacity: 0.7; }
+                50% { opacity: 1; }
+                100% { opacity: 0.7; }
+            }
+            .highlighted-trajectory {
+                filter: drop-shadow(0 0 5px rgba(52, 152, 219, 0.7));
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Event listeners for filters
+        document.getElementById('k-select').addEventListener('change', function() {
+            currentK = parseInt(this.value);
+            updateMap(currentK, currentTopN);
+            updateTrajectoryList(currentK, currentTopN);
+        });
+
+        document.getElementById('top-n').addEventListener('change', function() {
+            currentTopN = parseInt(this.value);
+            updateMap(currentK, currentTopN);
+            updateTrajectoryList(currentK, currentTopN);
+        });
+
+        // Event listener for reset button
+        document.getElementById('reset-btn').addEventListener('click', resetView);
+
+        // Load data and initialize the application
+        loadData();
+    </script>
+</body>
+</html>
