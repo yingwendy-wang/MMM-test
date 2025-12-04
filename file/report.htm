@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourism Analytics Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.1/src/wordcloud2.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+        
+        .dashboard-controls {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .location-selector {
+            flex: 1;
+            min-width: 300px;
+            margin-right: 20px;
+        }
+        
+        .location-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .location-selector select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #f9f9f9;
+            transition: all 0.3s;
+        }
+        
+        .location-selector select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        
+        .stat-card h3 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .stat-card p {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+        
+        .chart-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chart-controls button {
+            padding: 8px 15px;
+            background-color: #f1f8ff;
+            border: 1px solid #cce5ff;
+            border-radius: 6px;
+            color: #0066cc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .chart-controls button.active {
+            background-color: #0066cc;
+            color: white;
+        }
+        
+        .chart-controls button:hover:not(.active) {
+            background-color: #e6f2ff;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .wordcloud-container {
+            height: 300px;
+            width: 100%;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .combo-card {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .positive-combo {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+        }
+        
+        .negative-combo {
+            background-color: #ffebee;
+            border-left: 5px solid #f44336;
+        }
+        
+        .combo-location {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .combo-sentiment {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        @media (max-width: 1200px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .location-selector {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .chart-controls {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="dashboard-controls">
+            <div class="location-selector">
+                <label for="location-select"><i class="fas fa-map-marker-alt"></i> Select Destination</label>
+                <select id="location-select">
+                    <option value="">Loading locations...</option>
+                </select>
+            </div>
+            <div>
+                <p>Select a location to generate a detailed report.</p>
+            </div>
+        </div>
+        
+        <div class="summary-stats">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <h3 id="total-visits">0</h3>
+                <p>Total Visits</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-smile"></i>
+                <h3 id="avg-sentiment">0.0</h3>
+                <p>Average Sentiment</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-globe-americas"></i>
+                <h3 id="source-markets">0</h3>
+                <p>Source Markets</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-link"></i>
+                <h3 id="combinations">0</h3>
+                <p>Possible Combinations</p>
+            </div>
+        </div>
+        
+        <!-- Section 1: Where do tourists come from? -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-plane-departure"></i> Visitor Origins: Source Market Analysis</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Market Share Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="sourcePieChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3>Top 10 Source Markets</h3>
+                    <div class="chart-container">
+                        <canvas id="sourceBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 2: When do tourists come? -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Visit Patterns: Seasonal and Temporal Trends</h2>
+                <div class="chart-controls">
+                    <button class="time-filter active" data-period="month">Monthly</button>
+                    <button class="time-filter" data-period="week">Weekly</button>
+                    <button class="time-filter" data-period="day">Daily</button>
+                    <button class="time-filter" data-period="year">Yearly</button>
+                </div>
+            </div>
+            <div class="full-width">
+                <div class="chart-container">
+                    <canvas id="visitsOverTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3: How do tourists feel? -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-heart"></i> Visitor Sentiment Analysis</h2>
+                <div class="chart-controls">
+                    <button class="sentiment-time-filter active" data-period="month">Monthly</button>
+                    <button class="sentiment-time-filter" data-period="week">Weekly</button>
+                    <button class="sentiment-time-filter" data-period="year">Yearly</button>
+                </div>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Sentiment Over Time</h3>
+                    <div class="chart-container">
+                        <canvas id="sentimentOverTimeChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3>Sentiment by Source Market</h3>
+                    <div class="chart-container">
+                        <canvas id="sentimentBySourceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 4: Why tourists feel positive/negative -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-comment-dots"></i> Visitor Feedback: Positive & Negative Themes</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Positive Experience</h3>
+                    <div class="wordcloud-container" id="positiveWordCloud"></div>
+                </div>
+                <div>
+                    <h3>Negative Experience</h3>
+                    <div class="wordcloud-container" id="negativeWordCloud"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 5: Location combinations -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-sync-alt"></i> Experience Enhancement: Location Combinations</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Top 5 Positive Combinations</h3>
+                    <p>Pairing with these locations improves overall experience</p>
+                    <div id="positiveCombos">
+                        <!-- Positive combos will be inserted here -->
+                    </div>
+                </div>
+                <div>
+                    <h3>Top 5 Negative Combinations</h3>
+                    <p>Pairing with these locations decreases overall experience</p>
+                    <div id="negativeCombos">
+                        <!-- Negative combos will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        // ============================================
+        // DATA CONFIGURATION
+        // ============================================
+        // Replace these URLs with your actual data file URLs
+        const CSV_DATA_URL = "https://raw.githubusercontent.com/yourusername/yourrepo/main/yourdata.csv"; // Replace with your CSV URL
+        const JSON_DATA_URL = "https://raw.githubusercontent.com/yourusername/yourrepo/main/combinations.json"; // Replace with your JSON URL
+        
+        // Sample data structure (will be replaced by actual data)
+        let tourismData = [];
+        let combinationData = {};
+        let currentLocation = "";
+        let currentTimePeriod = "month";
+        let currentSentimentPeriod = "month";
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Load data from external sources
+            loadData();
+            
+            // Set up event listeners
+            document.getElementById('location-select').addEventListener('change', updateDashboard);
+            
+            // Time period filters
+            document.querySelectorAll('.time-filter').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.time-filter').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTimePeriod = this.getAttribute('data-period');
+                    updateVisitsOverTimeChart();
+                });
+            });
+            
+            // Sentiment time period filters
+            document.querySelectorAll('.sentiment-time-filter').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.sentiment-time-filter').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentSentimentPeriod = this.getAttribute('data-period');
+                    updateSentimentOverTimeChart();
+                });
+            });
+        });
+        
+        // ============================================
+        // DATA LOADING FUNCTIONS
+        // ============================================
+        async function loadData() {
+            try {
+                // For demo purposes, we'll use sample data
+                // In production, replace this with actual data loading from your URLs
+                
+                // Sample tourism data (replace with fetch from CSV_DATA_URL)
+                tourismData = generateSampleData();
+                
+                // Sample combination data (replace with fetch from JSON_DATA_URL)
+                combinationData = generateSampleCombinationData();
+                
+                // Populate location dropdown
+                populateLocationDropdown();
+                
+                // Set default location and update dashboard
+                document.getElementById('location-select').value = "Victoria Peak";
+                currentLocation = "Victoria Peak";
+                updateDashboard();
+                
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("Failed to load data. Please check the data URLs.");
+            }
+        }
+        
+        // Function to load CSV data from URL (to be used with your actual data)
+        async function loadCSVData(url) {
+            /*
+            // Uncomment this code and replace with your CSV loading logic
+            const response = await fetch(url);
+            const csvText = await response.text();
+            
+            // Parse CSV data
+            const rows = csvText.split('\n');
+            const headers = rows[0].split(',');
+            
+            const data = [];
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i].trim() === '') continue;
+                
+                const cols = rows[i].split(',');
+                const item = {};
+                for (let j = 0; j < headers.length; j++) {
+                    item[headers[j].trim()] = cols[j] ? cols[j].trim() : '';
+                }
+                data.push(item);
+            }
+            
+            return data;
+            */
+            
+            // For demo, return sample data
+            return generateSampleData();
+        }
+        
+        // Function to load JSON data from URL (to be used with your actual data)
+        async function loadJSONData(url) {
+            /*
+            // Uncomment this code and replace with your JSON loading logic
+            const response = await fetch(url);
+            const jsonData = await response.json();
+            return jsonData;
+            */
+            
+            // For demo, return sample data
+            return generateSampleCombinationData();
+        }
+        
+        // ============================================
+        // DASHBOARD UPDATE FUNCTIONS
+        // ============================================
+        function updateDashboard() {
+            const locationSelect = document.getElementById('location-select');
+            currentLocation = locationSelect.value;
+            
+            if (!currentLocation) return;
+            
+            // Filter data for current location
+            const locationData = tourismData.filter(item => item.location === currentLocation);
+            const locationCombinations = combinationData[currentLocation] || { 
+                "positive combinations": {}, 
+                "negative combinations": {} 
+            };
+            
+            // Update summary statistics
+            updateSummaryStats(locationData, locationCombinations);
+            
+            // Update all charts
+            updateSourceCharts(locationData);
+            updateVisitsOverTimeChart(locationData);
+            updateSentimentCharts(locationData);
+            updateWordClouds(locationData);
+            updateCombinationCards(locationCombinations);
+        }
+        
+        function updateSummaryStats(data, combinations) {
+            // Total visits
+            document.getElementById('total-visits').textContent = data.length;
+            
+            // Average sentiment
+            const totalSentiment = data.reduce((sum, item) => sum + parseFloat(item.sentiment), 0);
+            const avgSentiment = data.length > 0 ? (totalSentiment / data.length).toFixed(2) : 0;
+            document.getElementById('avg-sentiment').textContent = avgSentiment;
+            
+            // Number of source markets
+            const sources = [...new Set(data.map(item => item.source))];
+            document.getElementById('source-markets').textContent = sources.length;
+            
+            // Number of possible combinations
+            const positiveCombos = Object.keys(combinations["positive combinations"] || {}).length;
+            const negativeCombos = Object.keys(combinations["negative combinations"] || {}).length;
+            document.getElementById('combinations').textContent = positiveCombos + negativeCombos;
+        }
+        
+        // ============================================
+        // CHART FUNCTIONS
+        // ============================================
+        let sourcePieChart, sourceBarChart, visitsOverTimeChart, sentimentOverTimeChart, sentimentBySourceChart;
+        
+        function updateSourceCharts(data) {
+            // Count visits by source
+            const sourceCounts = {};
+            data.forEach(item => {
+                sourceCounts[item.source] = (sourceCounts[item.source] || 0) + 1;
+            });
+            
+            // Sort sources by count (descending)
+            const sortedSources = Object.entries(sourceCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            // Prepare data for pie chart (top 5 + others)
+            const pieSources = sortedSources.slice(0, 5);
+            const otherCount = sortedSources.slice(5).reduce((sum, item) => sum + item[1], 0);
+            if (otherCount > 0) {
+                pieSources.push(['Other', otherCount]);
+            }
+            
+            // Update pie chart
+            if (sourcePieChart) sourcePieChart.destroy();
+            const pieCtx = document.getElementById('sourcePieChart').getContext('2d');
+            sourcePieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: pieSources.map(item => item[0]),
+                    datasets: [{
+                        data: pieSources.map(item => item[1]),
+                        backgroundColor: [
+                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} visits (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update bar chart (top 10)
+            if (sourceBarChart) sourceBarChart.destroy();
+            const barCtx = document.getElementById('sourceBarChart').getContext('2d');
+            sourceBarChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedSources.map(item => item[0]),
+                    datasets: [{
+                        label: 'Number of Visits',
+                        data: sortedSources.map(item => item[1]),
+                        backgroundColor: '#3498db',
+                        borderColor: '#2980b9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Visits'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateVisitsOverTimeChart(data) {
+            if (!data || data.length === 0) return;
+            
+            // Group data by time period
+            const groupedData = {};
+            data.forEach(item => {
+                const date = new Date(item.date);
+                let key;
+                
+                switch(currentTimePeriod) {
+                    case 'day':
+                        key = date.toISOString().split('T')[0];
+                        break;
+                    case 'week':
+                        const weekStart = new Date(date);
+                        weekStart.setDate(date.getDate() - date.getDay());
+                        key = weekStart.toISOString().split('T')[0];
+                        break;
+                    case 'month':
+                        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        break;
+                    case 'year':
+                        key = date.getFullYear().toString();
+                        break;
+                }
+                
+                groupedData[key] = (groupedData[key] || 0) + 1;
+            });
+            
+            // Convert to arrays for chart
+            const labels = Object.keys(groupedData).sort();
+            const visits = labels.map(label => groupedData[label]);
+            
+            // Update chart
+            if (visitsOverTimeChart) visitsOverTimeChart.destroy();
+            const ctx = document.getElementById('visitsOverTimeChart').getContext('2d');
+            visitsOverTimeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Visits',
+                        data: visits,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time Period'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Visits'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateSentimentCharts(data) {
+            if (!data || data.length === 0) return;
+            
+            // Sentiment over time chart
+            updateSentimentOverTimeChart(data);
+            
+            // Sentiment by source market chart
+            // Calculate average sentiment per source
+            const sentimentBySource = {};
+            const sourceCounts = {};
+            
+            data.forEach(item => {
+                const source = item.source;
+                const sentiment = parseFloat(item.sentiment);
+                
+                if (!sentimentBySource[source]) {
+                    sentimentBySource[source] = 0;
+                    sourceCounts[source] = 0;
+                }
+                
+                sentimentBySource[source] += sentiment;
+                sourceCounts[source]++;
+            });
+            
+            // Calculate averages
+            const avgSentimentBySource = {};
+            Object.keys(sentimentBySource).forEach(source => {
+                avgSentimentBySource[source] = sentimentBySource[source] / sourceCounts[source];
+            });
+            
+            // Sort by sentiment (descending)
+            const sortedSources = Object.entries(avgSentimentBySource)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15);
+            
+            // Update chart
+            if (sentimentBySourceChart) sentimentBySourceChart.destroy();
+            const ctx = document.getElementById('sentimentBySourceChart').getContext('2d');
+            sentimentBySourceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedSources.map(item => item[0]),
+                    datasets: [{
+                        label: 'Average Sentiment',
+                        data: sortedSources.map(item => item[1]),
+                        backgroundColor: sortedSources.map(item => 
+                            item[1] >= 0.5 ? 'rgba(46, 204, 113, 0.7)' : 
+                            item[1] >= 0 ? 'rgba(241, 196, 15, 0.7)' : 
+                            'rgba(231, 76, 60, 0.7)'
+                        ),
+                        borderColor: sortedSources.map(item => 
+                            item[1] >= 0.5 ? 'rgba(46, 204, 113, 1)' : 
+                            item[1] >= 0 ? 'rgba(241, 196, 15, 1)' : 
+                            'rgba(231, 76, 60, 1)'
+                        ),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: 'Average Sentiment (0-1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateSentimentOverTimeChart(data) {
+            // Group sentiment by time period and calculate average
+            const groupedData = {};
+            const groupCounts = {};
+            
+            data.forEach(item => {
+                const date = new Date(item.date);
+                let key;
+                
+                switch(currentSentimentPeriod) {
+                    case 'day':
+                        key = date.toISOString().split('T')[0];
+                        break;
+                    case 'week':
+                        const weekStart = new Date(date);
+                        weekStart.setDate(date.getDate() - date.getDay());
+                        key = weekStart.toISOString().split('T')[0];
+                        break;
+                    case 'month':
+                        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        break;
+                    case 'year':
+                        key = date.getFullYear().toString();
+                        break;
+                }
+                
+                const sentiment = parseFloat(item.sentiment);
+                groupedData[key] = (groupedData[key] || 0) + sentiment;
+                groupCounts[key] = (groupCounts[key] || 0) + 1;
+            });
+            
+            // Calculate averages
+            const avgSentimentByPeriod = {};
+            Object.keys(groupedData).forEach(key => {
+                avgSentimentByPeriod[key] = groupedData[key] / groupCounts[key];
+            });
+            
+            // Convert to arrays for chart
+            const labels = Object.keys(avgSentimentByPeriod).sort();
+            const sentiments = labels.map(label => avgSentimentByPeriod[label]);
+            
+            // Update chart
+            if (sentimentOverTimeChart) sentimentOverTimeChart.destroy();
+            const ctx = document.getElementById('sentimentOverTimeChart').getContext('2d');
+            sentimentOverTimeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Sentiment',
+                        data: sentiments,
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time Period'
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: 'Sentiment Score (0-1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateWordClouds(data) {
+            // Extract positive and negative descriptions
+            const positiveWords = [];
+            const negativeWords = [];
+            
+            data.forEach(item => {
+                if (item.sentiment_type === 'positive') {
+                    positiveWords.push(...extractKeywords(item.description));
+                } else if (item.sentiment_type === 'negative') {
+                    negativeWords.push(...extractKeywords(item.description));
+                }
+            });
+            
+            // Count word frequencies
+            const positiveWordFreq = countWordFrequencies(positiveWords);
+            const negativeWordFreq = countWordFrequencies(negativeWords);
+            
+            // Create word clouds
+            createWordCloud('positiveWordCloud', positiveWordFreq, '#2ecc71');
+            createWordCloud('negativeWordCloud', negativeWordFreq, '#e74c3c');
+        }
+        
+        function updateCombinationCards(combinations) {
+            const positiveCombos = combinations["positive combinations"] || {};
+            const negativeCombos = combinations["negative combinations"] || {};
+            
+            // Get top 5 positive combos
+            const sortedPositive = Object.entries(positiveCombos)
+                .sort((a, b) => b[1].sentiment - a[1].sentiment)
+                .slice(0, 5);
+            
+            // Get top 5 negative combos
+            const sortedNegative = Object.entries(negativeCombos)
+                .sort((a, b) => a[1].sentiment - b[1].sentiment)
+                .slice(0, 5);
+            
+            // Update positive combos HTML
+            const positiveContainer = document.getElementById('positiveCombos');
+            positiveContainer.innerHTML = '';
+            
+            sortedPositive.forEach(([location, data]) => {
+                const card = document.createElement('div');
+                card.className = 'combo-card positive-combo';
+                card.innerHTML = `
+                    <div class="combo-location">${location}</div>
+                    <div class="combo-sentiment">Sentiment increase: +${data.sentiment.toFixed(3)}</div>
+                `;
+                positiveContainer.appendChild(card);
+            });
+            
+            // Update negative combos HTML
+            const negativeContainer = document.getElementById('negativeCombos');
+            negativeContainer.innerHTML = '';
+            
+            sortedNegative.forEach(([location, data]) => {
+                const card = document.createElement('div');
+                card.className = 'combo-card negative-combo';
+                card.innerHTML = `
+                    <div class="combo-location">${location}</div>
+                    <div class="combo-sentiment">Sentiment decrease: ${data.sentiment.toFixed(3)}</div>
+                `;
+                negativeContainer.appendChild(card);
+            });
+        }
+        
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        function populateLocationDropdown() {
+            const locations = [...new Set(tourismData.map(item => item.location))].sort();
+            const select = document.getElementById('location-select');
+            
+            select.innerHTML = '<option value="">Select a location...</option>';
+            locations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                select.appendChild(option);
+            });
+        }
+        
+        function extractKeywords(text) {
+            if (!text) return [];
+            
+            // Remove punctuation and convert to lowercase
+            const cleanText = text.toLowerCase().replace(/[^\w\s]/g, ' ');
+            
+            // Split into words and remove common stopwords
+            const stopwords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
+            const words = cleanText.split(/\s+/).filter(word => 
+                word.length > 3 && !stopwords.includes(word)
+            );
+            
+            return words;
+        }
+        
+        function countWordFrequencies(words) {
+            const freq = {};
+            words.forEach(word => {
+                freq[word] = (freq[word] || 0) + 1;
+            });
+            
+            // Convert to array format for word cloud
+            return Object.entries(freq).map(([text, size]) => [text, size * 10]);
+        }
+        
+        function createWordCloud(containerId, wordList, color) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            WordCloud(container, {
+                list: wordList,
+                gridSize: 10,
+                weightFactor: 1,
+                fontFamily: 'Arial, sans-serif',
+                color: color,
+                backgroundColor: '#ffffff',
+                rotateRatio: 0,
+                rotationSteps: 2,
+                ellipticity: 0.7
+            });
+        }
+        
+        // ============================================
+        // SAMPLE DATA GENERATION (for demo purposes)
+        // ============================================
+        function generateSampleData() {
+            const locations = [
+                "Victoria Peak", "Hong Kong Disneyland", "Ocean Park", 
+                "Tsim Sha Tsui", "Lantau Island", "Central", "Wan Chai"
+            ];
+            
+            const sources = [
+                "Mainland China", "Japan", "South Korea", "United States",
+                "United Kingdom", "Australia", "Germany", "France",
+                "Taiwan", "Singapore", "Philippines", "Thailand"
+            ];
+            
+            const positiveDescriptions = [
+                "Beautiful view amazing experience worth visiting",
+                "Fantastic attraction family friendly enjoyable day",
+                "Great food friendly staff memorable experience",
+                "Excellent service highly recommend wonderful time",
+                "Stunning scenery peaceful atmosphere perfect getaway"
+            ];
+            
+            const negativeDescriptions = [
+                "Crowded place long waiting times disappointed",
+                "Expensive tickets poor service overrated attraction",
+                "Bad weather limited access frustrating experience",
+                "Dirty facilities unhelpful staff waste money",
+                "Noisy environment confusing directions not worth"
+            ];
+            
+            const data = [];
+            const startDate = new Date(2022, 0, 1);
+            const endDate = new Date(2023, 11, 31);
+            
+            for (let i = 0; i < 1000; i++) {
+                const location = locations[Math.floor(Math.random() * locations.length)];
+                const source = sources[Math.floor(Math.random() * sources.length)];
+                
+                // Random date between start and end
+                const date = new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime()));
+                const dateStr = date.toISOString().split('T')[0];
+                
+                // Random sentiment between 0 and 1
+                const sentiment = Math.random();
+                const sentiment_type = sentiment >= 0.5 ? 'positive' : 'negative';
+                
+                // Select appropriate description
+                const descriptionPool = sentiment_type === 'positive' ? positiveDescriptions : negativeDescriptions;
+                const description = descriptionPool[Math.floor(Math.random() * descriptionPool.length)];
+                
+                data.push({
+                    id: `visitor_${i + 1}`,
+                    location: location,
+                    date: dateStr,
+                    sentiment: sentiment.toFixed(2),
+                    sentiment_type: sentiment_type,
+                    source: source,
+                    description: description
+                });
+            }
+            
+            return data;
+        }
+        
+        function generateSampleCombinationData() {
+            return {
+                "Victoria Peak": {
+                    "positive combinations": {
+                        "Hong Kong Disneyland": { "sentiment": 0.091 },
+                        "Ocean Park": { "sentiment": 0.078 },
+                        "Tsim Sha Tsui": { "sentiment": 0.065 },
+                        "Lantau Island": { "sentiment": 0.059 },
+                        "Central": { "sentiment": 0.052 }
+                    },
+                    "negative combinations": {
+                        "Wan Chai": { "sentiment": -0.043 },
+                        "Kowloon": { "sentiment": -0.037 },
+                        "Mong Kok": { "sentiment": -0.032 },
+                        "Causeway Bay": { "sentiment": -0.028 },
+                        "Sheung Wan": { "sentiment": -0.024 }
+                    }
+                },
+                "Hong Kong Disneyland": {
+                    "positive combinations": {
+                        "Victoria Peak": { "sentiment": 0.082 },
+                        "Ocean Park": { "sentiment": 0.071 },
+                        "Lantau Island": { "sentiment": 0.063 },
+                        "Tsim Sha Tsui": { "sentiment": 0.055 },
+                        "Central": { "sentiment": 0.048 }
+                    },
+                    "negative combinations": {
+                        "Wan Chai": { "sentiment": -0.039 },
+                        "Mong Kok": { "sentiment": -0.034 },
+                        "Kowloon": { "sentiment": -0.029 },
+                        "Sheung Wan": { "sentiment": -0.025 },
+                        "Causeway Bay": { "sentiment": -0.021 }
+                    }
+                }
+            };
+        }
+    </script>
+</body>
+</html>
