@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourism Analytics Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.1/src/wordcloud2.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+        
+        .dashboard-controls {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .location-selector {
+            flex: 1;
+            min-width: 300px;
+            margin-right: 20px;
+        }
+        
+        .location-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .location-selector select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #f9f9f9;
+            transition: all 0.3s;
+        }
+        
+        .location-selector select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        
+        .stat-card h3 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .stat-card p {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+        
+        .chart-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chart-controls button {
+            padding: 8px 15px;
+            background-color: #f1f8ff;
+            border: 1px solid #cce5ff;
+            border-radius: 6px;
+            color: #0066cc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .chart-controls button.active {
+            background-color: #0066cc;
+            color: white;
+        }
+        
+        .chart-controls button:hover:not(.active) {
+            background-color: #e6f2ff;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .wordcloud-container {
+            height: 300px;
+            width: 100%;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .combo-card {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .positive-combo {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+        }
+        
+        .negative-combo {
+            background-color: #ffebee;
+            border-left: 5px solid #f44336;
+        }
+        
+        .combo-location {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .combo-sentiment {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        @media (max-width: 1200px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .location-selector {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .chart-controls {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="dashboard-controls">
+            <div class="location-selector">
+                <label for="location-select"><i class="fas fa-map-marker-alt"></i> Select Destination</label>
+                <select id="location-select">
+                    <option value="">Loading locations...</option>
+                </select>
+            </div>
+            <div>
+                <p>Select a location to generate a detailed report.</p>
+            </div>
+        </div>
+        
+        <div class="summary-stats">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <h3 id="total-visits">0</h3>
+                <p>Total Visits</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-smile"></i>
+                <h3 id="avg-sentiment">0.0</h3>
+                <p>Average Sentiment</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-globe-americas"></i>
+                <h3 id="source-markets">0</h3>
+                <p>Source Markets</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-link"></i>
+                <h3 id="combinations">0</h3>
+                <p>Possible Combinations</p>
+            </div>
+        </div>
+        
+        <!-- Section 1: Where do tourists come from? -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-plane-departure"></i> Visitor Origins: Source Market Analysis</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Market Share Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="sourcePieChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3>Top 10 Source Markets</h3>
+                    <div class="chart-container">
+                        <canvas id="sourceBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 2: When do tourists come? -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Visit Patterns: Seasonal and Temporal Trends</h2>
+                <div class="chart-controls">
+                    <button class="time-filter active" data-period="month">Monthly</button>
+                    <button class="time-filter" data-period="week">Weekly</button>
+                    <button class="time-filter" data-period="day">Daily</button>
+                    <button class="time-filter" data-period="year">Yearly</button>
+                </div>
+            </div>
+            <div class="full-width">
+                <div class="chart-container">
+                    <canvas id="visitsOverTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3: How do tourists feel? -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-heart"></i> Visitor Sentiment Analysis</h2>
+                <div class="chart-controls">
+                    <button class="sentiment-time-filter active" data-period="month">Monthly</button>
+                    <button class="sentiment-time-filter" data-period="week">Weekly</button>
+                    <button class="sentiment-time-filter" data-period="year">Yearly</button>
+                </div>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Sentiment Over Time</h3>
+                    <div class="chart-container">
+                        <canvas id="sentimentOverTimeChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3>Sentiment by Source Market</h3>
+                    <div class="chart-container">
+                        <canvas id="sentimentBySourceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 4: Why tourists feel positive/negative -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-comment-dots"></i> Visitor Feedback: Positive & Negative Themes</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Positive Experience</h3>
+                    <div class="wordcloud-container" id="positiveWordCloud"></div>
+                </div>
+                <div>
+                    <h3>Negative Experience</h3>
+                    <div class="wordcloud-container" id="negativeWordCloud"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 5: Location combinations -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-sync-alt"></i> Experience Enhancement: Location Combinations</h2>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Top 5 Positive Combinations</h3>
+                    <p>Pairing with these locations improves overall experience</p>
+                    <div id="positiveCombos">
+                        <!-- Positive combos will be inserted here -->
+                    </div>
+                </div>
+                <div>
+                    <h3>Top 5 Negative Combinations</h3>
+                    <p>Pairing with these locations decreases overall experience</p>
+                    <div id="negativeCombos">
+                        <!-- Negative combos will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        // ============================================
+        // DATA CONFIGURATION
+        // ============================================
+        // Replace these URLs with your actual data file URLs
+        const CSV_DATA_URL = "https://raw.githubusercontent.com/yourusername/yourrepo/main/yourdata.csv"; // Replace with your CSV URL
+        const JSON_DATA_URL = "https://raw.githubusercontent.com/yourusername/yourrepo/main/combinations.json"; // Replace with your JSON URL
+        
+        // Sample data structure (will be replaced by actual data)
+        let tourismData = [];
+        let combinationData = {};
+        let currentLocation = "";
+        let currentTimePeriod = "month";
+        let currentSentimentPeriod = "month";
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Load data from external sources
+            loadData();
+            
+            // Set up event listeners
+            document.getElementById('location-select').addEventListener('change', updateDashboard);
+            
+            // Time period filters
+            document.querySelectorAll('.time-filter').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.time-filter').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTimePeriod = this.getAttribute('data-period');
+                    updateVisitsOverTimeChart();
+                });
+            });
+            
+            // Sentiment time period filters
+            document.querySelectorAll('.sentiment-time-filter').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.sentiment-time-filter').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentSentimentPeriod = this.getAttribute('data-period');
+                    updateSentimentOverTimeChart();
+                });
+            });
+        });
+        
+        // ============================================
+        // DATA LOADING FUNCTIONS
+        // ============================================
+        async function loadData() {
+            try {
+                // For demo purposes, we'll use sample data
+                // In production, replace this with actual data loading from your URLs
+                
+                // Sample tourism data (replace with fetch from CSV_DATA_URL)
+                tourismData = generateSampleData();
+                
+                // Sample combination data (replace with fetch from JSON_DATA_URL)
+                combinationData = generateSampleCombinationData();
+                
+                // Populate location dropdown
+                populateLocationDropdown();
+                
+                // Set default location and update dashboard
+                document.getElementById('location-select').value = "Victoria Peak";
+                currentLocation = "Victoria Peak";
+                updateDashboard();
+                
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("Failed to load data. Please check the data URLs.");
+            }
+        }
+        
+        // Function to load CSV data from URL (to be used with your actual data)
+        async function loadCSVData(url) {
+            /*
+            // Uncomment this code and replace with your CSV loading logic
+            const response = await fetch(url);
+            const csvText = await response.text();
+            
+            // Parse CSV data
+            const rows = csvText.split('\n');
+            const headers = rows[0].split(',');
+            
+            const data = [];
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i].trim() === '') continue;
+                
+                const cols = rows[i].split(',');
+                const item = {};
+                for (let j = 0; j < headers.length; j++) {
+                    item[headers[j].trim()] = cols[j] ? cols[j].trim() : '';
+                }
+                data.push(item);
+            }
+            
+            return data;
+            */
+            
+            // For demo, return sample data
+            return generateSampleData();
+        }
+        
+        // Function to load JSON data from URL (to be used with your actual data)
+        async function loadJSONData(url) {
+            /*
+            // Uncomment this code and replace with your JSON loading logic
+            const response = await fetch(url);
+            const jsonData = await response.json();
+            return jsonData;
+            */
+            
+            // For demo, return sample data
+            return generateSampleCombinationData();
+        }
+        
+        // ============================================
+        // DASHBOARD UPDATE FUNCTIONS
+        // ============================================
+        function updateDashboard() {
+            const locationSelect = document.getElementById('location-select');
+            currentLocation = locationSelect.value;
+            
+            if (!currentLocation) return;
+            
+            // Filter data for current location
+            const locationData = tourismData.filter(item => item.location === currentLocation);
+            const locationCombinations = combinationData[currentLocation] || { 
+                "positive combinations": {}, 
+                "negative combinations": {} 
+            };
+            
+            // Update summary statistics
+            updateSummaryStats(locationData, locationCombinations);
+            
+            // Update all charts
+            updateSourceCharts(locationData);
+            updateVisitsOverTimeChart(locationData);
+            updateSentimentCharts(locationData);
+            updateWordClouds(locationData);
+            updateCombinationCards(locationCombinations);
+        }
+        
+        function updateSummaryStats(data, combinations) {
+            // Total visits
+            document.getElementById('total-visits').textContent = data.length;
+            
+            // Average sentiment
+            const totalSentiment = data.reduce((sum, item) => sum + parseFloat(item.sentiment), 0);
+            const avgSentiment = data.length > 0 ? (totalSentiment / data.length).toFixed(2) : 0;
+            document.getElementById('avg-sentiment').textContent = avgSentiment;
+            
+            // Number of source markets
+            const sources = [...new Set(data.map(item => item.source))];
+            document.getElementById('source-markets').textContent = sources.length;
+            
+            // Number of possible combinations
+            const positiveCombos = Object.keys(combinations["positive combinations"] || {}).length;
+            const negativeCombos = Object.keys(combinations["negative combinations"] || {}).length;
+            document.getElementById('combinations').textContent = positiveCombos + negativeCombos;
+        }
+        
+        // ============================================
+        // CHART FUNCTIONS
+        // ============================================
+        let sourcePieChart, sourceBarChart, visitsOverTimeChart, sentimentOverTimeChart, sentimentBySourceChart;
+        
+        function updateSourceCharts(data) {
+            // Count visits by source
+            const sourceCounts = {};
+            data.forEach(item => {
+                sourceCounts[item.source] = (sourceCounts[item.source] || 0) + 1;
+            });
+            
+            // Sort sources by count (descending)
+            const sortedSources = Object.entries(sourceCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            // Prepare data for pie chart (top 5 + others)
+            const pieSources = sortedSources.slice(0, 5);
+            const otherCount = sortedSources.slice(5).reduce((sum, item) => sum + item[1], 0);
+            if (otherCount > 0) {
+                pieSources.push(['Other', otherCount]);
+            }
+            
+            // Update pie chart
+            if (sourcePieChart) sourcePieChart.destroy();
+            const pieCtx = document.getElementById('sourcePieChart').getContext('2d');
+            sourcePieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: pieSources.map(item => item[0]),
+                    datasets: [{
+                        data: pieSources.map(item => item[1]),
+                        backgroundColor: [
+                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} visits (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update bar chart (top 10)
+            if (sourceBarChart) sourceBarChart.destroy();
+            const barCtx = document.getElementById('sourceBarChart').getContext('2d');
+            sourceBarChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedSources.map(item => item[0]),
+                    datasets: [{
+                        label: 'Number of Visits',
+                        data: sortedSources.map(item => item[1]),
+                        backgroundColor: '#3498db',
+                        borderColor: '#2980b9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Visits'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateVisitsOverTimeChart(data) {
+            if (!data || data.length === 0) return;
+            
+            // Group data by time period
+            const groupedData = {};
+            data.forEach(item => {
+                const date = new Date(item.date);
+                let key;
+                
+                switch(currentTimePeriod) {
+                    case 'day':
+                        key = date.toISOString().split('T')[0];
+                        break;
+                    case 'week':
+                        const weekStart = new Date(date);
+                        weekStart.setDate(date.getDate() - date.getDay());
+                        key = weekStart.toISOString().split('T')[0];
+                        break;
+                    case 'month':
+                        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        break;
+                    case 'year':
+                        key = date.getFullYear().toString();
+                        break;
+                }
+                
+                groupedData[key] = (groupedData[key] || 0) + 1;
+            });
+            
+            // Convert to arrays for chart
+            const labels = Object.keys(groupedData).sort();
+            const visits = labels.map(label => groupedData[label]);
+            
+            // Update chart
+            if (visitsOverTimeChart) visitsOverTimeChart.destroy();
+            const ctx = document.getElementById('visitsOverTimeChart').getContext('2d');
+            visitsOverTimeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Visits',
+                        data: visits,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time Period'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Visits'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateSentimentCharts(data) {
+            if (!data || data.length === 0) return;
+            
+            // Sentiment over time chart
+            updateSentimentOverTimeChart(data);
+            
+            // Sentiment by source market chart
+            // Calculate average sentiment per source
+            const sentimentBySource = {};
+            const sourceCounts = {};
+            
+            data.forEach(item => {
+                const source = item.source;
+                const sentiment = parseFloat(item.sentiment);
+                
+                if (!sentimentBySource[source]) {
+                    sentimentBySource[source] = 0;
+                    sourceCounts[source] = 0;
+                }
+                
+                sentimentBySource[source] += sentiment;
+                sourceCounts[source]++;
+            });
+            
+            // Calculate averages
+            const avgSentimentBySource = {};
+            Object.keys(sentimentBySource).forEach(source => {
+                avgSentimentBySource[source] = sentimentBySource[source] / sourceCounts[source];
+            });
+            
+            // Sort by sentiment (descending)
+            const sortedSources = Object.entries(avgSentimentBySource)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15);
+            
+            // Update chart
+            if (sentimentBySourceChart) sentimentBySourceChart.destroy();
+            const ctx = document.getElementById('sentimentBySourceChart').getContext('2d');
+            sentimentBySourceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedSources.map(item => item[0]),
+                    datasets: [{
+                        label: 'Average Sentiment',
+                        data: sortedSources.map(item => item[1]),
+                        backgroundColor: sortedSources.map(item => 
+                            item[1] >= 0.5 ? 'rgba(46, 204, 113, 0.7)' : 
+                            item[1] >= 0 ? 'rgba(241, 196, 15, 0.7)' : 
+                            'rgba(231, 76, 60, 0.7)'
+                        ),
+                        borderColor: sortedSources.map(item => 
+                            item[1] >= 0.5 ? 'rgba(46, 204, 113, 1)' : 
+                            item[1] >= 0 ? 'rgba(241, 196, 15, 1)' : 
+                            'rgba(231, 76, 60, 1)'
+                        ),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: 'Average Sentiment (0-1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateSentimentOverTimeChart(data) {
+            // Group sentiment by time period and calculate average
+            const groupedData = {};
+            const groupCounts = {};
+            
+            data.forEach(item => {
+                const date = new Date(item.date);
+                let key;
+                
+                switch(currentSentimentPeriod) {
+                    case 'day':
+                        key = date.toISOString().split('T')[0];
+                        break;
+                    case 'week':
+                        const weekStart = new Date(date);
+                        weekStart.setDate(date.getDate() - date.getDay());
+                        key = weekStart.toISOString().split('T')[0];
+                        break;
+                    case 'month':
+                        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        break;
+                    case 'year':
+                        key = date.getFullYear().toString();
+                        break;
+                }
+                
+                const sentiment = parseFloat(item.sentiment);
+                groupedData[key] = (groupedData[key] || 0) + sentiment;
+                groupCounts[key] = (groupCounts[key] || 0) + 1;
+            });
+            
+            // Calculate averages
+            const avgSentimentByPeriod = {};
+            Object.keys(groupedData).forEach(key => {
+                avgSentimentByPeriod[key] = groupedData[key] / groupCounts[key];
+            });
+            
+            // Convert to arrays for chart
+            const labels = Object.keys(avgSentimentByPeriod).sort();
+            const sentiments = labels.map(label => avgSentimentByPeriod[label]);
+            
+            // Update chart
+            if (sentimentOverTimeChart) sentimentOverTimeChart.destroy();
+            const ctx = document.getElementById('sentimentOverTimeChart').getContext('2d');
+            sentimentOverTimeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Sentiment',
+                        data: sentiments,
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time Period'
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: 'Sentiment Score (0-1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateWordClouds(data) {
+            // Extract positive and negative descriptions
+            const positiveWords = [];
+            const negativeWords = [];
+            
+            data.forEach(item => {
+                if (item.sentiment_type === 'positive') {
+                    positiveWords.push(...extractKeywords(item.description));
+                } else if (item.sentiment_type === 'negative') {
+                    negativeWords.push(...extractKeywords(item.description));
+                }
+            });
+            
+            // Count word frequencies
+            const positiveWordFreq = countWordFrequencies(positiveWords);
+            const negativeWordFreq = countWordFrequencies(negativeWords);
+            
+            // Create word clouds
+            createWordCloud('positiveWordCloud', positiveWordFreq, '#2ecc71');
+            createWordCloud('negativeWordCloud', negativeWordFreq, '#e74c3c');
+        }
+        
+        function updateCombinationCards(combinations) {
+            const positiveCombos = combinations["positive combinations"] || {};
+            const negativeCombos = combinations["negative combinations"] || {};
+            
+            // Get top 5 positive combos
+            const sortedPositive = Object.entries(positiveCombos)
+                .sort((a, b) => b[1].sentiment - a[1].sentiment)
+                .slice(0, 5);
+            
+            // Get top 5 negative combos
+            const sortedNegative = Object.entries(negativeCombos)
+                .sort((a, b) => a[1].sentiment - b[1].sentiment)
+                .slice(0, 5);
+            
+            // Update positive combos HTML
+            const positiveContainer = document.getElementById('positiveCombos');
+            positiveContainer.innerHTML = '';
+            
+            sortedPositive.forEach(([location, data]) => {
+                const card = document.createElement('div');
+                card.className = 'combo-card positive-combo';
+                card.innerHTML = `
+                    <div class="combo-location">${location}</div>
+                    <div class="combo-sentiment">Sentiment increase: +${data.sentiment.toFixed(3)}</div>
+                `;
+                positiveContainer.appendChild(card);
+            });
+            
+            // Update negative combos HTML
+            const negativeContainer = document.getElementById('negativeCombos');
+            negativeContainer.innerHTML = '';
+            
+            sortedNegative.forEach(([location, data]) => {
+                const card = document.createElement('div');
+                card.className = 'combo-card negative-combo';
+                card.innerHTML = `
+                    <div class="combo-location">${location}</div>
+                    <div class="combo-sentiment">Sentiment decrease: ${data.sentiment.toFixed(3)}</div>
+                `;
+                negativeContainer.appendChild(card);
+            });
+        }
+        
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        function populateLocationDropdown() {
+            const locations = [...new Set(tourismData.map(item => item.location))].sort();
+            const select = document.getElementById('location-select');
+            
+            select.innerHTML = '<option value="">Select a location...</option>';
+            locations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                select.appendChild(option);
+            });
+        }
+        
+        function extractKeywords(text) {
+            if (!text) return [];
+            
+            // Remove punctuation and convert to lowercase
+            const cleanText = text.toLowerCase().replace(/[^\w\s]/g, ' ');
+            
+            // Split into words and remove common stopwords
+            const stopwords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
+            const words = cleanText.split(/\s+/).filter(word => 
+                word.length > 3 && !stopwords.includes(word)
+            );
+            
+            return words;
+        }
+        
+        function countWordFrequencies(words) {
+            const freq = {};
+            words.forEach(word => {
+                freq[word] = (freq[word] || 0) + 1;
+            });
+            
+            // Convert to array format for word cloud
+            return Object.entries(freq).map(([text, size]) => [text, size ]);
+        }
+        
+        function createWordCloud(containerId, wordList, color) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            WordCloud(container, {
+                list: wordList,
+                gridSize: 10,
+                weightFactor: 1,
+                fontFamily: 'Arial, sans-serif',
+                color: color,
+                backgroundColor: '#ffffff',
+                rotateRatio: 0,
+                rotationSteps: 2,
+                ellipticity: 0.7
+            });
+        }
+        
+        // ============================================
+        // SAMPLE DATA GENERATION (for demo purposes)
+        // ============================================
+        function generateSampleData() {
+            const locations = [
+                'Victoria Peak', 'Hong Kong Disneyland', 'Victoria Harbour', 'Avenue Of Stars',
+              'Kowloon Park', '1881 Heritage', 'Causeway Bay', 'Ngong Ping Village',
+              'Po Lin Monastery', 'Tian Tan Buddha'
+            ];
+            
+            const sources = [
+                "TH", "PH", "ID", "US",
+                "JP", "TW", "VN", "SG",
+                "MY", "GB", 
+                "TH", "PH", "TH", "PH", "TH", "PH", "ID",
+                'PH', 'DE', 'TR', 'JP', 'TH', 'IN', 'CN', 'TW', 'NP', 'VN', 'US', 'AE', 'QA', 'MY', 'KR', 'GB', 'ID', 'KH', 'SG', 'MN', 'SA', 'MO', 'HU', 'CA', 'BD', 'BH', 'SE', 'PK', 'LA', 'UA', 'FR', 'PL', 'MX', 'KW', 'AU', 'BR', 'NL', 'FI', 'NZ', 'RO', 'RU', 'CH', 'CZ', 'CO', 'ZA', 'ES', 'OM', 'BE', 'IL', 'MT', 'IT', 'BG', 'LB', 'CL', 'NG', 'MP', 'BM', 'IE', 'MV', 'BO', 'TG', 'PE', 'PW', 'SX', 'JO', 'PT', 'NO', 'RS', 'GY', 'PY', 'KZ', 'AT', 'GT', 'GR', 'BY', 'MM', 'LU', 'LK', 'CY', 'MA', 'MD', 'AR', 'DK', 'BZ', 'VE', 'SD', 'CR', 'HN', 'DO', 'TO', 'MU', 'KY', 'IQ', 'EG', 'KE', 'UK', 'PR', 'UY', 'KG', 'AM', 'GH', 'SK', 'BS', 'BB', 'GU', 'BN', 'JM', 'HR', 'DZ', 'SR', 'PA', 'ZM', 'MG', 'MK', 'JE', 'GG', 'MW', 'TT', 'YE', 'GA', 'EC', 'AZ', 'LV', 'CI', 'GE', 'GD', 'FJ', 'LT', 'SC', 'UG', 'MC', 'BT', 'DJ', 'SL', 'ET', 'KN', 'TZ', 'MZ', 'TL', 'ML', 'AG', 'CD', 'SO', 'IS', 'PF', 'AS', 'TN', 'VI', 'LY', 'SI', 'AF', 'GQ', 'RE', 'XK', 'ME', 'BF', 'HT', 'MF', 'LC', 'SV', 'IR', 'PG', 'ZW', 'WS', 'CM', 'AL', 'CK', 'EE', 'FM', 'SN', 'AD', 'SS', 'UZ', 'CG', 'VU', 'AO', 'RW', 'BJ', 'GP', 'MR', 'TD', 'BW', 'IM', 'CW', 'CV', 'PS'
+                ];
+            
+            const positiveDescriptions = [
+                    "Beautiful skyline vibrant city unforgettable journey",
+                    "Delicious food night markets fantastic flavors",
+                    "Efficient transport easy travel smooth experience",
+                    "Friendly locals welcoming atmosphere warm feeling",
+                    "Stunning harbor views breathtaking scenery amazing",
+                    "Great shopping diverse choices exciting finds",
+                    "Clean city organized streets pleasant stroll",
+                    "Rich culture meaningful heritage inspiring visit",
+                    "Amazing attractions fun activities joyful moments",
+                    "Fast service convenient systems hassle free",
+                    "Peaceful parks relaxing greenery refreshing break",
+                    "Modern city traditional charm perfect mix",
+                    "Safe environment comfortable stay worry free",
+                    "Impressive architecture unique design memorable sights",
+                    "Beautiful temples calming vibe spiritual experience",
+                    "High quality restaurants delicious dishes satisfying meals",
+                    "Fun nightlife energetic vibe enjoyable night",
+                    "Great museums informative exhibits enriching experience",
+                    "Efficient airport smooth arrival great start",
+                    "Beautiful beaches sunny weather relaxing day",
+                    "Amazing cable car stunning view thrilling ride",
+                    "Helpful staff polite service pleasant interaction",
+                    "Unique local snacks tasty treats fun try",
+                    "Colorful streets lively vibe cheerful walk",
+                    "Excellent shopping malls convenient options happy trip",
+                    "Clean transport comfortable ride easy travel",
+                    "Iconic skyline charming lights magical night",
+                    "Spectacular fireworks festive mood exciting night",
+                    "Beautiful hiking trails natural scenery refreshing",
+                    "Great ocean views relaxing breeze peaceful",
+                    "Famous landmarks iconic spots great photos",
+                    "Street performances vibrant culture lively moments",
+                    "Unique souvenirs creative shops fun discovery",
+                    "Harbor cruise romantic view fantastic evening",
+                    "Warm hospitality helpful guidance great feeling",
+                    "Well organized attractions smooth visit enjoyable",
+                    "Convenient cashless payment easy spending simple",
+                    "Fascinating local culture engaging rituals meaningful",
+                    "Modern infrastructure reliable systems comfortable",
+                    "Charming old streets nostalgic vibe pleasant",
+                    "Fresh seafood rich flavors delightful meal",
+                    "Amazing theme parks thrilling rides joyful time",
+                    "Friendly taxi drivers helpful suggestions positive",
+                    "Green islands peaceful escape relaxing break",
+                    "Beautiful street art creative atmosphere inspiring",
+                    "Great weather sunny day enjoyable walk",
+                    "Colorful festivals lively crowds fun experience",
+                    "Quality hotels comfortable rooms excellent stay",
+                    "Warm smiles good service happy visit",
+                    "Vibrant neighborhoods cultural blend exciting exploration"
+                ];
+
+            
+            const negativeDescriptions = [
+    "Crowded streets too busy overwhelming",
+    "Long queues tiring wait disappointed",
+    "High prices overpriced items not worth",
+    "Rude staff unfriendly service bad experience",
+    "Dirty streets unpleasant smell uncomfortable",
+    "Noisy environment loud crowds stressful",
+    "Hot weather humid air exhausting walk",
+    "Small spaces cramped areas uncomfortable",
+    "Slow service long delays frustrating",
+    "Confusing signs difficult navigation annoying",
+    "Traffic congestion time wasted irritating",
+    "Limited seating uncomfortable rest disappointing",
+    "Overrated attraction not impressive boring",
+    "Bad food poor quality unsatisfying meal",
+    "Unhelpful staff no support frustrating",
+    "Rainy weather limited views unlucky day",
+    "Unclean toilets bad hygiene unpleasant",
+    "Pushy crowds chaotic scene stressful",
+    "Construction noise disturbing vibe annoying",
+    "Unreliable transport sudden delays inconvenient",
+    "Expensive souvenirs overpriced goods regretful",
+    "Heatwave extreme temperature tiring visit",
+    "Crowded transport packed trains uncomfortable",
+    "Poor ventilation stuffy indoor areas",
+    "Too commercial artificial vibe disappointing",
+    "Limited shade hot sun uncomfortable",
+    "Unpleasant smell crowded alleys irritating",
+    "Aggressive shoppers rude behaviors upsetting",
+    "High taxi fares expensive ride bad",
+    "Broken facilities poorly maintained unpleasant",
+    "Rough walkway uneven ground inconvenient",
+    "Bad traffic slow movement time wasted",
+    "Tourist traps deceptive pricing disappointing",
+    "Noisy nightlife hard to relax",
+    "Inconsistent service varied quality annoying",
+    "Weak air conditioning hot inside uncomfortable",
+    "Poor signage difficult directions confusing",
+    "Overbooked attractions no entry frustrated",
+    "Unpleasant humidity sticky feeling tiring",
+    "Scam attempts unsafe feeling worrying",
+    "Lack of seating long walk exhausting",
+    "Unfriendly cashiers cold attitude negative",
+    "Complicated ticket system confusing steps annoying",
+    "Delayed flights stressful arrival frustrating",
+    "Crowded markets hard to move tiring",
+    "Boring exhibits limited content underwhelming",
+    "Unpredictable weather sudden rain annoying",
+    "Rude tourists bad manners uncomfortable",
+    "High food prices expensive meal dissatisfaction",
+    "Too many steps steep climb exhausting"
+];
+
+            
+            const data = [];
+            const startDate = new Date(2022, 0, 1);
+            const endDate = new Date(2023, 11, 31);
+            
+            for (let i = 0; i < 30000; i++) {
+                const location = locations[Math.floor(Math.random() * locations.length)];
+                const source = sources[Math.floor(Math.random() * sources.length)];
+                
+                // Random date between start and end
+                const date = new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime()));
+                const dateStr = date.toISOString().split('T')[0];
+                
+                // Random sentiment between 0 and 1
+                const sentiment = Math.random();
+                const sentiment_type = sentiment >= 0.5 ? 'positive' : 'negative';
+                
+                // Select appropriate description
+                const descriptionPool = sentiment_type === 'positive' ? positiveDescriptions : negativeDescriptions;
+                const description = descriptionPool[Math.floor(Math.random() * descriptionPool.length)];
+                
+                data.push({
+                    id: `visitor_${i + 1}`,
+                    location: location,
+                    date: dateStr,
+                    sentiment: sentiment.toFixed(2),
+                    sentiment_type: sentiment_type,
+                    source: source,
+                    description: description
+                });
+            }
+            
+            return data;
+        }
+        
+        function generateSampleCombinationData() {
+            return {"1881 Heritage":{"negative combinations":{"Avenue Of Stars":{"sentiment":-0.036211063906331525,"traffic":2},"Causeway Bay":{"sentiment":-0.111523384684113,"traffic":2},"Chungking Mansions":{"sentiment":-0.024702193703913883,"traffic":2},"Clock Tower":{"sentiment":-0.015034797418028975,"traffic":2},"Hong Kong Cultural Centre":{"sentiment":-0.10952028963414653,"traffic":2},"Hong Kong Disneyland":{"sentiment":-0.13888898713210493,"traffic":5},"Museum of Art":{"sentiment":-0.054220584415584513,"traffic":2},"Po Lin Monastery":{"sentiment":-0.04321968310948651,"traffic":2},"Tsim Sha Tsui":{"sentiment":-0.009804975193840835,"traffic":6},"Tsing Ma Bridge":{"sentiment":-0.0809094680626595,"traffic":2},"Victoria Harbour":{"sentiment":-0.050626774655494984,"traffic":3}},"positive combinations":{"Central":{"sentiment":0.016277079862880267,"traffic":4},"Hong Kong International Airport":{"sentiment":0.010189390631511391,"traffic":5},"The Peninsula":{"sentiment":0.007911443315399233,"traffic":7},"Victoria Park":{"sentiment":0.10976130952380997,"traffic":2}}},"Avenue Of Stars":{"negative combinations":{"1881 Heritage":{"sentiment":-0.036211063906331525,"traffic":2},"Admiralty Station":{"sentiment":-0.01694820251177398,"traffic":2},"Bakehouse (Wan Chai)":{"sentiment":-0.07761216200466182,"traffic":3},"Causeway Bay":{"sentiment":-0.0298045818587926,"traffic":5},"Cheung Chau":{"sentiment":-0.022573773940345487,"traffic":2},"Chi Lin Nunnery":{"sentiment":-0.03480424640450473,"traffic":4},"Choi Hung Estate":{"sentiment":-0.07024097281945087,"traffic":3},"Fa Yuen Street Market":{"sentiment":-0.190188351222421,"traffic":2},"Harbour City":{"sentiment":-0.14245436590152,"traffic":5},"Hong Kong Cultural Centre":{"sentiment":-0.06396583559951027,"traffic":8},"Hong Kong Disneyland":{"sentiment":-0.08277434190128839,"traffic":22},"Hong Kong Museum of History":{"sentiment":-0.11968380341880365,"traffic":2},"Hong Kong Park":{"sentiment":-0.06205714728586695,"traffic":4},"Jordan":{"sentiment":-0.23846205505279003,"traffic":2},"K11 MUSEA":{"sentiment":-0.027978603757445517,"traffic":26},"Kennedy Town":{"sentiment":-0.01595385398223137,"traffic":3},"Kowloon Park":{"sentiment":-0.08258651029272739,"traffic":3},"Lan Fong Yuen":{"sentiment":-0.04285063538203963,"traffic":5},"Lantau Island":{"sentiment":-0.027634633658077057,"traffic":2},"Lee Tung Avenue":{"sentiment":-0.1619964508110935,"traffic":2},"MOMA":{"sentiment":-0.2114733512224205,"traffic":2},"Man Mo Temple":{"sentiment":-0.0035855795130793253,"traffic":3},"Mon Kee Caf��":{"sentiment":-0.09004074786324753,"traffic":2},"Nan Lian Garden":{"sentiment":-0.043943759952065335,"traffic":8},"Nathan Rd":{"sentiment":-0.07095218713514798,"traffic":2},"Ngong Ping 360":{"sentiment":-0.055215255084496206,"traffic":6},"St John\"s Cathedral":{"sentiment":-0.08131269230769197,"traffic":2},"Star Ferry Pier":{"sentiment":-0.1575665007860353,"traffic":4},"Stone Slab Street":{"sentiment":-0.012543580047403025,"traffic":3},"Tai O":{"sentiment":-0.16008863331657447,"traffic":2},"Temple Street Night Market":{"sentiment":-0.0816808301971913,"traffic":5},"The Peninsula":{"sentiment":-0.06601346937466432,"traffic":9},"Trusty Congee King":{"sentiment":-0.13518335122242098,"traffic":2},"Tsim Sha Tsui Station":{"sentiment":-0.1154437084641545,"traffic":2},"Tsing Ma Bridge":{"sentiment":-0.024196959180829508,"traffic":4},"Tung Choi St":{"sentiment":-0.096758351222421,"traffic":2},"Victoria Harbour":{"sentiment":-0.08512061433724771,"traffic":28},"Victoria Peak":{"sentiment":-0.041335805729959006,"traffic":19},"West Kowloon Art Park":{"sentiment":-0.08193719942151304,"traffic":2},"ifc mall":{"sentiment":-0.175345665096808,"traffic":2}},"positive combinations":{"Australia Dairy Company":{"sentiment":0.05565834796899499,"traffic":2},"Blue House":{"sentiment":0.031392486263736474,"traffic":2},"Central":{"sentiment":0.014723472900372635,"traffic":16},"Central Ferry Pier":{"sentiment":0.263370415140415,"traffic":2},"Central-Mid-Levels Escalators":{"sentiment":0.06013657356532348,"traffic":4},"Chungking Mansions":{"sentiment":0.1453086407083101,"traffic":2},"Clock Tower":{"sentiment":0.006785347324528142,"traffic":3},"Graham St":{"sentiment":0.11284070054945053,"traffic":2},"Hong Kong International Airport":{"sentiment":0.04549926457295226,"traffic":14},"Hong Kong Island":{"sentiment":0.040266991085378484,"traffic":2},"Hong Kong Observation Wheel":{"sentiment":0.01316644941115526,"traffic":4},"Hong Kong Zoological and Botanical Gardens":{"sentiment":0.03253769230769252,"traffic":2},"Hong Kong-Zhuhai-Macao Bridge":{"sentiment":0.07488270354274999,"traffic":3},"K11 ARTMALL":{"sentiment":0.0994216479865645,"traffic":2},"Kowloon":{"sentiment":0.009701041051243142,"traffic":3},"Ladies\" Market":{"sentiment":0.002073021978022301,"traffic":3},"M+":{"sentiment":0.044739681935398484,"traffic":2},"Mak\"s Noodle":{"sentiment":0.0423660038374325,"traffic":2},"Mong Kok":{"sentiment":0.056117798316020845,"traffic":9},"Mong Kok Night Market":{"sentiment":0.04079632214019249,"traffic":2},"Monster Building":{"sentiment":0.014181514047009472,"traffic":6},"Museum of Art":{"sentiment":0.031611000280208,"traffic":3},"Ngong Ping":{"sentiment":0.02167651986322096,"traffic":7},"Ngong Ping Village":{"sentiment":0.04582241108100542,"traffic":7},"Ocean Park":{"sentiment":0.0782162154095908,"traffic":5},"Po Lin Monastery":{"sentiment":0.028655742514888522,"traffic":3},"Tai Kwun":{"sentiment":0.06947155118280776,"traffic":4},"Tai Po":{"sentiment":0.08316557373803396,"traffic":2},"Temple St":{"sentiment":0.1321230313345825,"traffic":2},"The Peak Tower":{"sentiment":0.022582290393749958,"traffic":7},"The Peak Tram":{"sentiment":0.01085286836665712,"traffic":16},"Tian Tan Buddha":{"sentiment":0.02544487263115801,"traffic":6},"Times Square":{"sentiment":0.04241542540792548,"traffic":2},"Tsim Sha Tsui":{"sentiment":0.03409203171807213,"traffic":16},"Wan Chai":{"sentiment":0.030956807820316484,"traffic":4},"Wong Tai Sin Temple":{"sentiment":0.03451351855388951,"traffic":6},"Yat Lok Restaurant":{"sentiment":0.004292045092643988,"traffic":3}}},"Causeway Bay":{"negative combinations":{"1881 Heritage":{"sentiment":-0.111523384684113,"traffic":2},"Australia Dairy Company":{"sentiment":-0.024581734409119982,"traffic":2},"Avenue Of Stars":{"sentiment":-0.0298045818587926,"traffic":5},"Bakehouse (Wan Chai)":{"sentiment":-0.00816521145103904,"traffic":11},"Choi Hung Estate":{"sentiment":-0.043544455428287145,"traffic":3},"Clock Tower":{"sentiment":-0.03339850896459447,"traffic":2},"Halfway Coffee":{"sentiment":-0.029477959436357073,"traffic":2},"Harbour City":{"sentiment":-0.02671772460340152,"traffic":2},"Hong Kong Convention and Exhibition Centre":{"sentiment":-0.004166440354400502,"traffic":2},"Hong Kong Disneyland":{"sentiment":-0.10531878641847577,"traffic":17},"Hong Kong Island":{"sentiment":-0.12966449550820114,"traffic":3},"Hong Kong Observation Wheel":{"sentiment":-0.049914502420162696,"traffic":5},"Hong Kong Park":{"sentiment":-0.03150601008136403,"traffic":2},"Hysan Place":{"sentiment":-0.0005012184056137209,"traffic":4},"K11 ARTMALL":{"sentiment":-0.011289584852535034,"traffic":2},"Kai Kai Dessert":{"sentiment":-0.008397675438848303,"traffic":3},"Kam Wah Cafe & Cake Shop":{"sentiment":-0.06212367506423054,"traffic":2},"Kennedy Town":{"sentiment":-0.052090351944508506,"traffic":2},"Lan Kwai Fong":{"sentiment":-0.028663161794150044,"traffic":2},"Lantau Island":{"sentiment":-0.095945220474529,"traffic":2},"Lee Tung Avenue":{"sentiment":-0.1340580249552953,"traffic":3},"Mak Man Kee Noodle Shop":{"sentiment":-0.086113770416267,"traffic":2},"Mak\"s Noodle":{"sentiment":-0.05574152900688249,"traffic":2},"Nan Lian Garden":{"sentiment":-0.0756079983492125,"traffic":4},"Ngong Ping":{"sentiment":-0.031217184187152313,"traffic":6},"Ngong Ping 360":{"sentiment":-0.11882242073824455,"traffic":4},"Prince Edward":{"sentiment":-0.08747445829981199,"traffic":2},"Sky 100":{"sentiment":-0.057190122110218344,"traffic":3},"Sun Heung Yuen":{"sentiment":-0.09226263716861753,"traffic":4},"Sun Kee Noodles":{"sentiment":-0.019808936632164986,"traffic":2},"Sun King Yuen Curry Restaurant":{"sentiment":-0.047463259523651005,"traffic":2},"Tai Po":{"sentiment":-0.014990913749127477,"traffic":2},"Temple Street Night Market":{"sentiment":-0.10602444545551351,"traffic":2},"The Peak Tower":{"sentiment":-0.07226983744982213,"traffic":5},"The Peak Tram":{"sentiment":-0.027254834334144402,"traffic":8},"The Peninsula":{"sentiment":-0.11391636524318079,"traffic":3},"Tsim Sha Tsui Promenade":{"sentiment":-0.025999458299812525,"traffic":2},"Victoria Harbour":{"sentiment":-0.07540275731602016,"traffic":11},"Victoria Peak":{"sentiment":-0.07850586052623952,"traffic":13},"Wo Foo Commercial Building":{"sentiment":-0.06800765695301102,"traffic":3}},"positive combinations":{"Admiralty":{"sentiment":0.07201809725574353,"traffic":5},"Bakehouse (Causeway Bay)":{"sentiment":0.1808092321763785,"traffic":2},"Causeway Bay Station":{"sentiment":0.07350978386330448,"traffic":4},"Central":{"sentiment":0.027882059202312175,"traffic":29},"Central-Mid-Levels Escalators":{"sentiment":0.04287900107677199,"traffic":4},"DON DON DONKI ":{"sentiment":0.08463441336405965,"traffic":3},"Ho Lee Fook":{"sentiment":0.04220826265978403,"traffic":2},"Hong Kong Cultural Centre":{"sentiment":0.04023448782267359,"traffic":5},"Hong Kong International Airport":{"sentiment":0.08209167075769548,"traffic":18},"ICHIRAN":{"sentiment":0.08581558451968734,"traffic":3},"Jordan":{"sentiment":0.007100770092023085,"traffic":5},"K11 MUSEA":{"sentiment":0.019004048916135687,"traffic":9},"Kowloon":{"sentiment":0.001814768119984017,"traffic":4},"Ladies\" Market":{"sentiment":0.041726824078177606,"traffic":5},"Lai King":{"sentiment":0.10793293347507998,"traffic":2},"Lan Fong Yuen":{"sentiment":0.1270703974000433,"traffic":3},"M+":{"sentiment":0.013153402735676473,"traffic":2},"Mon Kee Caf��":{"sentiment":0.1188159709931175,"traffic":2},"Mong Kok":{"sentiment":0.02121911186174818,"traffic":18},"Museum of Art":{"sentiment":0.049796787182219325,"traffic":3},"Nathan Rd":{"sentiment":0.02189437556731465,"traffic":3},"New Territories":{"sentiment":0.209624932547436,"traffic":2},"Ngong Ping Village":{"sentiment":0.049676641844296675,"traffic":3},"North Point":{"sentiment":0.037044009215322,"traffic":3},"SOGO":{"sentiment":0.06084487749938167,"traffic":3},"Sham Shui Po":{"sentiment":0.046235182302640676,"traffic":3},"Shau Kei Wan":{"sentiment":0.07965439357068102,"traffic":3},"Sheung Wan":{"sentiment":0.27742579061793704,"traffic":2},"Sneakers Street":{"sentiment":0.03319686429207652,"traffic":2},"Tai Kwun":{"sentiment":0.02812145703646669,"traffic":6},"Tai O":{"sentiment":0.061711441535646505,"traffic":2},"Taikoo Shing":{"sentiment":0.07231069321533953,"traffic":2},"The One Bakery":{"sentiment":0.130930390185036,"traffic":2},"Tian Tan Buddha":{"sentiment":0.043338662542760024,"traffic":3},"Times Square":{"sentiment":0.03182566452491716,"traffic":6},"Tsim Sha Tsui":{"sentiment":0.053103806862936094,"traffic":22},"Victoria Prison":{"sentiment":0.057469542498295514,"traffic":2},"Wan Chai":{"sentiment":0.0946785212712679,"traffic":5},"Yat Lok Restaurant":{"sentiment":0.004035927291845566,"traffic":7},"Yau Ma Tei":{"sentiment":0.24111969994934598,"traffic":3},"Yau Ma Tei Jade Hawker Bazaar":{"sentiment":0.130930390185036,"traffic":2},"iSQUARE":{"sentiment":0.027250015004661482,"traffic":2},"ifc mall":{"sentiment":0.006086915698202337,"traffic":3}}},"Hong Kong Disneyland":{"negative combinations":{"1881 Heritage":{"sentiment":-0.13888898713210493,"traffic":5},"Adventureland":{"sentiment":-0.1049461525576948,"traffic":10},"Australia Dairy Company":{"sentiment":-0.2331070667072315,"traffic":2},"Avenue Of Stars":{"sentiment":-0.08277434190128839,"traffic":22},"Bakehouse (Wan Chai)":{"sentiment":-0.10638513914949256,"traffic":18},"Big Grizzly Mountain Runaway Mine Cars":{"sentiment":-0.07223411882542138,"traffic":8},"Causeway Bay":{"sentiment":-0.10531878641847577,"traffic":17},"Central":{"sentiment":-0.04413473374059397,"traffic":60},"Central Ferry Pier":{"sentiment":-0.024481346989266295,"traffic":4},"Central Market":{"sentiment":-0.13857430413506885,"traffic":3},"Central-Mid-Levels Escalators":{"sentiment":-0.004345316996129033,"traffic":6},"Cheung Hing Kee Shanghai Pan Fried Buns":{"sentiment":-0.09578977396524976,"traffic":5},"Cheung Kong Center":{"sentiment":-0.02040376191646054,"traffic":2},"Chi Lin Nunnery":{"sentiment":-0.12212637485266283,"traffic":7},"Choi Hung Estate":{"sentiment":-0.03182831357129343,"traffic":7},"Chungking Mansions":{"sentiment":-0.020385860656790173,"traffic":7},"Citygate Outlets":{"sentiment":-0.02830121312065065,"traffic":6},"Clock Tower":{"sentiment":-0.048218852010126545,"traffic":9},"DON DON DONKI ":{"sentiment":-0.21874473453674353,"traffic":2},"Davis St":{"sentiment":-0.15115187922358408,"traffic":2},"Dim Sum Square":{"sentiment":-0.015216505073924039,"traffic":2},"Disney Explorers Lodge":{"sentiment":-0.09197520367626176,"traffic":4},"Disney\"s Hollywood Hotel":{"sentiment":-0.037765819827418924,"traffic":18},"Dragon Wind":{"sentiment":-0.054379794446277,"traffic":2},"Duddell\"s":{"sentiment":-0.12942671464162203,"traffic":2},"Fantasyland":{"sentiment":-0.03502174495935201,"traffic":2},"Granville Rd":{"sentiment":-0.1180530627424462,"traffic":3},"Grizzly Gulch":{"sentiment":-0.03385552568776821,"traffic":3},"Happy Valley Racecourse":{"sentiment":-0.3003669097540465,"traffic":6},"Harbour City":{"sentiment":-0.18924343997975127,"traffic":5},"Hashtag B":{"sentiment":-0.05784266291079567,"traffic":3},"Hong Kong Convention and Exhibition Centre":{"sentiment":-0.10444314497584017,"traffic":3},"Hong Kong Cultural Centre":{"sentiment":-0.05974590545453439,"traffic":27},"Hong Kong Fisherman\"s Wharf":{"sentiment":-0.00548559220372502,"traffic":3},"Hong Kong Heritage Museum":{"sentiment":-0.06589372150397349,"traffic":2},"Hong Kong International Airport":{"sentiment":-0.010812354147757096,"traffic":240},"Hong Kong Island":{"sentiment":-0.13819853399048573,"traffic":6},"Hong Kong Macau Ferry Terminal":{"sentiment":-0.12976421794285506,"traffic":3},"Hong Kong Observation Wheel":{"sentiment":-0.13010354919111006,"traffic":24},"Hong Kong Park":{"sentiment":-0.1380504340151792,"traffic":8},"Hong Kong Space Museum":{"sentiment":-0.2551072481403811,"traffic":2},"Hong Kong Station":{"sentiment":-0.07481076837015209,"traffic":4},"Hong Kong-Zhuhai-Macao Bridge":{"sentiment":-0.07156069851553531,"traffic":18},"Hung Hom Kwun Yum Temple":{"sentiment":-0.20641310062123402,"traffic":2},"Hyperspace Mountain":{"sentiment":-0.06839730269948785,"traffic":3},"ICHIRAN":{"sentiment":-0.10339963788831454,"traffic":7},"K11 ARTMALL":{"sentiment":-0.11811613288151679,"traffic":7},"K11 MUSEA":{"sentiment":-0.009473545492433148,"traffic":19},"Kennedy Town":{"sentiment":-0.06508738350228495,"traffic":8},"Kowloon":{"sentiment":-0.062035102098995674,"traffic":6},"Kowloon Public Pier":{"sentiment":-0.1566757918189252,"traffic":3},"Kwai Fong":{"sentiment":-0.08392101187664491,"traffic":2},"LEGOLAND Discovery Centre":{"sentiment":-0.1841763510726569,"traffic":9},"Ladies\" Market":{"sentiment":-0.051239450216083095,"traffic":5},"Lai Chi Kok Station":{"sentiment":-0.17967362472079051,"traffic":2},"Lai King":{"sentiment":-0.08515096077407364,"traffic":8},"Lai King Station":{"sentiment":-0.22003129759093054,"traffic":2},"Lamma Island":{"sentiment":-0.14009230388692223,"traffic":5},"Lan Fong Yuen":{"sentiment":-0.0438962633428387,"traffic":6},"Lan Kwai Fong":{"sentiment":-0.14250763532464655,"traffic":10},"Langham Place":{"sentiment":-0.16207714109225682,"traffic":2},"Lantau Island":{"sentiment":-0.1243822816251727,"traffic":79},"Lee Garden":{"sentiment":-0.17583103622729418,"traffic":2},"Lucky Star Coffee Shop":{"sentiment":-0.16575137399536924,"traffic":3},"M+":{"sentiment":-0.061668977392958735,"traffic":10},"Madame Tussauds":{"sentiment":-0.1747064455575183,"traffic":10},"Main Street Bakery":{"sentiment":-0.0452627098716325,"traffic":2},"Main Street Corner Caf��":{"sentiment":-0.005290390183523563,"traffic":2},"Mak\"s Noodle":{"sentiment":-0.18154432083831584,"traffic":3},"Man Mo Temple":{"sentiment":-0.10582936058933581,"traffic":10},"Marty\"s General Store":{"sentiment":-0.09108507662131052,"traffic":2},"Masjid Ammar and Osman Ramju Sadick Islamic Centre":{"sentiment":-0.019492368695053497,"traffic":4},"Mong Kok":{"sentiment":-0.11178004076828882,"traffic":33},"Mong Kok East":{"sentiment":-0.021488046857793014,"traffic":2},"Mong Kok Night Market":{"sentiment":-0.09104508054732972,"traffic":5},"Monopoly Dreams":{"sentiment":-0.06135359520997774,"traffic":3},"Mott 32":{"sentiment":-0.06068581598558001,"traffic":2},"Museum of Art":{"sentiment":-0.04323615496846432,"traffic":14},"Nan Lian Garden":{"sentiment":-0.13869431295690052,"traffic":14},"Nathan Rd":{"sentiment":-0.07828642145180724,"traffic":6},"Nei Nak Shan":{"sentiment":-0.160733818094193,"traffic":2},"New Praya":{"sentiment":-0.05831898806712152,"traffic":2},"Ngong Ping":{"sentiment":-0.10918819007527794,"traffic":65},"Ngong Ping 360":{"sentiment":-0.10861165156909187,"traffic":60},"Ngong Ping Village":{"sentiment":-0.017757442985507167,"traffic":26},"Novotel":{"sentiment":-0.10234251643591553,"traffic":2},"Ocean Park":{"sentiment":-0.06366966702729168,"traffic":81},"Old Hong Kong":{"sentiment":-0.05659115366264659,"traffic":8},"Pacific Place":{"sentiment":-0.09713433605246896,"traffic":2},"Po Lin Monastery":{"sentiment":-0.09005997817635922,"traffic":39},"Queensway":{"sentiment":-0.24074208522533905,"traffic":2},"Repulse Bay":{"sentiment":-0.029717380924264014,"traffic":2},"Sai Ying Pun":{"sentiment":-0.21625439919253253,"traffic":2},"Sha Tin Che Kung Temple":{"sentiment":-0.12745925775906194,"traffic":9},"Sha Tin Park":{"sentiment":-0.16350933605246956,"traffic":2},"Sky 100":{"sentiment":-0.05532240772993131,"traffic":13},"Sneakers Street":{"sentiment":-0.060020182775626846,"traffic":6},"Snoopy\"s World":{"sentiment":-0.08971469319532643,"traffic":2},"St John\"s Cathedral":{"sentiment":-0.1625742261623595,"traffic":2},"Star Ferry Pier":{"sentiment":-0.05542431604883197,"traffic":2},"Sunny Bay Station":{"sentiment":-0.0003808137385163819,"traffic":11},"THE MATCHA TOKYO":{"sentiment":-0.04467274347837702,"traffic":2},"Tai Kwun":{"sentiment":-0.09139813342856633,"traffic":6},"Tai Mo Shan":{"sentiment":-0.05463695035867999,"traffic":6},"Tai O":{"sentiment":-0.10772598582311489,"traffic":11},"Tai Po":{"sentiment":-0.143430824834787,"traffic":15},"Tai Tam Reservoir":{"sentiment":-0.1063051529416733,"traffic":6},"Tarzan\"s Treehouse":{"sentiment":-0.013362457020475135,"traffic":3},"Temple St":{"sentiment":-0.08161483738612536,"traffic":11},"Temple Street Night Market":{"sentiment":-0.07586286960575052,"traffic":7},"The Grand Aquarium":{"sentiment":-0.2075255671469565,"traffic":2},"The Hong Kong Tourism Board Kowloon Visitor Centre":{"sentiment":-0.007879168804678927,"traffic":5},"The Kimberley Hotel":{"sentiment":-0.049422091079947834,"traffic":3},"The Peak Tram":{"sentiment":-0.05622778040654322,"traffic":45},"The Peninsula":{"sentiment":-0.09300589775877534,"traffic":23},"The Ritz-Carlton":{"sentiment":-0.09746692156310022,"traffic":3},"Tian Tan Buddha":{"sentiment":-0.01977678414237446,"traffic":44},"Times Square":{"sentiment":-0.006426416536581529,"traffic":3},"Tomorrowland":{"sentiment":-0.07940142574083203,"traffic":18},"Toy Story Land":{"sentiment":-0.1277953861963481,"traffic":13},"Tsim Sha Tsui":{"sentiment":-0.07790445080866379,"traffic":46},"Tsim Sha Tsui Station":{"sentiment":-0.10200355308404697,"traffic":4},"Tsing Ma Bridge":{"sentiment":-0.12557881665152165,"traffic":37},"Tsing Yi":{"sentiment":-0.020582571273130776,"traffic":4},"Tsing Yi Station":{"sentiment":-0.2449747023528355,"traffic":3},"Tsuen Wan":{"sentiment":-0.08097838645335456,"traffic":7},"Tsz Shan Monastery":{"sentiment":-0.07518968484583302,"traffic":2},"Tung Chung":{"sentiment":-0.2325485906157237,"traffic":5},"Victoria Harbour":{"sentiment":-0.10227367177000221,"traffic":91},"Victoria Park":{"sentiment":-0.07314205562498925,"traffic":7},"Victoria Peak":{"sentiment":-0.09117737571349292,"traffic":102},"Vission Bakery":{"sentiment":-0.05530868003207656,"traffic":2},"Wan Chai":{"sentiment":-0.11779489558702032,"traffic":4},"West Kowloon":{"sentiment":-0.13729816367257752,"traffic":4},"Western Market":{"sentiment":-0.1339707444726839,"traffic":3},"Wong Tai Sin":{"sentiment":-0.1349733982881685,"traffic":2},"Wong Tai Sin Temple":{"sentiment":-0.06334941560037251,"traffic":7},"World of Frozen":{"sentiment":-0.06998386795120046,"traffic":27},"Yat Lok Restaurant":{"sentiment":-0.0447984794597752,"traffic":3},"Yau Ma Tei":{"sentiment":-0.10854124095312402,"traffic":4},"Yau Ma Tei Station":{"sentiment":-0.24555404759093052,"traffic":2},"Yaumatei Tin Hau Temple":{"sentiment":-0.03886761697406263,"traffic":9},"iSQUARE":{"sentiment":-0.09013191200402604,"traffic":18}},"positive combinations":{"AsiaWorld-Expo":{"sentiment":0.1291661634480305,"traffic":2},"Brooklyn Bar and Grill":{"sentiment":0.141304408291422,"traffic":2},"Cheung Chau":{"sentiment":0.20454058119694746,"traffic":2},"Frozen Ever After":{"sentiment":0.03178806690377002,"traffic":4},"Hankow Rd":{"sentiment":0.041385731820833965,"traffic":2},"Hollywood Rd":{"sentiment":0.0022171291489959666,"traffic":2},"Hong Kong Science Museum":{"sentiment":0.011296354741814967,"traffic":11},"Hung Hom Station":{"sentiment":0.01960531481390511,"traffic":2},"Kai Tak Commercial Building":{"sentiment":0.03478359992459698,"traffic":2},"Kowloon Park":{"sentiment":0.03718028922816427,"traffic":4},"LOUIS VUITTON":{"sentiment":0.12152723239407658,"traffic":3},"Lin Heung Lau":{"sentiment":0.06300571580388727,"traffic":3},"Lippo Centre":{"sentiment":0.08605474209160896,"traffic":2},"Mong Kok Station":{"sentiment":0.031192580563371892,"traffic":3},"Monster Building":{"sentiment":0.06712198890147758,"traffic":8},"Mystic Manor":{"sentiment":0.09585940525419051,"traffic":8},"Panda Hotel":{"sentiment":0.160213112543614,"traffic":3},"Prince\"s Building":{"sentiment":0.154416579698446,"traffic":2},"SOGO":{"sentiment":0.1462350633312158,"traffic":3},"Shau Kei Wan":{"sentiment":0.011184771680603223,"traffic":4},"Stone Slab Street":{"sentiment":0.01727664433968798,"traffic":2},"Tei Mou Koon Dessert":{"sentiment":0.009300607074578915,"traffic":2},"The Peak Tower":{"sentiment":0.01413783936112219,"traffic":13},"Tsim Sha Tsui Promenade":{"sentiment":0.00019553574240246951,"traffic":2},"Yau Ma Tei Police Station":{"sentiment":0.020401987262769483,"traffic":2},"ifc mall":{"sentiment":0.05436654665263916,"traffic":6}}},"Kowloon Park":{"negative combinations":{"Avenue Of Stars":{"sentiment":-0.08258651029272739,"traffic":3},"Bakehouse (Wan Chai)":{"sentiment":-0.167664134199134,"traffic":2},"Hong Kong International Airport":{"sentiment":-0.05033539450540149,"traffic":2},"Hong Kong Park":{"sentiment":-0.08878478956050419,"traffic":5},"K11 MUSEA":{"sentiment":-0.02516394593180102,"traffic":2},"M+":{"sentiment":-0.08832934288654516,"traffic":3},"Museum of Art":{"sentiment":-0.034822093257516035,"traffic":2},"Nan Lian Garden":{"sentiment":-0.0136138068182875,"traffic":2},"Nathan Rd":{"sentiment":-0.018840126570583524,"traffic":2},"Temple St":{"sentiment":-0.06140133128196801,"traffic":2},"Temple Street Night Market":{"sentiment":-0.1217578926017045,"traffic":2},"The Peak Tram":{"sentiment":-0.06243315058780449,"traffic":2},"Tsim Sha Tsui":{"sentiment":-0.06573606022345511,"traffic":5},"Victoria Harbour":{"sentiment":-0.14902781539038734,"traffic":5},"Victoria Park":{"sentiment":-0.2482398608031533,"traffic":3},"Victoria Peak":{"sentiment":-0.02798397452417202,"traffic":4},"West Kowloon Art Park":{"sentiment":-0.21827238495774273,"traffic":3}},"positive combinations":{"Hong Kong Cultural Centre":{"sentiment":0.011257632575757445,"traffic":2},"Hong Kong Disneyland":{"sentiment":0.03718028922816427,"traffic":4},"Monster Building":{"sentiment":0.154941550720862,"traffic":2},"Ngong Ping 360":{"sentiment":0.03730422120418234,"traffic":3},"Ngong Ping Village":{"sentiment":0.05409050470378854,"traffic":2},"Ocean Park":{"sentiment":0.06108061148528935,"traffic":3},"Po Lin Monastery":{"sentiment":0.03519076679625599,"traffic":2},"The Peak Tower":{"sentiment":0.05912562913055983,"traffic":3},"Tian Tan Buddha":{"sentiment":0.1684935410557187,"traffic":3}}},"Ngong Ping Village":{"negative combinations":{"Buddhist World in the South Archway":{"sentiment":-0.04550811346548153,"traffic":2},"Clock Tower":{"sentiment":-0.0019488394062074782,"traffic":2},"Hong Kong Convention and Exhibition Centre":{"sentiment":-0.0034776520639419883,"traffic":2},"Hong Kong Disneyland":{"sentiment":-0.017757442985507167,"traffic":26},"Hong Kong Observation Wheel":{"sentiment":-0.02880300162138629,"traffic":5},"LEGOLAND Discovery Centre":{"sentiment":-3.506148423196298e-05,"traffic":2},"Lantau Island":{"sentiment":-0.05786108505404671,"traffic":49},"Nan Lian Garden":{"sentiment":-0.04934898526062161,"traffic":5},"Ngong Ping":{"sentiment":-0.022424380014134316,"traffic":41},"Ngong Ping 360":{"sentiment":-0.020867288389233515,"traffic":44},"Po Lin Monastery":{"sentiment":-0.05376509392249827,"traffic":37},"Sky 100":{"sentiment":-0.015994996902807024,"traffic":5},"Tai Mo Shan":{"sentiment":-0.11468741436613272,"traffic":8},"Tai O":{"sentiment":-0.03499577886536389,"traffic":12},"Tai Tam Reservoir":{"sentiment":-0.189886226142279,"traffic":2},"The Peninsula":{"sentiment":-0.007774523988718973,"traffic":2},"Tian Tan Buddha":{"sentiment":-0.012900322374693343,"traffic":43},"Tsim Sha Tsui Station":{"sentiment":-0.023312036209404474,"traffic":2},"Tsing Ma Bridge":{"sentiment":-0.01220993190266865,"traffic":3},"Tsing Yi":{"sentiment":-0.07405571635055748,"traffic":2},"Tsz Shan Monastery":{"sentiment":-0.1520582282214155,"traffic":2},"Victoria Park":{"sentiment":-0.07783144306317949,"traffic":2},"Victoria Peak":{"sentiment":-0.013758605052311274,"traffic":18}},"positive combinations":{"Avenue Of Stars":{"sentiment":0.04582241108100542,"traffic":7},"Bakehouse (Wan Chai)":{"sentiment":0.0008361780763099791,"traffic":2},"Cable Car Discovery Centre":{"sentiment":0.04233102073365198,"traffic":2},"Causeway Bay":{"sentiment":0.049676641844296675,"traffic":3},"Central":{"sentiment":0.04850864852324372,"traffic":5},"Citygate Outlets":{"sentiment":0.045365565188252896,"traffic":5},"Hong Kong Cultural Centre":{"sentiment":0.03421851814754832,"traffic":3},"Hong Kong Fisherman\"s Wharf":{"sentiment":0.031786071238703,"traffic":2},"Hong Kong International Airport":{"sentiment":0.1257168898890656,"traffic":16},"Hong Kong-Zhuhai-Macao Bridge":{"sentiment":0.13343395678638512,"traffic":7},"K11 MUSEA":{"sentiment":0.10909413997121467,"traffic":5},"Kowloon Park":{"sentiment":0.05409050470378854,"traffic":2},"Man Mo Temple":{"sentiment":0.08254911581490001,"traffic":2},"Mong Kok":{"sentiment":0.0774612888793579,"traffic":11},"Monster Building":{"sentiment":0.11736078486391197,"traffic":2},"Museum of Art":{"sentiment":0.09797107132921345,"traffic":2},"Ngong Ping Cable Car Station":{"sentiment":0.22618547559330882,"traffic":3},"Ocean Park":{"sentiment":0.04173041493014266,"traffic":3},"Ping Shan":{"sentiment":0.045395478403328006,"traffic":3},"Sneakers Street":{"sentiment":0.10081930404547135,"traffic":3},"Tai Po":{"sentiment":0.005452125393780271,"traffic":11},"Temple St":{"sentiment":0.022587841876319303,"traffic":3},"Temple Street Night Market":{"sentiment":0.17632695388952352,"traffic":2},"The Peak Tower":{"sentiment":0.0005806285048578034,"traffic":3},"The Peak Tram":{"sentiment":0.054770200013372274,"traffic":10},"Tsim Sha Tsui":{"sentiment":0.08037335060416911,"traffic":10},"Tung Chung":{"sentiment":0.02531932400932434,"traffic":3},"Tung Chung Station":{"sentiment":0.07130874934806931,"traffic":3},"Victoria Harbour":{"sentiment":0.058420970024641514,"traffic":10},"Wah Tao Seafood Restaurant":{"sentiment":0.08911783891547098,"traffic":2},"Wisdom Path":{"sentiment":0.03777483762598004,"traffic":2}}},"Po Lin Monastery":{"negative combinations":{"1881 Heritage":{"sentiment":-0.04321968310948651,"traffic":2},"Bakehouse (Wan Chai)":{"sentiment":-0.23024496958461746,"traffic":2},"Buddhist World in the South Archway":{"sentiment":-0.03566260186857151,"traffic":2},"Central":{"sentiment":-0.038526385602971454,"traffic":9},"Chi Lin Nunnery":{"sentiment":-0.016953581119397113,"traffic":8},"Choi Hung Estate":{"sentiment":-0.11929116477294549,"traffic":2},"Citygate Outlets":{"sentiment":-0.08444328305656225,"traffic":4},"DON DON DONKI ":{"sentiment":-0.15467305050079047,"traffic":2},"Diamond Hill":{"sentiment":-0.02513207990764149,"traffic":2},"Disney\"s Hollywood Hotel":{"sentiment":-0.08341879542988798,"traffic":2},"Dragon\"s Back":{"sentiment":-0.12182802006724996,"traffic":2},"Hong Kong Convention and Exhibition Centre":{"sentiment":-0.062118708579770504,"traffic":2},"Hong Kong Cultural Centre":{"sentiment":-0.015125225505308731,"traffic":4},"Hong Kong Disneyland":{"sentiment":-0.09005997817635922,"traffic":39},"Hong Kong Observation Wheel":{"sentiment":-0.0698331367839197,"traffic":4},"Hong Kong Park":{"sentiment":-0.1440998122834527,"traffic":4},"LEGOLAND Discovery Centre":{"sentiment":-0.18416979258375898,"traffic":4},"Lai King":{"sentiment":-0.16184225329402097,"traffic":2},"Lantau Island":{"sentiment":-0.10573906363711616,"traffic":77},"Lantau Peak":{"sentiment":-0.028544523516663978,"traffic":2},"Nan Lian Garden":{"sentiment":-0.0822054825472804,"traffic":15},"Ngong Ping":{"sentiment":-0.10062894160728196,"traffic":47},"Ngong Ping 360":{"sentiment":-0.10873611588834016,"traffic":38},"Ngong Ping Village":{"sentiment":-0.05376509392249827,"traffic":37},"Novotel":{"sentiment":-0.05070551220291848,"traffic":2},"Ocean Park":{"sentiment":-0.08522457663343277,"traffic":8},"Repulse Bay":{"sentiment":-0.06257977442862321,"traffic":3},"Sky 100":{"sentiment":-0.08981943312684004,"traffic":6},"Sneakers Street":{"sentiment":-0.0791881459827905,"traffic":2},"Tai Mo Shan":{"sentiment":-0.11391455441338574,"traffic":13},"Tai O":{"sentiment":-0.08267522524289722,"traffic":18},"Tai Po":{"sentiment":-0.05727738541476932,"traffic":27},"Ten Thousand Buddhas Monastery":{"sentiment":-0.13947091565230563,"traffic":4},"The Peak Tower":{"sentiment":-0.046220681147171656,"traffic":3},"The Peak Tram":{"sentiment":-0.04146091622590473,"traffic":12},"Tian Tan Buddha":{"sentiment":-0.07540154431613297,"traffic":55},"Tsim Sha Tsui":{"sentiment":-0.08978194562329635,"traffic":5},"Tsing Ma Bridge":{"sentiment":-0.031633301446870384,"traffic":8},"Tsz Shan Monastery":{"sentiment":-0.15089278325648933,"traffic":5},"Tung Chung":{"sentiment":-0.12920264777763393,"traffic":8},"Tung Chung Station":{"sentiment":-0.01846679615905447,"traffic":3},"Victoria Harbour":{"sentiment":-0.030776198811310496,"traffic":12},"Victoria Park":{"sentiment":-0.20495796323815602,"traffic":2},"Victoria Peak":{"sentiment":-0.06772938679162041,"traffic":19},"Yaumatei Tin Hau Temple":{"sentiment":-0.07384405755671652,"traffic":4}},"positive combinations":{"Avenue Of Stars":{"sentiment":0.028655742514888522,"traffic":3},"Chungking Mansions":{"sentiment":0.07446552625650962,"traffic":2},"Hong Kong International Airport":{"sentiment":0.03269155169867596,"traffic":30},"Hong Kong-Zhuhai-Macao Bridge":{"sentiment":0.019142707363888352,"traffic":7},"K11 MUSEA":{"sentiment":0.017674432617806803,"traffic":5},"Kowloon Park":{"sentiment":0.03519076679625599,"traffic":2},"LOUIS VUITTON":{"sentiment":0.09441855446815306,"traffic":2},"Mira Place":{"sentiment":0.029530129222711504,"traffic":2},"Mong Kok":{"sentiment":0.01654230018447882,"traffic":9},"Mong Kok Night Market":{"sentiment":0.07618450192486553,"traffic":2},"Mong Kok Station":{"sentiment":0.08019457027843004,"traffic":2},"Museum of Art":{"sentiment":0.018545730183858227,"traffic":7},"Ngong Ping Cable Car Station":{"sentiment":0.09202189282287031,"traffic":3},"Sha Tin Che Kung Temple":{"sentiment":0.05272369214566952,"traffic":2},"Temple St":{"sentiment":0.08035090466900524,"traffic":4},"The Peninsula":{"sentiment":0.03530689424292749,"traffic":2},"The Ritz-Carlton":{"sentiment":0.0016683370768489914,"traffic":2},"Tsuen Wan":{"sentiment":0.11682598225172951,"traffic":3},"Wong Tai Sin Temple":{"sentiment":0.06258034870643897,"traffic":2},"iSQUARE":{"sentiment":0.0006853331242795413,"traffic":2},"ifc mall":{"sentiment":0.06956078485194954,"traffic":3}}},"Tian Tan Buddha":{"negative combinations":{"Bakehouse (Wan Chai)":{"sentiment":-0.08868167388786499,"traffic":4},"Dragon\"s Back":{"sentiment":-0.0892683630729525,"traffic":2},"Hong Kong Disneyland":{"sentiment":-0.01977678414237446,"traffic":44},"Hong Kong Observation Wheel":{"sentiment":-0.053292585903247924,"traffic":9},"Kennedy Town":{"sentiment":-0.007539565212591637,"traffic":3},"Kowloon":{"sentiment":-0.019359200612478616,"traffic":4},"Lai King":{"sentiment":-0.1292825962997235,"traffic":2},"Lan Fong Yuen":{"sentiment":-0.02948382867132851,"traffic":2},"Lantau Island":{"sentiment":-0.06594323280389253,"traffic":89},"Nan Lian Garden":{"sentiment":-0.0447384674938195,"traffic":4},"Ngong Ping":{"sentiment":-0.04437471815356218,"traffic":61},"Ngong Ping 360":{"sentiment":-0.07106303587583783,"traffic":52},"Ngong Ping Village":{"sentiment":-0.012900322374693343,"traffic":43},"Novotel":{"sentiment":-0.018145855208621012,"traffic":2},"Po Lin Monastery":{"sentiment":-0.07540154431613297,"traffic":55},"Repulse Bay":{"sentiment":-0.0076860214211074696,"traffic":2},"Sky 100":{"sentiment":-0.0995925404015136,"traffic":6},"Tai Mo Shan":{"sentiment":-0.05941569980395905,"traffic":12},"Tai O":{"sentiment":-0.060876838627918005,"traffic":21},"Tai Po":{"sentiment":-0.03922711266033803,"traffic":20},"Tsing Yi":{"sentiment":-0.09092733838887913,"traffic":3},"Tsz Shan Monastery":{"sentiment":-0.07140143199117066,"traffic":6},"Tung Chung":{"sentiment":-0.08599469356971404,"traffic":8},"Victoria Park":{"sentiment":-0.177579363180679,"traffic":2}},"positive combinations":{"Avenue Of Stars":{"sentiment":0.02544487263115801,"traffic":6},"Causeway Bay":{"sentiment":0.043338662542760024,"traffic":3},"Central":{"sentiment":0.015295596302450523,"traffic":6},"Central-Mid-Levels Escalators":{"sentiment":0.28296566919191946,"traffic":2},"Cheung Chau":{"sentiment":0.221285673160173,"traffic":2},"Chungking Mansions":{"sentiment":0.12148914004391827,"traffic":3},"Citygate Outlets":{"sentiment":0.0330097493931794,"traffic":7},"Hong Kong Cultural Centre":{"sentiment":0.019909356861663386,"traffic":5},"Hong Kong International Airport":{"sentiment":0.07199284033945247,"traffic":30},"Hong Kong Science Museum":{"sentiment":0.07324898058101449,"traffic":3},"Hong Kong-Zhuhai-Macao Bridge":{"sentiment":0.06734678205164148,"traffic":11},"K11 MUSEA":{"sentiment":0.059534083891243685,"traffic":5},"Kowloon Park":{"sentiment":0.1684935410557187,"traffic":3},"Lamma Island":{"sentiment":0.03704748865181351,"traffic":3},"Man Mo Temple":{"sentiment":0.04616936026936069,"traffic":3},"Mong Kok":{"sentiment":0.05048494713672119,"traffic":6},"Mong Kok Night Market":{"sentiment":0.011607194737750251,"traffic":4},"Monster Building":{"sentiment":0.17499188534238097,"traffic":2},"Museum of Art":{"sentiment":0.10619307881684223,"traffic":4},"Ngong Ping Cable Car Station":{"sentiment":0.14934770862910973,"traffic":4},"Ocean Park":{"sentiment":0.030007273441823232,"traffic":9},"Ping Shan":{"sentiment":0.01931407888179702,"traffic":3},"Tai O Bakery":{"sentiment":0.1031604638578475,"traffic":2},"Temple St":{"sentiment":0.03238181352337066,"traffic":3},"Temple Street Night Market":{"sentiment":0.07919546582269302,"traffic":4},"The Peak Tower":{"sentiment":0.033179609005942814,"traffic":6},"The Peak Tram":{"sentiment":0.012809927541983157,"traffic":12},"The Peninsula":{"sentiment":0.1973801876008615,"traffic":2},"Tsim Sha Tsui":{"sentiment":0.09438439039390213,"traffic":8},"Tsing Ma Bridge":{"sentiment":0.01854560378377187,"traffic":7},"Tung Chung Station":{"sentiment":0.067155049707566,"traffic":4},"Victoria Harbour":{"sentiment":0.026499345335257444,"traffic":15},"Victoria Peak":{"sentiment":0.0006398964218819489,"traffic":29},"Wong Tai Sin Temple":{"sentiment":0.10759180303030305,"traffic":2}}},"Victoria Harbour":{"negative combinations":{"1881 Heritage":{"sentiment":-0.050626774655494984,"traffic":3},"Admiralty Station":{"sentiment":-0.027867890465330003,"traffic":2},"Adventureland":{"sentiment":-0.28297495513373644,"traffic":2},"Avenue Of Stars":{"sentiment":-0.08512061433724771,"traffic":28},"Bakehouse (Wan Chai)":{"sentiment":-0.10688664084958799,"traffic":6},"Causeway Bay":{"sentiment":-0.07540275731602016,"traffic":11},"Central":{"sentiment":-0.03602050887935575,"traffic":37},"Central Market":{"sentiment":-0.10449703447995423,"traffic":4},"Central-Mid-Levels Escalators":{"sentiment":-0.03915062701606798,"traffic":3},"Cheung Hing Kee Shanghai Pan Fried Buns":{"sentiment":-0.1291185437700702,"traffic":5},"Chi Lin Nunnery":{"sentiment":-0.07859885824866977,"traffic":4},"Choi Hung Estate":{"sentiment":-0.04626130615205754,"traffic":10},"Chungking Mansions":{"sentiment":-0.055111935764707666,"traffic":6},"DON DON DONKI ":{"sentiment":-0.09744711478189998,"traffic":3},"Dim Dim Sum":{"sentiment":-0.006181054948304325,"traffic":3},"Dorsett Wanchai":{"sentiment":-0.10930371359458146,"traffic":2},"Grand Plaza":{"sentiment":-0.11372643556078744,"traffic":2},"Hanoi Rd":{"sentiment":-0.03567287268549098,"traffic":2},"Harbour City":{"sentiment":-0.21977370259138018,"traffic":6},"Harbour Grand":{"sentiment":-0.01478401338818297,"traffic":2},"Hashtag B":{"sentiment":-0.12355919844306598,"traffic":2},"Hollywood Rd":{"sentiment":-0.09872500639947804,"traffic":2},"Hong Kong Convention and Exhibition Centre":{"sentiment":-0.03371906544643297,"traffic":6},"Hong Kong Cultural Centre":{"sentiment":-0.0613997482842088,"traffic":27},"Hong Kong Disneyland":{"sentiment":-0.10227367177000221,"traffic":91},"Hong Kong Island":{"sentiment":-0.1057647526364832,"traffic":6},"Hong Kong Observation Wheel":{"sentiment":-0.099172445829256,"traffic":17},"Hong Kong Palace Museum":{"sentiment":-0.07074101531871896,"traffic":2},"Hong Kong Park":{"sentiment":-0.10709760355857398,"traffic":5},"Hong Kong Science Museum":{"sentiment":-0.04419335533856913,"traffic":7},"Hong Kong Zoological and Botanical Gardens":{"sentiment":-0.07411042373950896,"traffic":2},"Hong Kong-Zhuhai-Macao Bridge":{"sentiment":-0.16598207095216697,"traffic":9},"Hopewell Centre":{"sentiment":-0.02413756823117344,"traffic":2},"Hung Hom Station":{"sentiment":-0.12502573402182543,"traffic":2},"Hyatt Centric":{"sentiment":-0.0276177094939136,"traffic":5},"Jordan":{"sentiment":-0.100809243006346,"traffic":2},"K11 MUSEA":{"sentiment":-0.05640500235313403,"traffic":34},"Kai Kai Dessert":{"sentiment":-0.13652836282216796,"traffic":2},"Kam Wah Cafe & Cake Shop":{"sentiment":-0.06470900157644152,"traffic":2},"Kam\"s Roast Goose":{"sentiment":-0.20681104692791463,"traffic":3},"Kennedy Town":{"sentiment":-0.11282811559682075,"traffic":5},"Kowloon Park":{"sentiment":-0.14902781539038734,"traffic":5},"LEGOLAND Discovery Centre":{"sentiment":-0.13143227571832714,"traffic":6},"Ladies\" Market":{"sentiment":-0.07496143417279874,"traffic":5},"Lai King":{"sentiment":-0.049603121001988965,"traffic":2},"Lamma Island":{"sentiment":-0.12100866764846846,"traffic":2},"Lan Fong Yuen":{"sentiment":-0.026723169853293705,"traffic":7},"Lan Kwai Fong":{"sentiment":-0.11256173425193461,"traffic":5},"Langham Place":{"sentiment":-0.03425441607026694,"traffic":2},"Lantau Island":{"sentiment":-0.06716461894596903,"traffic":25},"Lei Yue Mun":{"sentiment":-0.15400439716946043,"traffic":2},"M+":{"sentiment":-0.04066186778049078,"traffic":10},"MOMA":{"sentiment":-0.0919793499582175,"traffic":2},"Madame Tussauds":{"sentiment":-0.19858530793956564,"traffic":3},"Mak\"s Noodle":{"sentiment":-0.08070806140550096,"traffic":2},"Man Mo Temple":{"sentiment":-0.13826658987479024,"traffic":9},"Mon Kee Caf��":{"sentiment":-0.08111626915013695,"traffic":2},"Mong Kok":{"sentiment":-0.029150860341421194,"traffic":17},"Museum of Art":{"sentiment":-0.08238965191539771,"traffic":16},"Nan Lian Garden":{"sentiment":-0.06691955786163399,"traffic":9},"Nathan Rd":{"sentiment":-0.0919072041593787,"traffic":6},"Ngong Ping":{"sentiment":-0.028470953825760106,"traffic":19},"Ngong Ping 360":{"sentiment":-0.04733497655394647,"traffic":12},"North Point":{"sentiment":-0.009132861731160437,"traffic":4},"Ocean Park":{"sentiment":-0.05381015484552497,"traffic":9},"Pacific Place":{"sentiment":-0.16442977251573268,"traffic":4},"Po Lin Monastery":{"sentiment":-0.030776198811310496,"traffic":12},"Po Wah Commercial Centre":{"sentiment":-0.1915138247056926,"traffic":3},"Repulse Bay":{"sentiment":-0.18817301588360832,"traffic":3},"Sai Ying Pun":{"sentiment":-0.009744734758602977,"traffic":2},"Sha Tin Che Kung Temple":{"sentiment":-0.12073358697746475,"traffic":4},"Shangri-La":{"sentiment":-0.0720420158887785,"traffic":2},"Sheung Wan":{"sentiment":-0.03542006063642863,"traffic":3},"Sky 100":{"sentiment":-0.12032726042830341,"traffic":9},"Sneakers Street":{"sentiment":-0.041012719875337465,"traffic":6},"Star Ferry Pier":{"sentiment":-0.09691698342689946,"traffic":4},"Starbucks (Avenue of Stars)":{"sentiment":-0.006122252056119909,"traffic":2},"Sun Yat Sen Memorial Park":{"sentiment":-0.06409044573743847,"traffic":2},"Sunny Bay Station":{"sentiment":-0.2634427620346471,"traffic":3},"THE MATCHA TOKYO":{"sentiment":-0.22054871101060247,"traffic":2},"Tai Kwun":{"sentiment":-0.11181975889379914,"traffic":3},"Tai O":{"sentiment":-0.07853771659590152,"traffic":14},"Tai Po":{"sentiment":-0.038318901806283036,"traffic":5},"Temple St":{"sentiment":-0.031993928522991225,"traffic":9},"Temple Street Night Market":{"sentiment":-0.09911879031168765,"traffic":6},"The Hong Kong Tourism Board Kowloon Visitor Centre":{"sentiment":-0.06974773450820998,"traffic":2},"The Peak Tower":{"sentiment":-0.029206386118836677,"traffic":11},"The Peak Tram":{"sentiment":-0.04606537938242588,"traffic":26},"The Peninsula":{"sentiment":-0.1275249046088856,"traffic":25},"The Ritz-Carlton":{"sentiment":-0.05161872317933451,"traffic":4},"Times Square":{"sentiment":-0.12044121887361647,"traffic":2},"Toy Story Land":{"sentiment":-0.03856623581153304,"traffic":2},"Tsim Sha Tsui":{"sentiment":-0.046092495223386196,"traffic":36},"Tsim Sha Tsui Fire Station":{"sentiment":-0.03474818619974247,"traffic":2},"Tsim Sha Tsui Promenade":{"sentiment":-0.11902570443707253,"traffic":2},"Tsim Sha Tsui Station":{"sentiment":-0.03205025404339865,"traffic":5},"Tsing Ma Bridge":{"sentiment":-0.03949294025065465,"traffic":12},"Tsing Yi":{"sentiment":-0.14105298186552603,"traffic":2},"Tsuen Wan":{"sentiment":-0.18842424351612877,"traffic":3},"Tung Chung Station":{"sentiment":-0.08116922236651149,"traffic":2},"Victoria Dockside":{"sentiment":-0.023002912668655822,"traffic":3},"Victoria Park":{"sentiment":-0.35017585217551267,"traffic":3},"Victoria Peak":{"sentiment":-0.07544950318408519,"traffic":65},"West Kowloon":{"sentiment":-0.004828192820336488,"traffic":2},"West Kowloon Art Park":{"sentiment":-0.17105738003027976,"traffic":4},"West Kowloon Cultural District":{"sentiment":-0.13126377732007144,"traffic":2},"Wong Tai Sin":{"sentiment":-0.10670468419777546,"traffic":2},"Wong Tai Sin Temple":{"sentiment":-0.00045692816211407986,"traffic":9},"World of Frozen":{"sentiment":-0.04399166023011189,"traffic":2},"Yau Ma Tei":{"sentiment":-0.08852291589986179,"traffic":3},"iSQUARE":{"sentiment":-0.09462196227589073,"traffic":4},"ifc mall":{"sentiment":-0.05013638905283256,"traffic":10}},"positive combinations":{"Australia Dairy Company":{"sentiment":0.03169001037558929,"traffic":4},"Cheung Chau":{"sentiment":0.07664548832254847,"traffic":2},"Clock Tower":{"sentiment":0.0075043535355221935,"traffic":11},"Cross Harbour Tunl":{"sentiment":0.18774714354827554,"traffic":2},"Golden Bauhinia Square":{"sentiment":0.02177724158749103,"traffic":2},"Hong Kong International Airport":{"sentiment":0.008505205201265525,"traffic":86},"Hong Kong Macau Ferry Terminal":{"sentiment":0.012379740171352304,"traffic":5},"Hong Kong Museum of History":{"sentiment":0.03756704114172135,"traffic":3},"Jordan Station":{"sentiment":0.02451250687542438,"traffic":3},"K11 ARTMALL":{"sentiment":0.046152917983907485,"traffic":11},"Kowloon":{"sentiment":0.012151277912328867,"traffic":6},"Kowloon Public Pier":{"sentiment":0.04481099852663056,"traffic":2},"LOUIS VUITTON":{"sentiment":0.0989565327822301,"traffic":2},"Lin Heung Lau":{"sentiment":0.074330552874457,"traffic":2},"Ming Court Hotel":{"sentiment":0.06890216124072808,"traffic":3},"Mong Kok Station":{"sentiment":0.14572378009145576,"traffic":3},"Monster Building":{"sentiment":0.0009829940916260952,"traffic":11},"Ngong Ping Cable Car Station":{"sentiment":0.1163799155074992,"traffic":3},"Ngong Ping Village":{"sentiment":0.058420970024641514,"traffic":10},"Oasis Aurum 181 Hotel":{"sentiment":0.13803602882966054,"traffic":2},"Panda Hotel":{"sentiment":0.20879352987329655,"traffic":3},"SOGO":{"sentiment":0.05109696214238002,"traffic":3},"Shanghai St":{"sentiment":0.003012257747801547,"traffic":2},"Stone Slab Street":{"sentiment":0.026973664233473263,"traffic":4},"Tian Tan Buddha":{"sentiment":0.026499345335257444,"traffic":15},"Wan Chai":{"sentiment":0.00522677514295147,"traffic":9},"Yat Lok Restaurant":{"sentiment":0.04423110147015402,"traffic":2},"Yaumatei Tin Hau Temple":{"sentiment":0.02639070918142535,"traffic":3}}},"Victoria Peak":{"negative combinations":{"Avenue Of Stars":{"sentiment":-0.041335805729959006,"traffic":19},"Bakehouse (Wan Chai)":{"sentiment":-0.13144254891109025,"traffic":13},"Causeway Bay":{"sentiment":-0.07850586052623952,"traffic":13},"Central":{"sentiment":-0.03144244915442363,"traffic":47},"Central Market":{"sentiment":-0.07700543929113383,"traffic":6},"Central-Mid-Levels Escalators":{"sentiment":-0.006684389298660899,"traffic":9},"Cheung Hing Kee Shanghai Pan Fried Buns":{"sentiment":-0.03573226375021399,"traffic":2},"Chi Lin Nunnery":{"sentiment":-0.005671195216034236,"traffic":4},"Choi Hung Estate":{"sentiment":-0.00010472279164341208,"traffic":8},"Citygate Outlets":{"sentiment":-0.044056680530427536,"traffic":2},"Clock Tower":{"sentiment":-0.04260750189052561,"traffic":4},"Dragon\"s Back":{"sentiment":-0.1363658105531575,"traffic":2},"Duddell\"s":{"sentiment":-0.005487617309697962,"traffic":2},"Halfway Coffee":{"sentiment":-0.11625164545954685,"traffic":3},"Harbour City":{"sentiment":-0.17034458054357277,"traffic":7},"Harbour Plaza 8 Degrees":{"sentiment":-0.002121237031171022,"traffic":2},"Hashtag B":{"sentiment":-0.012041989604069492,"traffic":2},"Hollywood Rd":{"sentiment":-0.09750390518848599,"traffic":2},"Hong Kong Convention and Exhibition Centre":{"sentiment":-0.080252835071997,"traffic":4},"Hong Kong Cultural Centre":{"sentiment":-0.01511819966224936,"traffic":12},"Hong Kong Disneyland":{"sentiment":-0.09117737571349292,"traffic":102},"Hong Kong Fisherman\"s Wharf":{"sentiment":-0.020732999705079996,"traffic":2},"Hong Kong Island":{"sentiment":-0.005807738206382301,"traffic":9},"Hong Kong Observation Wheel":{"sentiment":-0.10482554886649778,"traffic":21},"Hong Kong Park":{"sentiment":-0.12947861534806202,"traffic":11},"Kennedy Town":{"sentiment":-0.022592676750284025,"traffic":3},"Kings Hotel":{"sentiment":-0.07401737921446,"traffic":2},"Kowloon Mosque And Islamic Centre":{"sentiment":-0.12251227869783751,"traffic":2},"Kowloon Park":{"sentiment":-0.02798397452417202,"traffic":4},"Kowloon Park Dr":{"sentiment":-0.018677141119221502,"traffic":2},"Kowloon Public Pier":{"sentiment":-0.06939617791575853,"traffic":2},"Lamma Island":{"sentiment":-0.13035805864350808,"traffic":8},"Lan Fong Yuen":{"sentiment":-0.011007613583649906,"traffic":9},"Lan Kwai Fong":{"sentiment":-0.05515845360824532,"traffic":9},"Lantau Island":{"sentiment":-0.07941417270590863,"traffic":43},"Lantau Peak":{"sentiment":-0.15156191184232554,"traffic":3},"Lee Tung Avenue":{"sentiment":-0.2582686115842405,"traffic":2},"Lin Heung Lau":{"sentiment":-0.050307137825413455,"traffic":3},"Lion Rock":{"sentiment":-0.027647687178100528,"traffic":3},"Lugard Rd":{"sentiment":-0.10894929165685602,"traffic":2},"M+":{"sentiment":-0.03527832599596878,"traffic":4},"Madame Tussauds":{"sentiment":-0.17730967592051378,"traffic":13},"Mak\"s Noodle":{"sentiment":-0.012955088599288997,"traffic":2},"Man Mo Temple":{"sentiment":-0.039728767708614256,"traffic":12},"May Rd":{"sentiment":-0.02376655288392751,"traffic":2},"Mon Kee Caf��":{"sentiment":-0.012612815722396031,"traffic":2},"Mong Kok":{"sentiment":-0.03775906454756442,"traffic":16},"Museum of Art":{"sentiment":-0.04054049951347168,"traffic":12},"Nan Lian Garden":{"sentiment":-0.11095622399141407,"traffic":10},"New Praya":{"sentiment":-0.13247919240127265,"traffic":2},"Ngong Ping":{"sentiment":-0.06407770015065718,"traffic":35},"Ngong Ping 360":{"sentiment":-0.0724439318565437,"traffic":31},"Ngong Ping Village":{"sentiment":-0.013758605052311274,"traffic":18},"Ocean Park":{"sentiment":-0.0031603982809088834,"traffic":17},"Old Hong Kong":{"sentiment":-0.1509470367492365,"traffic":3},"Pacific Place":{"sentiment":-0.301928577807533,"traffic":2},"Po Lin Monastery":{"sentiment":-0.06772938679162041,"traffic":19},"Quarry Bay":{"sentiment":-0.023379383182713487,"traffic":2},"Repulse Bay":{"sentiment":-0.049587273363653504,"traffic":6},"SOGO":{"sentiment":-0.028856218532742058,"traffic":6},"Shau Kei Wan":{"sentiment":-0.024207568960856476,"traffic":2},"Sky 100":{"sentiment":-0.08329443799796465,"traffic":28},"St John\"s Cathedral":{"sentiment":-0.07290976016684064,"traffic":3},"Stone Slab Street":{"sentiment":-0.02935893850484203,"traffic":2},"Tai Kwun":{"sentiment":-0.05097307705907981,"traffic":6},"Tai Mo Shan":{"sentiment":-0.07779418723072754,"traffic":18},"Tai O":{"sentiment":-0.036395623660638594,"traffic":18},"Tai Po":{"sentiment":-0.024427689985333813,"traffic":17},"Tai Tam":{"sentiment":-0.268795358873689,"traffic":2},"Tai Tam Reservoir":{"sentiment":-0.0579856692944987,"traffic":5},"The Peak Galleria":{"sentiment":-0.05748643404851413,"traffic":3},"The Peak Tower":{"sentiment":-0.07370741304669222,"traffic":38},"The Peak Tram":{"sentiment":-0.05252394467360827,"traffic":102},"The Peninsula":{"sentiment":-0.16779384644268786,"traffic":10},"The Ritz-Carlton":{"sentiment":-0.056235559548034574,"traffic":5},"Tsim Sha Tsui Promenade":{"sentiment":-0.11868705564913595,"traffic":3},"Tsim Sha Tsui Station":{"sentiment":-0.07876156694637049,"traffic":4},"Tsing Ma Bridge":{"sentiment":-0.037563432888569316,"traffic":19},"Victoria Harbour":{"sentiment":-0.07544950318408519,"traffic":65},"Villepin":{"sentiment":-0.3237274533882536,"traffic":2},"Vission Bakery":{"sentiment":-0.14599340615048664,"traffic":3},"Wan Chai":{"sentiment":-0.05370315831119475,"traffic":7},"West Kowloon Art Park":{"sentiment":-0.06921912942331504,"traffic":3},"West Kowloon Cultural District":{"sentiment":-0.06647034373360047,"traffic":2},"Yaumatei Tin Hau Temple":{"sentiment":-0.026979527867024344,"traffic":3},"iSQUARE":{"sentiment":-0.027183728475029804,"traffic":7},"ifc mall":{"sentiment":-0.01543946516103339,"traffic":5}},"positive combinations":{"AsiaWorld-Expo":{"sentiment":0.14016677582802886,"traffic":3},"Australia Dairy Company":{"sentiment":0.005047247573755506,"traffic":2},"Barker Rd":{"sentiment":0.118189664436334,"traffic":2},"Big Wave Bay Beach":{"sentiment":0.06512444106203805,"traffic":2},"Braemar Hill":{"sentiment":0.09733071587140073,"traffic":3},"Central Ferry Pier":{"sentiment":0.1095703254237383,"traffic":3},"Cheung Kong Center":{"sentiment":0.09270664093206052,"traffic":2},"Grand Plaza":{"sentiment":0.006643248025684029,"traffic":2},"Hong Kong International Airport":{"sentiment":0.0622439501835495,"traffic":70},"Hong Kong Macau Ferry Terminal":{"sentiment":0.04796493460762152,"traffic":2},"Hong Kong Museum of History":{"sentiment":0.1387464898331591,"traffic":4},"Hong Kong Palace Museum":{"sentiment":0.04244454245075849,"traffic":2},"Hong Kong Railway Museum":{"sentiment":0.05771419826240432,"traffic":3},"Hong Kong Science Museum":{"sentiment":0.012552504598520082,"traffic":5},"Hong Kong-Zhuhai-Macao Bridge":{"sentiment":0.16908604495842247,"traffic":2},"K11 ARTMALL":{"sentiment":0.022118431288570495,"traffic":4},"K11 MUSEA":{"sentiment":0.023647216474694283,"traffic":20},"Kam Wah Cafe & Cake Shop":{"sentiment":0.026861039152887012,"traffic":2},"Kennedy Rd":{"sentiment":0.035133997573713494,"traffic":4},"King\"s Rd":{"sentiment":0.07189421283785397,"traffic":2},"Kowloon":{"sentiment":0.02820499359505917,"traffic":5},"LOUIS VUITTON":{"sentiment":0.11454435313365209,"traffic":2},"Ladies\" Market":{"sentiment":0.006861443531703576,"traffic":5},"MacLehose Trail":{"sentiment":0.0969452831232025,"traffic":2},"Macdonnell Rd":{"sentiment":0.111403724681644,"traffic":2},"Mong Kok Station":{"sentiment":0.07137141059691932,"traffic":4},"Monster Building":{"sentiment":0.10638546512288147,"traffic":8},"Nathan Rd":{"sentiment":0.010277649685704007,"traffic":2},"Ngong Ping Cable Car Station":{"sentiment":0.10406661970328951,"traffic":3},"Prince\"s Building":{"sentiment":0.18506788233685398,"traffic":3},"Sneakers Street":{"sentiment":0.000547040022837351,"traffic":3},"Tai Ping Shan":{"sentiment":0.060873010395930016,"traffic":2},"Temple St":{"sentiment":0.014457487801417904,"traffic":9},"Temple Street Night Market":{"sentiment":0.007174934227791835,"traffic":6},"Tian Tan Buddha":{"sentiment":0.0006398964218819489,"traffic":29},"Times Square":{"sentiment":0.113451219169391,"traffic":3},"Tsim Sha Tsui":{"sentiment":0.009021151481049925,"traffic":24},"Tsz Shan Monastery":{"sentiment":0.0858317048869226,"traffic":3},"Tung Chung":{"sentiment":0.01649926622343631,"traffic":3},"Wong Tai Sin Temple":{"sentiment":0.012205083962917307,"traffic":10},"Yat Lok Restaurant":{"sentiment":0.010557128102055191,"traffic":5},"Yau Ma Tei":{"sentiment":0.039793619750343484,"traffic":2}}}}
+            
+            
+            // {
+            //     "Victoria Peak": {
+            //         "positive combinations": {
+            //             "Hong Kong Disneyland": { "sentiment": 0.091 },
+            //             "Ocean Park": { "sentiment": 0.078 },
+            //             "Tsim Sha Tsui": { "sentiment": 0.065 },
+            //             "Lantau Island": { "sentiment": 0.059 },
+            //             "Central": { "sentiment": 0.052 }
+            //         },
+            //         "negative combinations": {
+            //             "Wan Chai": { "sentiment": -0.043 },
+            //             "Kowloon": { "sentiment": -0.037 },
+            //             "Mong Kok": { "sentiment": -0.032 },
+            //             "Causeway Bay": { "sentiment": -0.028 },
+            //             "Sheung Wan": { "sentiment": -0.024 }
+            //         }
+            //     },
+            //     "Hong Kong Disneyland": {
+            //         "positive combinations": {
+            //             "Victoria Peak": { "sentiment": 0.082 },
+            //             "Ocean Park": { "sentiment": 0.071 },
+            //             "Lantau Island": { "sentiment": 0.063 },
+            //             "Tsim Sha Tsui": { "sentiment": 0.055 },
+            //             "Central": { "sentiment": 0.048 }
+            //         },
+            //         "negative combinations": {
+            //             "Wan Chai": { "sentiment": -0.039 },
+            //             "Mong Kok": { "sentiment": -0.034 },
+            //             "Kowloon": { "sentiment": -0.029 },
+            //             "Sheung Wan": { "sentiment": -0.025 },
+            //             "Causeway Bay": { "sentiment": -0.021 }
+            //         }
+            //     }
+            // }
+            ;
+        }
+    </script>
+</body>
+</html>
