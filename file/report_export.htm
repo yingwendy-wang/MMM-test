@@ -1,0 +1,2435 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Location Report</title>
+
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" />
+
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --surface:#ffffff;
+      --surface-2:#f8fbff;
+      --surface-3:#f3f8ff;
+      --line:#e3ebf5;
+      --line-strong:#d4dfed;
+      --text:#102235;
+      --muted:#617287;
+      --primary:#2952cc;
+      --primary-2:#3a66ea;
+      --primary-soft:#eaf1ff;
+      --teal:#0f8b8d;
+      --amber:#d88a0a;
+      --violet:#7759d7;
+      --shadow:0 18px 42px rgba(16,34,53,.08);
+      --shadow-soft:0 10px 22px rgba(16,34,53,.06);
+      --radius-xl:24px;
+      --radius-lg:18px;
+      --radius-md:14px;
+      --chart-h:376px;
+      --page-w:1460px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(41,82,204,.08), transparent 25%),
+        radial-gradient(circle at top right, rgba(15,139,141,.06), transparent 22%),
+        linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
+    }
+    .page{
+      max-width:var(--page-w);
+      margin:0 auto;
+      padding:28px;
+      position:relative;
+      z-index:1;
+    }
+    .hero{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.82);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-soft);
+      color:var(--primary);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .hero h1{
+      margin:0;
+      font-size:36px;
+      line-height:1.04;
+      letter-spacing:-.04em;
+    }
+    .hero-sub{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.72;
+      max-width:780px;
+    }
+    .hero-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      border:0;
+      border-radius:14px;
+      padding:12px 16px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:var(--shadow-soft);
+      transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+    }
+    button:hover{transform:translateY(-1px)}
+    button.primary{
+      background:linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+      color:#fff;
+    }
+    button.secondary{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .export-menu-wrap{position:relative}
+    .export-menu{
+      position:absolute;
+      top:calc(100% + 8px);
+      right:0;
+      min-width:176px;
+      padding:8px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 16px 40px rgba(16,34,53,.12);
+      z-index:12000;
+    }
+    .export-menu.hidden{display:none}
+    .export-menu .menu-label{
+      padding:8px 10px 6px;
+      color:var(--muted);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:800;
+    }
+    .export-menu button{
+      width:100%;
+      box-shadow:none;
+      text-align:left;
+      background:#fff;
+      color:var(--text);
+      border:1px solid transparent;
+      padding:10px 12px;
+    }
+    .export-menu button:hover{
+      background:var(--surface-2);
+      border-color:var(--line);
+      transform:none;
+    }
+
+    .toolbar,
+    .section-card,
+    .focal-panel,
+    .panel,
+    .viz-card,
+    .movement-card{
+      background:rgba(255,255,255,.9);
+      border:1px solid rgba(227,235,245,.92);
+      box-shadow:var(--shadow);
+      border-radius:var(--radius-xl);
+      backdrop-filter: blur(10px);
+    }
+
+    .toolbar{
+      position:relative;
+      z-index:20;
+      padding:18px;
+      margin-bottom:18px;
+    }
+    .toolbar-grid{
+      display:grid;
+      grid-template-columns:1.05fr 1.45fr .75fr .75fr;
+      gap:14px;
+      align-items:start;
+    }
+    .field{display:flex;flex-direction:column;gap:8px;min-width:0}
+    .field label{
+      font-size:13px;
+      font-weight:800;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    input[type="date"]{
+      width:100%;
+      min-height:48px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 14px;
+      background:#fff;
+      color:var(--text);
+      outline:none;
+      font-size:15px;
+    }
+    input[type="date"]:focus{
+      border-color:#a8bcff;
+      box-shadow:0 0 0 4px rgba(41,82,204,.10);
+    }
+
+    .ts-wrapper.single .ts-control,
+    .ts-wrapper.multi .ts-control{
+      min-height:48px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      box-shadow:none;
+      padding:9px 12px;
+      font-size:15px;
+    }
+    .ts-wrapper .ts-control{
+      background:#fff;
+    }
+    .ts-wrapper.focus .ts-control{
+      border-color:#a8bcff;
+      box-shadow:0 0 0 4px rgba(41,82,204,.10);
+    }
+    .ts-wrapper.multi .ts-control > div{
+      background:var(--primary-soft);
+      color:var(--primary);
+      border-radius:999px;
+      border:1px solid #d8e5ff;
+      padding:5px 10px;
+      font-size:13px;
+      font-weight:700;
+      margin:2px 6px 2px 0;
+    }
+    .ts-wrapper .item .remove{
+      border-left:0 !important;
+      margin-left:6px;
+      padding-left:4px !important;
+      color:var(--primary) !important;
+      opacity:.8;
+    }
+    .ts-control input{
+      font-size:15px !important;
+    }
+    .ts-dropdown{
+      margin-top:8px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 18px 42px rgba(16,34,53,.12);
+      overflow:hidden;
+      z-index:14000 !important;
+    }
+    .ts-dropdown .option{
+      padding:11px 12px;
+      font-size:15px;
+      text-align:left;
+      color:var(--text);
+    }
+    .ts-dropdown .active{
+      background:#f4f8ff;
+      color:var(--primary);
+    }
+
+    .helper-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:14px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      padding:8px 11px;
+      background:var(--surface-2);
+      border:1px solid var(--line);
+      color:#304154;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .section-card{
+      padding:20px;
+      margin-bottom:18px;
+      position:relative;
+      z-index:1;
+      overflow:visible;
+    }
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+    .section-title-row{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .icon-badge{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, #edf3ff 0%, #f8fbff 100%);
+      border:1px solid #dae6ff;
+      color:var(--primary);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+      flex:0 0 auto;
+    }
+    .icon-badge svg{
+      width:20px;height:20px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .section-head h2{
+      margin:0;
+      font-size:25px;
+      letter-spacing:-.03em;
+      line-height:1.08;
+    }
+
+    .info-tip{
+      position:relative;
+      display:inline-flex;
+      width:22px;height:22px;
+      border-radius:999px;
+      align-items:center;justify-content:center;
+      font-size:12px;
+      font-weight:800;
+      color:var(--primary);
+      background:var(--primary-soft);
+      border:1px solid #d8e5ff;
+      cursor:help;
+      flex:0 0 auto;
+      overflow:visible;
+    }
+    .info-tip::after{
+      content:attr(data-tip);
+      position:absolute;
+      left:calc(100% + 10px);
+      top:50%;
+      transform:translateY(-50%);
+      width:min(320px, 70vw);
+      padding:10px 12px;
+      border-radius:12px;
+      background:#142132;
+      color:#fff;
+      font-size:12px;
+      line-height:1.6;
+      font-weight:600;
+      opacity:0;
+      pointer-events:none;
+      box-shadow:0 18px 36px rgba(0,0,0,.18);
+      transition:opacity .15s ease;
+      z-index:16000;
+      text-align:left;
+    }
+    .info-tip::before{
+      content:"";
+      position:absolute;
+      left:100%;
+      top:50%;
+      transform:translateY(-50%);
+      border:7px solid transparent;
+      border-right-color:#142132;
+      opacity:0;
+      transition:opacity .15s ease;
+      z-index:16001;
+    }
+    .info-tip:hover::after,
+    .info-tip:focus-visible::after,
+    .info-tip:hover::before,
+    .info-tip:focus-visible::before{opacity:1}
+
+    .summary-layout{
+      display:grid;
+      grid-template-columns:390px 1fr;
+      gap:18px;
+    }
+    .focal-panel{
+      padding:18px;
+      background:
+        radial-gradient(circle at top right, rgba(41,82,204,.08), transparent 34%),
+        linear-gradient(180deg, #f7fbff 0%, #ffffff 100%);
+    }
+    .focal-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      margin-bottom:14px;
+    }
+    .focal-name{
+      margin:0;
+      font-size:30px;
+      letter-spacing:-.03em;
+      line-height:1.04;
+    }
+    .focal-sub{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.7;
+    }
+    .focal-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 11px;
+      border-radius:999px;
+      background:var(--primary-soft);
+      color:var(--primary);
+      border:1px solid #d8e5ff;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .meta-grid{display:grid;gap:10px;margin-top:14px}
+    .meta-item{
+      border:1px solid #e8eef7;
+      border-radius:16px;
+      padding:13px 14px;
+      background:rgba(255,255,255,.84);
+    }
+    .meta-label{
+      display:block;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      font-weight:800;
+      margin-bottom:5px;
+    }
+    .meta-value{
+      font-size:15px;
+      line-height:1.76;
+      color:var(--text);
+    }
+
+    .tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--primary);
+      font-weight:700;
+      font-size:12px;
+    }
+
+    .panel{
+      padding:18px;
+      background:
+        radial-gradient(circle at top left, rgba(15,139,141,.06), transparent 26%),
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+    .panel-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .panel-head h3{
+      margin:0;
+      font-size:19px;
+      letter-spacing:-.02em;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .metric-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .metric-card{
+      border:1px solid #e8eef7;
+      border-radius:18px;
+      padding:15px;
+      background:linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+      min-height:118px;
+    }
+    .metric-head{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .metric-icon{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--primary);
+      background:var(--primary-soft);
+      border:1px solid #d8e5ff;
+      flex:0 0 auto;
+    }
+    .metric-icon svg{
+      width:16px;height:16px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .metric-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      line-height:1.5;
+    }
+    .metric-value{
+      font-size:30px;
+      line-height:1;
+      letter-spacing:-.04em;
+      font-weight:800;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid #e8eef7;
+      border-radius:18px;
+      background:#fff;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:15px;
+      min-width:680px;
+    }
+    th,td{
+      padding:12px 12px;
+      border-bottom:1px solid #edf2f8;
+      text-align:left;
+      vertical-align:top;
+    }
+    th{
+      background:#f8fbff;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    tr.focal-row td{
+      background:#eef4ff;
+      font-weight:700;
+    }
+    .name-cell{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .swatch{
+      width:11px;height:11px;border-radius:999px;flex:0 0 auto;
+      border:2px solid rgba(255,255,255,.92);
+      box-shadow:0 0 0 1px rgba(148,163,184,.3);
+    }
+
+    .insight-banner{
+      margin-top:12px;
+      border-radius:16px;
+      padding:14px 16px;
+      background:linear-gradient(180deg, #f8fbff 0%, #f4f8ff 100%);
+      border:1px solid #e1ebff;
+      color:#27384c;
+      font-size:14px;
+      line-height:1.82;
+    }
+
+    .viz-stack{display:grid;gap:16px}
+    .viz-grid-2{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .viz-card,
+    .movement-card{
+      overflow:visible;
+      background:
+        radial-gradient(circle at top right, rgba(117,89,215,.05), transparent 24%),
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      box-shadow:var(--shadow-soft);
+      border-radius:22px;
+    }
+    .viz-top{
+      padding:16px 18px 10px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+    .viz-kicker{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:4px;
+    }
+    .viz-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .viz-title h3{
+      margin:0;
+      font-size:19px;
+      letter-spacing:-.02em;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .chart-wrap{
+      padding:0 12px 6px;
+    }
+    .chart-shell{
+      border:1px solid #edf2f7;
+      border-radius:18px;
+      background:linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+      min-height:var(--chart-h);
+      overflow:hidden;
+    }
+    .chart{width:100%;height:var(--chart-h)}
+
+    .viz-insight{
+      padding:14px 18px 18px;
+      border-top:1px solid #edf2f7;
+      background:linear-gradient(180deg, #fafcff 0%, #f8fbff 100%);
+    }
+    .viz-insight .text{
+      font-size:15px;
+      line-height:1.84;
+      color:#27384c;
+      white-space:pre-line;
+    }
+
+    .hidden{display:none !important}
+
+    #exportRenderHost{
+      position:fixed;
+      left:-10000px;
+      top:0;
+      width:1120px;
+      z-index:-1;
+    }
+    .export-page{
+      width:1120px;
+      min-height:1580px;
+      background:#ffffff;
+      color:#000000;
+      padding:64px 58px 56px;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      box-sizing:border-box;
+    }
+    .export-title{
+      font-size:42px;
+      line-height:1.08;
+      letter-spacing:-.04em;
+      margin:0;
+      color:#000000;
+    }
+    .export-sub{
+      font-size:18px;
+      line-height:1.76;
+      color:#111111;
+    }
+    .export-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:18px;
+    }
+    .export-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 13px;
+      border-radius:999px;
+      background:#f6f9ff;
+      border:1px solid #dfe9f8;
+      color:#000000;
+      font-size:16px;
+      font-weight:700;
+    }
+    .export-center{
+      min-height:1350px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      gap:18px;
+    }
+    .export-cover-title{
+      font-size:54px;
+      line-height:1.05;
+      letter-spacing:-.05em;
+      margin:0;
+      max-width:860px;
+      color:#000000;
+    }
+    .export-cover-meta{
+      display:grid;
+      gap:12px;
+      margin-top:10px;
+      min-width:580px;
+      max-width:760px;
+    }
+    .export-cover-row{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      padding:16px 20px;
+      border-radius:18px;
+      background:#f8fbff;
+      border:1px solid #e3ebf5;
+      font-size:18px;
+      color:#000000;
+    }
+    .export-cover-row .k{
+      color:#111111;
+      font-weight:800;
+      letter-spacing:.03em;
+      text-transform:uppercase;
+      font-size:13px;
+    }
+    .export-grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:24px;
+      align-items:start;
+    }
+    .export-box{
+      border:1px solid #e3ebf5;
+      border-radius:22px;
+      background:#fff;
+      padding:20px;
+    }
+    .export-box.soft{
+      background:#f8fbff;
+    }
+    .export-box h2, .export-box h3{
+      margin:0 0 12px;
+      font-size:25px;
+      letter-spacing:-.03em;
+      color:#102235;
+    }
+    .export-box h3{font-size:20px}
+    .export-list{
+      display:grid;
+      gap:14px;
+      margin-top:8px;
+    }
+    .export-item{
+      border:1px solid #e7eef8;
+      border-radius:18px;
+      padding:16px 18px;
+      background:#fff;
+    }
+    .export-item .k{
+      font-size:13px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.07em;
+      color:#111111;
+      margin-bottom:8px;
+    }
+    .export-item .v{
+      font-size:19px;
+      line-height:1.8;
+      color:#000000;
+    }
+    .export-metrics{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-top:18px;
+      margin-bottom:18px;
+    }
+    .export-metric{
+      border:1px solid #e4ecf6;
+      border-radius:18px;
+      padding:16px;
+      background:#f9fbff;
+    }
+    .export-metric .k{
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.07em;
+      color:#111111;
+      font-weight:800;
+      margin-bottom:10px;
+      line-height:1.5;
+    }
+    .export-metric .v{
+      font-size:36px;
+      line-height:1;
+      font-weight:800;
+      color:#000000;
+    }
+    .export-table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:18px;
+      font-size:16px;
+    }
+    .export-table th,.export-table td{
+      border:1px solid #e5edf7;
+      padding:12px;
+      text-align:left;
+      vertical-align:top;
+      color:#102235;
+    }
+    .export-table th{
+      background:#f8fbff;
+      color:#111111;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .export-table tr.focal td{
+      background:#eef4ff;
+      font-weight:700;
+    }
+    .export-subhead{
+      margin:10px 0 12px;
+      font-size:18px;
+      line-height:1.3;
+      font-weight:800;
+      color:#000000;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .export-chart-img{
+      width:100%;
+      border-radius:18px;
+      display:block;
+      border:1px solid #e4ecf6;
+    }
+    .export-insight{
+      margin-top:16px;
+      font-size:18px;
+      line-height:1.78;
+      color:#000000;
+    }
+    .export-insight strong{
+      font-weight:800;
+      color:#000000;
+    }
+
+    @media (max-width:1200px){
+      .toolbar-grid{grid-template-columns:1fr 1fr}
+      .summary-layout{grid-template-columns:1fr}
+      .viz-grid-2{grid-template-columns:1fr}
+      .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:760px){
+      .page{padding:16px}
+      .metric-grid{grid-template-columns:1fr}
+      .toolbar-grid{grid-template-columns:1fr}
+      .hero h1{font-size:30px}
+      .focal-name{font-size:26px}
+      .section-head h2{font-size:22px}
+      .viz-title h3,.panel-head h3{font-size:18px}
+      .chart{height:330px}
+      .chart-shell{min-height:330px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page" id="reportRoot">
+    <header class="hero no-export">
+      <div>
+        <h1>Location Report</h1>
+        <div class="hero-sub" id="heroSubline">Comparative report for location performance, experience, and movement across the selected date range.</div>
+      </div>
+
+      <div class="hero-actions">
+        <div class="export-menu-wrap" id="exportMenuWrap">
+          <button id="exportReportBtn" class="primary">Export Report ▾</button>
+          <div id="exportMenu" class="export-menu hidden">
+            <div class="menu-label">Choose format</div>
+            <button id="choosePdfBtn" type="button">PDF</button>
+            <button id="choosePptBtn" type="button">PowerPoint</button>
+          </div>
+        </div>
+        <button id="resetBtn" class="secondary">Reset filters</button>
+      </div>
+    </header>
+
+    <section class="toolbar no-export">
+      <div class="toolbar-grid">
+        <div class="field">
+          <label for="focalLocationSelect">Focal Location</label>
+          <select id="focalLocationSelect" placeholder="Type location name"></select>
+        </div>
+
+        <div class="field">
+          <label for="compareLocationSelect">Compare Locations (up to 3)</label>
+          <select id="compareLocationSelect" multiple placeholder="Type location name"></select>
+        </div>
+
+        <div class="field">
+          <label for="startDateInput">Start Date</label>
+          <input id="startDateInput" type="date" />
+        </div>
+
+        <div class="field">
+          <label for="endDateInput">End Date</label>
+          <input id="endDateInput" type="date" />
+        </div>
+      </div>
+      <div class="helper-row" id="filterPills"></div>
+    </section>
+
+    <section class="section-card" id="summarySection">
+      <div class="section-head">
+        <div class="section-title-row">
+          <span class="icon-badge">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/><circle cx="18" cy="18" r="2"/></svg>
+          </span>
+          <h2>Summary</h2>
+          <span class="info-tip" tabindex="0" data-tip="This section presents the focal location profile, focal summary metrics, and a comparison table for the selected locations.">i</span>
+        </div>
+      </div>
+
+      <div class="summary-layout">
+        <div class="focal-panel">
+          <div class="focal-head">
+            <div>
+              <h3 class="focal-name" id="metaName">-</h3>
+              <!--<div class="focal-sub" id="metaSub">-</div>-->
+            </div>
+            <div class="focal-badge">Focal Location</div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Category</span>
+              <div class="meta-value" id="metaCategory">-</div>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Description</span>
+              <div class="meta-value" id="metaDescription">-</div>
+            </div>
+            <!--<div class="meta-item">-->
+            <!--  <span class="meta-label">Tags</span>-->
+            <!--  <div class="meta-value" id="metaTagsInline">-</div>-->
+            <!--</div>-->
+          </div>
+
+          <div class="tag-row" id="metaTags"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Summary Metrics</h3>
+          </div>
+
+          <div class="metric-grid" id="summaryMetricGrid"></div>
+
+          <div class="panel-head" style="margin-top:6px;">
+            <h3>Comparative Table</h3>
+            <div class="muted" id="comparisonMeta">-</div>
+          </div>
+
+          <div class="table-wrap">
+            <table id="summaryMetricsTable"></table>
+          </div>
+
+          <div class="insight-banner" id="summaryInsight">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="visitSection">
+      <div class="section-head">
+        <div class="section-title-row">
+          <span class="icon-badge">
+            <svg viewBox="0 0 24 24"><path d="M4 18V8"/><path d="M10 18V5"/><path d="M16 18v-7"/><path d="M22 18v-9"/></svg>
+          </span>
+          <h2>Visit Analysis</h2>
+          <span class="info-tip" tabindex="0" data-tip="The focal location is shown with a stronger visual treatment, while comparison locations use lighter dashed styling.">i</span>
+        </div>
+      </div>
+
+      <div class="viz-stack">
+        <div class="viz-card">
+          <div class="viz-top">
+            <div>
+              <div class="viz-kicker">Trend</div>
+              <div class="viz-title">
+                <h3>Visit Trend</h3>
+                <span class="info-tip" tabindex="0" data-tip="Monthly visit volume within the selected date range.">i</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-shell"><div class="chart" id="visitTrendChart"></div></div>
+          </div>
+          <div class="viz-insight">
+            <div class="text" id="visitTrendInsight">-</div>
+          </div>
+        </div>
+
+        <div class="viz-card">
+          <div class="viz-top">
+            <div>
+              <div class="viz-kicker">Structure</div>
+              <div class="viz-title">
+                <h3>Source Market</h3>
+                <span class="info-tip" tabindex="0" data-tip="Markets are sorted by focal location volume from highest to lowest.">i</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-shell"><div class="chart" id="sourceMarketChart"></div></div>
+          </div>
+          <div class="viz-insight">
+            <div class="text" id="sourceMarketInsight">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="experienceSection">
+      <div class="section-head">
+        <div class="section-title-row">
+          <span class="icon-badge">
+            <svg viewBox="0 0 24 24"><path d="M4 15c2-6 4-9 8-9s6 3 8 9"/><path d="M6 18h12"/></svg>
+          </span>
+          <h2>Experience Analysis</h2>
+          <span class="info-tip" tabindex="0" data-tip="Experience is represented by average sentiment over time.">i</span>
+        </div>
+      </div>
+
+      <div class="viz-card">
+        <div class="viz-top">
+          <div>
+            <div class="viz-kicker">Experience</div>
+            <div class="viz-title">
+              <h3>Experience Trend</h3>
+              <span class="info-tip" tabindex="0" data-tip="Monthly average sentiment for the selected locations.">i</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-shell"><div class="chart" id="experienceChart"></div></div>
+        </div>
+        <div class="viz-insight">
+          <div class="text" id="experienceInsight">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="movementSection">
+      <div class="section-head">
+        <div class="section-title-row">
+          <span class="icon-badge">
+            <svg viewBox="0 0 24 24"><path d="M6 7h12"/><path d="M14 3l4 4-4 4"/><path d="M18 17H6"/><path d="M10 13l-4 4 4 4"/></svg>
+          </span>
+          <h2>Movement Analysis</h2>
+          <span class="info-tip" tabindex="0" data-tip="Movement charts compare the leading inbound and outbound connected locations.">i</span>
+        </div>
+      </div>
+
+      <div class="viz-grid-2">
+        <div class="movement-card">
+          <div class="viz-top">
+            <div>
+              <div class="viz-kicker">Inbound</div>
+              <div class="viz-title">
+                <h3>Top 5 Inbound Locations</h3>
+                <span class="info-tip" tabindex="0" data-tip="Leading inbound connected locations.">i</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-shell"><div class="chart" id="movementFromChart"></div></div>
+          </div>
+          <div class="viz-insight">
+            <div class="text" id="movementFromInsight">-</div>
+          </div>
+        </div>
+
+        <div class="movement-card">
+          <div class="viz-top">
+            <div>
+              <div class="viz-kicker">Outbound</div>
+              <div class="viz-title">
+                <h3>Top 5 Outbound Locations</h3>
+                <span class="info-tip" tabindex="0" data-tip="Leading outbound connected locations.">i</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-shell"><div class="chart" id="movementToChart"></div></div>
+          </div>
+          <div class="viz-insight">
+            <div class="text" id="movementToInsight">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="exportRenderHost" aria-hidden="true"></div>
+
+  <script>
+    const LOCATION_METADATA_CSV_URL = 'https://raw.githubusercontent.com/yingwendy-wang/MMM-test/refs/heads/main/data/data_location_metadata_20260330.csv';
+    const MAIN_CSV_URL = 'https://raw.githubusercontent.com/yingwendy-wang/MMM-test/refs/heads/main/data/data_main_20260330.csv';
+    const MOVEMENT_CSV_URL = 'https://raw.githubusercontent.com/yingwendy-wang/MMM-test/refs/heads/main/data/data_movement_20260330.csv';
+
+    function toISODate(dateObj){
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth()+1).padStart(2,'0');
+      const d = String(dateObj.getDate()).padStart(2,'0');
+      return `${y}-${m}-${d}`;
+    }
+
+    const state = {
+      locationMetadata: [],
+      mainData: [],
+      movementData: [],
+      focalPoi: null,
+      compareSelections: [],
+      dateMin: null,
+      dateMax: null,
+      focalSelect: null,
+      compareSelect: null,
+      latestMetrics: [],
+      latestSummaryMetrics: null
+    };
+
+    const palette = ['#2952cc', '#0f8b8d', '#d88a0a', '#7759d7'];
+    const lightPalette = ['#2952cc', '#55a7a9', '#ebb24f', '#9d87e9'];
+
+    function parseCSV(url){
+      return new Promise((resolve, reject) => {
+        Papa.parse(url, {
+          download: true,
+          header: true,
+          skipEmptyLines: true,
+          complete: results => resolve(results.data),
+          error: err => reject(err)
+        });
+      });
+    }
+
+    async function loadData(){
+      try{
+
+        const [locationMetadata, mainData, movementData] = await Promise.all([
+          parseCSV(LOCATION_METADATA_CSV_URL),
+          parseCSV(MAIN_CSV_URL),
+          parseCSV(MOVEMENT_CSV_URL)
+        ]);
+        state.locationMetadata = normalizeLocationMetadata(locationMetadata);
+        state.mainData = normalizeMain(mainData);
+        state.movementData = normalizeMovement(movementData);
+        
+        hydrateState();
+      } catch(error){
+        console.error('Failed to load data.', error);
+      }
+    }
+
+    function normalizeLocationMetadata(rows){
+      return rows.map(r => ({
+        poi_name: String(r.poi_name || '').trim(),
+        total_visits: Number(r.total_visits || 0),
+        total_source_markets: Number(r.total_source_markets || 0),
+        avg_sentiment: Number(r.avg_sentiment || 0),
+        sentiment_std: Number(r.sentiment_std || 0),
+        first_date: String(r.first_date || '').slice(0,10),
+        last_date: String(r.last_date || '').slice(0,10),
+        poi_category: String(r.poi_category || '').trim(),
+        poi_description: String(r.poi_description || '').trim(),
+        poi_tags: String(r.poi_tags || '').trim()
+      }))
+      .filter(r => r.poi_name)
+      .sort((a,b) => a.poi_name.localeCompare(b.poi_name));
+    }
+
+    function normalizeMain(rows){
+      return rows.map(r => ({
+        poi_name: String(r.poi_name || '').trim(),
+        date: String(r.date || '').slice(0,10),
+        source_market: String(r.source_market || '').trim(),
+        visits: Number(r.visits || 0),
+        avg_sentiment: parseNullableNumber(r.avg_sentiment),
+        sentiment_std: parseNullableNumber(r.sentiment_std),
+        positive_share: parseNullableNumber(r.positive_share),
+        negative_share: parseNullableNumber(r.negative_share)
+      }))
+      .filter(r => r.poi_name && r.date)
+      .sort((a,b) => a.date.localeCompare(b.date));
+    }
+
+    function normalizeMovement(rows){
+      return rows.map(r => ({
+        poi_name: String(r.poi_name || '').trim(),
+        related_poi_name: String(r.related_poi_name || '').trim(),
+        type: String(r.type || '').trim().toLowerCase(),
+        count: Number(r.count || 0),
+        rank: Number(r.rank || 0),
+        share: parseNullableNumber(r.share)
+      }))
+      .filter(r => r.poi_name && r.related_poi_name && (r.type === 'from' || r.type === 'to'));
+    }
+
+    function hydrateState(){
+      const allDates = state.mainData.map(d => d.date).filter(Boolean).sort();
+      state.dateMin = allDates[0] || '';
+      state.dateMax = allDates[allDates.length - 1] || '';
+      state.focalPoi = state.locationMetadata[0]?.poi_name || null;
+      state.compareSelections = [];
+      setupSelectors();
+      setDefaultDates();
+      bindEvents();
+      renderAll();
+    }
+
+    function setupSelectors(){
+      const options = state.locationMetadata.map(loc => ({value: loc.poi_name, text: loc.poi_name}));
+
+      if(state.focalSelect) state.focalSelect.destroy();
+      if(state.compareSelect) state.compareSelect.destroy();
+
+      const focalEl = document.getElementById('focalLocationSelect');
+      focalEl.innerHTML = options.map(o => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.text)}</option>`).join('');
+      state.focalSelect = new TomSelect(focalEl, {
+        maxItems: 1,
+        create: false,
+        allowEmptyOption: false,
+        searchField: ['text'],
+        sortField: {field:'text', direction:'asc'},
+        placeholder: 'Type location name',
+        dropdownParent: 'body',
+        render: {
+          option(data, escape){ return `<div>${escape(data.text)}</div>`; },
+          item(data, escape){ return `<div>${escape(data.text)}</div>`; }
+        },
+        onChange(value){
+          state.focalPoi = value;
+          state.compareSelections = state.compareSelections.filter(v => v !== value).slice(0,3);
+          syncCompareSelectorOptions();
+          renderAll();
+        }
+      });
+      if(state.focalPoi) state.focalSelect.setValue(state.focalPoi, true);
+
+      const compareEl = document.getElementById('compareLocationSelect');
+      compareEl.innerHTML = '';
+      state.compareSelect = new TomSelect(compareEl, {
+        plugins: ['remove_button'],
+        maxItems: 3,
+        create: false,
+        searchField: ['text'],
+        sortField: {field:'text', direction:'asc'},
+        placeholder: 'Type location name',
+        hideSelected: true,
+        closeAfterSelect: false,
+        dropdownParent: 'body',
+        render: {
+          option(data, escape){ return `<div>${escape(data.text)}</div>`; },
+          item(data, escape){ return `<div>${escape(data.text)}</div>`; }
+        },
+        onChange(values){
+          const arr = Array.isArray(values) ? values : (values ? [values] : []);
+          state.compareSelections = arr.filter(v => v && v !== state.focalPoi).slice(0,3);
+          renderAll();
+        }
+      });
+      syncCompareSelectorOptions();
+    }
+
+    function syncCompareSelectorOptions(){
+      if(!state.compareSelect) return;
+      const options = state.locationMetadata
+        .filter(loc => loc.poi_name !== state.focalPoi)
+        .map(loc => ({value: loc.poi_name, text: loc.poi_name}));
+      const selected = (state.compareSelections || []).filter(v => v && v !== state.focalPoi).slice(0,3);
+      state.compareSelect.clear(true);
+      state.compareSelect.clearOptions();
+      state.compareSelect.addOptions(options);
+      state.compareSelect.refreshOptions(false);
+      state.compareSelect.setValue(selected, true);
+      state.compareSelections = selected;
+    }
+
+    function setDefaultDates(){
+      document.getElementById('startDateInput').value = '2023-01-01';
+      document.getElementById('endDateInput').value = state.dateMax || '';
+    }
+
+    function bindEvents(){
+      if(bindEvents.bound) return;
+      bindEvents.bound = true;
+
+      document.getElementById('startDateInput').addEventListener('change', () => {
+        clampDates();
+        renderAll();
+      });
+      document.getElementById('endDateInput').addEventListener('change', () => {
+        clampDates();
+        renderAll();
+      });
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        state.compareSelections = [];
+        if(state.locationMetadata[0]){
+          state.focalPoi = state.locationMetadata[0].poi_name;
+          state.focalSelect.setValue(state.focalPoi, true);
+          syncCompareSelectorOptions();
+        }
+        if(state.compareSelect) state.compareSelect.clear(true);
+        setDefaultDates();
+        renderAll();
+      });
+
+      const exportWrap = document.getElementById('exportMenuWrap');
+      const exportMenu = document.getElementById('exportMenu');
+      document.getElementById('exportReportBtn').addEventListener('click', (event) => {
+        event.stopPropagation();
+        exportMenu.classList.toggle('hidden');
+      });
+      document.getElementById('choosePdfBtn').addEventListener('click', async (event) => {
+        event.stopPropagation();
+        exportMenu.classList.add('hidden');
+        await exportPDFReport();
+      });
+      document.getElementById('choosePptBtn').addEventListener('click', async (event) => {
+        event.stopPropagation();
+        exportMenu.classList.add('hidden');
+        await exportPPTReport();
+      });
+      document.addEventListener('click', (event) => {
+        if(exportWrap && !exportWrap.contains(event.target)) exportMenu.classList.add('hidden');
+      });
+    }
+
+    function clampDates(){
+      const startEl = document.getElementById('startDateInput');
+      const endEl = document.getElementById('endDateInput');
+      if(!startEl.value) startEl.value = state.dateMin || '';
+      if(!endEl.value) endEl.value = state.dateMax || '';
+      if(startEl.value && endEl.value && startEl.value > endEl.value){
+        if(document.activeElement === startEl) endEl.value = startEl.value;
+        else startEl.value = endEl.value;
+      }
+    }
+
+    function getFilters(){
+      clampDates();
+      return {
+        focalPoi: state.focalPoi,
+        comparePois: state.compareSelections.slice(0,3),
+        startDate: document.getElementById('startDateInput').value || state.dateMin,
+        endDate: document.getElementById('endDateInput').value || state.dateMax
+      };
+    }
+
+    function selectedPois(filters){
+      return [filters.focalPoi, ...filters.comparePois].filter(Boolean);
+    }
+
+    function getLocationMeta(poiName){
+      return state.locationMetadata.find(l => l.poi_name === poiName) || null;
+    }
+
+    function getSeriesStyle(index, isFocal){
+      return {
+        color: isFocal ? palette[0] : lightPalette[(index % 3) + 1],
+        width: isFocal ? 4.2 : 2.8,
+        dash: isFocal ? 'solid' : ['dash','dot','dashdot'][Math.max(0,index-1)%3]
+      };
+    }
+
+    function getBarColor(index, isFocal){
+      return isFocal ? palette[0] : lightPalette[(index % 3) + 1];
+    }
+
+    function num(value){ return Number(value || 0); }
+
+    function parseNullableNumber(value){
+      if(value === null || value === undefined) return null;
+      const str = String(value).trim();
+      if(!str || str.toLowerCase() === 'na' || str.toLowerCase() === 'nan' || str.toLowerCase() === 'null') return null;
+      const parsed = Number(str);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function formatInt(value){
+      return new Intl.NumberFormat('en-US', {maximumFractionDigits:0}).format(Math.round(num(value)));
+    }
+
+    function formatFloat(value, digits=2){
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits:digits,
+        maximumFractionDigits:digits
+      }).format(num(value));
+    }
+
+    function formatDate(dateStr){
+      if(!dateStr) return '-';
+      const [y,m,d] = String(dateStr).split('-').map(Number);
+      const dt = new Date(y, (m || 1) - 1, d || 1);
+      return dt.toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'});
+    }
+
+    function monthKey(dateStr){
+      return String(dateStr || '').slice(0,7);
+    }
+
+    function monthLabel(monthStr){
+      const [y,m] = monthStr.split('-').map(Number);
+      const dt = new Date(y, (m || 1) - 1, 1);
+      return dt.toLocaleDateString('en-US', {year:'numeric', month:'short'});
+    }
+
+    function buildContinuousMonths(startDate, endDate, fallbackDates=[]){
+      let start = startDate;
+      let end = endDate;
+
+      if((!start || !end) && fallbackDates.length){
+        const sortedDates = fallbackDates.filter(Boolean).slice().sort();
+        if(!start) start = sortedDates[0];
+        if(!end) end = sortedDates[sortedDates.length - 1];
+      }
+
+      if(!start || !end) return [];
+
+      const startMonth = monthKey(start + '-01').slice(0,7);
+      const endMonth = monthKey(end + '-01').slice(0,7);
+      const [startY, startM] = startMonth.split('-').map(Number);
+      const [endY, endM] = endMonth.split('-').map(Number);
+      const cursor = new Date(startY, startM - 1, 1);
+      const last = new Date(endY, endM - 1, 1);
+      const months = [];
+
+      while(cursor <= last){
+        const y = cursor.getFullYear();
+        const m = String(cursor.getMonth() + 1).padStart(2, '0');
+        months.push(`${y}-${m}`);
+        cursor.setMonth(cursor.getMonth() + 1);
+      }
+
+      return months;
+    }
+
+    function dateInRange(dateStr, startDate, endDate){
+      return (!startDate || dateStr >= startDate) && (!endDate || dateStr <= endDate);
+    }
+
+    function unique(arr){ return [...new Set(arr.filter(Boolean))]; }
+
+    function boldName(name){
+      return `<strong>${escapeHtml(name)}</strong>`;
+    }
+
+    function parseTags(tagStr){
+      return unique(String(tagStr || '')
+        .split(/[|,;]+/)
+        .map(s => s.trim())
+        .filter(Boolean));
+    }
+
+    function topNFromMap(mapObj, n=5){
+      return Object.entries(mapObj).sort((a,b) => b[1] - a[1]).slice(0,n);
+    }
+
+    function renderAll(){
+      const filters = getFilters();
+      renderFilterPills(filters);
+      renderSummary(filters);
+      renderVisit(filters);
+      renderExperience(filters);
+      renderMovement(filters);
+      updateHeroSubline(filters);
+    }
+
+    function updateHeroSubline(filters){
+      const focal = filters.focalPoi || '-';
+      const comps = filters.comparePois;
+      document.getElementById('heroSubline').textContent =
+        comps.length
+          ? `${focal} compared with ${comps.join(', ')} from ${formatDate(filters.startDate)} to ${formatDate(filters.endDate)}.`
+          : `${focal} from ${formatDate(filters.startDate)} to ${formatDate(filters.endDate)}.`;
+    }
+
+    function renderFilterPills(filters){
+      const pillHost = document.getElementById('filterPills');
+      const compareText = filters.comparePois.length ? filters.comparePois.join(', ') : 'None';
+      pillHost.innerHTML = `
+        <span class="pill"><strong>Focal Location:</strong> ${escapeHtml(filters.focalPoi || '-')}</span>
+        <span class="pill"><strong>Compare Locations:</strong> ${escapeHtml(compareText)}</span>
+        <span class="pill"><strong>Date Range:</strong> ${escapeHtml(formatDate(filters.startDate))} – ${escapeHtml(formatDate(filters.endDate))}</span>
+      `;
+    }
+
+    function getFilteredMain(filters){
+      const names = selectedPois(filters);
+      return state.mainData.filter(row => names.includes(row.poi_name) && dateInRange(row.date, filters.startDate, filters.endDate));
+    }
+
+    function getFilteredMovement(filters){
+      const names = selectedPois(filters);
+      return state.movementData.filter(row => names.includes(row.poi_name));
+    }
+
+    function computeLocationMetrics(filters){
+      const names = selectedPois(filters);
+      const filtered = getFilteredMain(filters);
+
+      return names.map((poiName, idx) => {
+        const rows = filtered.filter(r => r.poi_name === poiName);
+        const totalVisits = rows.reduce((s,r) => s + num(r.visits), 0);
+        const activeDays = unique(rows.filter(r => num(r.visits) > 0).map(r => r.date)).length;
+        const avgVisitPerDay = activeDays ? totalVisits / activeDays : 0;
+        const weightedSentNumerator = rows.reduce((s,r) => s + num(r.avg_sentiment) * num(r.visits), 0);
+        const avgSentiment = totalVisits ? weightedSentNumerator / totalVisits : 0;
+        const marketMap = {};
+        let weightedPos = 0;
+        let weightedNeg = 0;
+
+        rows.forEach(r => {
+          marketMap[r.source_market] = (marketMap[r.source_market] || 0) + num(r.visits);
+          weightedPos += num(r.positive_share) * num(r.visits);
+          weightedNeg += num(r.negative_share) * num(r.visits);
+        });
+
+        return {
+          poi_name: poiName,
+          isFocal: poiName === filters.focalPoi,
+          totalVisits,
+          avgVisitPerDay,
+          avgSentiment,
+          marketCount: unique(rows.map(r => r.source_market)).length,
+          positiveShare: totalVisits ? weightedPos / totalVisits : 0,
+          negativeShare: totalVisits ? weightedNeg / totalVisits : 0,
+          rawMarketMap: marketMap,
+          color: getBarColor(idx, poiName === filters.focalPoi)
+        };
+      });
+    }
+
+    function renderSummary(filters){
+      const focalMeta = getLocationMeta(filters.focalPoi) || {};
+      const metrics = computeLocationMetrics(filters);
+      state.latestMetrics = metrics;
+      state.latestSummaryMetrics = metrics.find(m => m.poi_name === filters.focalPoi) || null;
+
+      document.getElementById('metaName').textContent = focalMeta.poi_name || '-';
+    //   document.getElementById('metaSub').textContent = focalMeta.poi_category || '-';
+      document.getElementById('metaCategory').textContent = focalMeta.poi_category || '-';
+      document.getElementById('metaDescription').textContent = focalMeta.poi_description || '-';
+      const tags = parseTags(focalMeta.poi_tags);
+    //   document.getElementById('metaTagsInline').textContent = tags.length ? tags.join(', ') : '-';
+      document.getElementById('metaTags').innerHTML = tags.length
+        ? tags.map(tag => `<span class="tag"># ${escapeHtml(tag)}</span>`).join('')
+        : '';
+
+      renderSummaryMetricCards(filters, metrics);
+      renderSummaryTable(filters, metrics);
+
+      document.getElementById('comparisonMeta').textContent =
+        filters.comparePois.length ? `${filters.comparePois.length} comparison location${filters.comparePois.length > 1 ? 's' : ''} selected.` : 'No comparison location selected.';
+      document.getElementById('summaryInsight').innerHTML = buildSummaryInsight(filters, metrics);
+    }
+
+    function metricCardIcon(kind){
+      const icons = {
+        visits:`<svg viewBox="0 0 24 24"><path d="M4 18V9"/><path d="M10 18V5"/><path d="M16 18v-7"/><path d="M22 18v-4"/></svg>`,
+        day:`<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 10h18"/></svg>`,
+        sentiment:`<svg viewBox="0 0 24 24"><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/><circle cx="12" cy="12" r="9"/></svg>`,
+        markets:`<svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M3 12h18"/><path d="M6.5 6.5l11 11"/><path d="M17.5 6.5l-11 11"/></svg>`
+      };
+      return icons[kind] || icons.visits;
+    }
+
+    function renderSummaryMetricCards(filters, metrics){
+      const focalMetric = metrics.find(m => m.poi_name === filters.focalPoi) || {
+        totalVisits:0, avgVisitPerDay:0, avgSentiment:0, marketCount:0
+      };
+      const cardHost = document.getElementById('summaryMetricGrid');
+      const items = [
+        {icon:'visits', label:'TOTAL VISITS', value:formatInt(focalMetric.totalVisits)},
+        {icon:'day', label:'VISITS/DAY', value:formatFloat(focalMetric.avgVisitPerDay,1)},
+        {icon:'sentiment', label:'AVG SENTIMENT', value:formatFloat(focalMetric.avgSentiment,2)},
+        {icon:'markets', label:'SOURCE MARKETS', value:formatInt(focalMetric.marketCount)}
+      ];
+      cardHost.innerHTML = items.map(item => `
+        <div class="metric-card">
+          <div class="metric-head">
+            <span class="metric-icon">${metricCardIcon(item.icon)}</span>
+            <div class="metric-label">${escapeHtml(item.label)}</div>
+          </div>
+          <div class="metric-value">${escapeHtml(item.value)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderSummaryTable(filters, metrics){
+      const table = document.getElementById('summaryMetricsTable');
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>LOCATION</th>
+            <th>TOTAL VISITS</th>
+            <th>VISITS/DAY</th>
+            <th>AVG SENTIMENT</th>
+            <th>SOURCE MARKETS</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${metrics.map(m => `
+            <tr class="${m.isFocal ? 'focal-row' : ''}">
+              <td>
+                <div class="name-cell">
+                  <span class="swatch" style="background:${m.color}"></span>
+                  <span>${escapeHtml(m.poi_name)}${m.isFocal ? ' (Focal)' : ''}</span>
+                </div>
+              </td>
+              <td>${formatInt(m.totalVisits)}</td>
+              <td>${formatFloat(m.avgVisitPerDay,1)}</td>
+              <td>${formatFloat(m.avgSentiment,2)}</td>
+              <td>${formatInt(m.marketCount)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+    }
+
+    function buildSummaryInsight(filters, metrics){
+      const focal = metrics.find(m => m.poi_name === filters.focalPoi);
+      if(!focal) return 'No summary metrics are available for the selected filters.';
+      const topMarkets = topNFromMap(focal.rawMarketMap || {}, 2).map(([name, count]) => `${escapeHtml(name)} (${formatInt(count)})`);
+      const visitRank = [...metrics].sort((a,b) => b.totalVisits - a.totalVisits).findIndex(m => m.poi_name === focal.poi_name) + 1;
+      const sentimentRank = [...metrics].sort((a,b) => b.avgSentiment - a.avgSentiment).findIndex(m => m.poi_name === focal.poi_name) + 1;
+      let text = `${boldName(focal.poi_name)} records ${formatInt(focal.totalVisits)} visits in the selected period, averaging ${formatFloat(focal.avgVisitPerDay,1)} visits/day with an average sentiment of ${formatFloat(focal.avgSentiment,2)}. It reaches ${formatInt(focal.marketCount)} source markets, led by ${topMarkets.join(', ') || 'the available markets in the dataset'}. `;
+      if(filters.comparePois.length){
+        const bestVisit = [...metrics].sort((a,b) => b.totalVisits - a.totalVisits)[0];
+        const bestSent = [...metrics].sort((a,b) => b.avgSentiment - a.avgSentiment)[0];
+        text += `Within this comparison set, ${boldName(focal.poi_name)} ranks #${visitRank} in visit volume and #${sentimentRank} in sentiment. ${boldName(bestVisit.poi_name)} leads visits, while ${boldName(bestSent.poi_name)} records the highest sentiment.`;
+      } else {
+        text;
+      }
+      return text;
+    }
+
+    function renderVisit(filters){
+      const filtered = getFilteredMain(filters);
+      const pois = selectedPois(filters);
+      const months = buildContinuousMonths(filters.startDate, filters.endDate, filtered.map(r => r.date));
+
+      const trendTraces = pois.map((poiName, idx) => {
+        const isFocal = poiName === filters.focalPoi;
+        const style = getSeriesStyle(idx, isFocal);
+        const monthMap = {};
+        filtered.filter(r => r.poi_name === poiName).forEach(r => {
+          const mk = monthKey(r.date);
+          monthMap[mk] = (monthMap[mk] || 0) + num(r.visits);
+        });
+        return {
+          x: months.map(monthLabel),
+          y: months.map(m => (Object.prototype.hasOwnProperty.call(monthMap, m) && monthMap[m] > 0) ? monthMap[m] : null),
+          type: 'scatter',
+          mode: 'lines+markers',
+          connectgaps: false,
+          name: poiName,
+          line: {color: style.color, width: style.width, dash: style.dash},
+          marker: {color: style.color, size: isFocal ? 8 : 6, line:{color:'#fff', width:isFocal ? 1.5 : 1}},
+          hovertemplate: '%{x}<br>%{y:,.0f} visits<extra>%{fullData.name}</extra>'
+        };
+      });
+
+      Plotly.newPlot('visitTrendChart', trendTraces, getBaseLayout({legend:true, xTitle:'Month', yTitle:'Visits'}), {responsive:true, displayModeBar:false});
+
+      const marketRows = filtered;
+      const totalsByPoi = {};
+      pois.forEach(poi => { totalsByPoi[poi] = 0; });
+      marketRows.forEach(r => {
+        if(pois.includes(r.poi_name)){
+          totalsByPoi[r.poi_name] += num(r.visits);
+        }
+      });
+
+      const visitsByPoiMarket = {};
+      pois.forEach(poi => { visitsByPoiMarket[poi] = {}; });
+      marketRows.forEach(r => {
+        if(!pois.includes(r.poi_name)) return;
+        const poi = r.poi_name;
+        const market = r.source_market;
+        if(!visitsByPoiMarket[poi][market]) visitsByPoiMarket[poi][market] = 0;
+        visitsByPoiMarket[poi][market] += num(r.visits);
+      });
+
+      const focalShares = {};
+      Object.keys(visitsByPoiMarket[filters.focalPoi] || {}).forEach(market => {
+        const visits = visitsByPoiMarket[filters.focalPoi][market] || 0;
+        const total = totalsByPoi[filters.focalPoi] || 0;
+        focalShares[market] = total ? visits / total : 0;
+      });
+
+      const topMarkets = Object.keys(focalShares)
+        .sort((a, b) => {
+          const d1 = (focalShares[b] || 0) - (focalShares[a] || 0);
+          if(d1 !== 0) return d1;
+          return a.localeCompare(b);
+        })
+        .slice(0, 5);
+
+      const barTraces = pois.map((poiName, idx) => {
+        const isFocal = poiName === filters.focalPoi;
+        const total = totalsByPoi[poiName] || 0;
+        const sharesPct = topMarkets.map(market => {
+          const visits = visitsByPoiMarket[poiName][market] || 0;
+          return total ? (visits / total) * 100 : 0;
+        });
+        const rawVisits = topMarkets.map(market => visitsByPoiMarket[poiName][market] || 0);
+
+        return {
+          x: sharesPct,
+          y: topMarkets,
+          type: 'bar',
+          orientation: 'h',
+          name: poiName,
+          customdata: rawVisits.map((visits, i) => [visits, sharesPct[i]]),
+          marker: {
+            color: getBarColor(idx, isFocal),
+            opacity: isFocal ? 0.95 : 0.72,
+            line: {color: isFocal ? '#173a9a' : '#ffffff', width: isFocal ? 1.2 : 0.7}
+          },
+          hovertemplate: '%{y}<br>Share: %{x:.2f}%<br>Visits: %{customdata[0]:,.0f}<extra>%{fullData.name}</extra>'
+        };
+      });
+
+      const barLayout = getBaseLayout({legend:true, xTitle:'Share (%)', yTitle:'Source Market'});
+      barLayout.barmode = 'group';
+      barLayout.margin.l = 170;
+      barLayout.yaxis.autorange = 'reversed';
+      Plotly.newPlot('sourceMarketChart', barTraces, barLayout, {responsive:true, displayModeBar:false});
+
+      document.getElementById('visitTrendInsight').innerHTML = buildVisitTrendInsight(filters, trendTraces);
+      document.getElementById('sourceMarketInsight').innerHTML = buildSourceMarketInsight(filters, topMarkets, barTraces);
+    }
+
+    function buildVisitTrendInsight(filters, traces){
+      if(!traces.length || !traces[0].x.length) return 'No visit trend is available for the selected filters.';
+      const summaries = traces.map(trace => {
+        const points = trace.x.map((x, i) => ({x, y: trace.y[i]})).filter(p => p.y != null && Number.isFinite(Number(p.y)));
+        const start = points.length ? Number(points[0].y) : 0;
+        const end = points.length ? Number(points[points.length - 1].y) : 0;
+        const peak = points.length ? Math.max(...points.map(p => Number(p.y))) : 0;
+        const peakPoint = points.find(p => Number(p.y) === peak);
+        const change = start ? ((end - start) / start) * 100 : 0;
+        return {name:trace.name, start, end, peak, peakMonth:peakPoint ? peakPoint.x : '-', change};
+      });
+      const focal = summaries.find(s => s.name === filters.focalPoi) || summaries[0];
+      const endLeader = [...summaries].sort((a,b) => b.end - a.end)[0];
+      const growthLeader = [...summaries].sort((a,b) => b.change - a.change)[0];
+      let text = `${boldName(focal.name)} moves from ${formatInt(focal.start)} visits at the start of the selected period to ${formatInt(focal.end)} at the end, a ${focal.change >= 0 ? 'gain' : 'decline'} of ${formatFloat(Math.abs(focal.change),1)}%. Its monthly peak appears in ${escapeHtml(focal.peakMonth)}, when visits reach ${formatInt(focal.peak)}. `;
+      if(filters.comparePois.length){
+        text += `${boldName(endLeader.name)} finishes with the highest ending volume, while ${boldName(growthLeader.name)} shows the fastest overall change. `;
+      } else {
+        text;
+      }
+      return text;
+    }
+
+    function buildSourceMarketInsight(filters, sortedMarkets, barTraces){
+      if(!sortedMarkets.length || !barTraces.length) return 'No source market distribution is available for the selected filters.';
+      const focalTrace = barTraces.find(t => t.name === filters.focalPoi) || barTraces[0];
+      const focalPairs = sortedMarkets.map((m, i) => ({
+        market: m,
+        sharePct: num(focalTrace.x[i]),
+        visits: Array.isArray(focalTrace.customdata?.[i]) ? num(focalTrace.customdata[i][0]) : 0
+      })).filter(p => p.sharePct > 0);
+
+      const topThree = focalPairs.slice(0,3);
+      const topThreeText = topThree.map(p => `${escapeHtml(p.market)} (${formatFloat(p.sharePct,2)}%, ${formatInt(p.visits)} visits)`).join(', ') || 'the markets available in the dataset';
+      const topFiveSharePct = focalPairs.reduce((s, p) => s + p.sharePct, 0);
+
+      let text = `${boldName(filters.focalPoi)} is led by ${topThreeText}. The top 5 source markets account for ${formatFloat(topFiveSharePct,2)}% of visits in the selected period. `;
+      if(filters.comparePois.length){
+        const activeMarketsByPoi = {};
+        barTraces.forEach(trace => {
+          activeMarketsByPoi[trace.name] = new Set(sortedMarkets.filter((m, i) => {
+            const row = trace.customdata?.[i];
+            return Array.isArray(row) ? num(row[0]) > 0 : num(trace.x[i]) > 0;
+          }));
+        });
+        const common = sortedMarkets.filter(m => selectedPois(filters).every(p => activeMarketsByPoi[p]?.has(m))).slice(0,2);
+        const focalUnique = focalPairs.map(p => p.market).filter(m => !filters.comparePois.some(p => activeMarketsByPoi[p]?.has(m))).slice(0,2);
+        text += common.length ? `Common markets include ${common.map(escapeHtml).join(', ')}. ` : `Market overlap across the selected locations is limited. `;
+        text += focalUnique.length ? `${boldName(filters.focalPoi)} also shows stronger pull from ${focalUnique.map(escapeHtml).join(', ')}.` : `Most leading markets overlap with the comparison locations.`;
+      } else {
+        text;
+      }
+      return text;
+    }
+
+    function renderExperience(filters){
+      const filtered = getFilteredMain(filters);
+      const pois = selectedPois(filters);
+      const months = buildContinuousMonths(filters.startDate, filters.endDate, filtered.map(r => r.date));
+
+      const traces = pois.map((poiName, idx) => {
+        const isFocal = poiName === filters.focalPoi;
+        const style = getSeriesStyle(idx, isFocal);
+        const sums = {};
+        const weights = {};
+
+        filtered.filter(r => r.poi_name === poiName).forEach(r => {
+          const mk = monthKey(r.date);
+          const sentiment = r.avg_sentiment;
+          const visits = num(r.visits);
+          if(!Number.isFinite(sentiment) || visits <= 0) return;
+          sums[mk] = (sums[mk] || 0) + sentiment * visits;
+          weights[mk] = (weights[mk] || 0) + visits;
+        });
+
+        return {
+          x: months.map(monthLabel),
+          y: months.map(m => weights[m] ? sums[m] / weights[m] : null),
+          type: 'scatter',
+          mode: 'lines+markers',
+          connectgaps: false,
+          name: poiName,
+          line: {color: style.color, width: style.width, dash: style.dash},
+          marker: {color: style.color, size: isFocal ? 8 : 6, line:{color:'#fff', width:isFocal ? 1.5 : 1}},
+          hovertemplate: '%{x}<br>%{y:.2f} sentiment<extra>%{fullData.name}</extra>'
+        };
+      });
+
+      const layout = getBaseLayout({legend:true, xTitle:'Month', yTitle:'Average sentiment'});
+      layout.yaxis.range = [0, 1];
+      Plotly.newPlot('experienceChart', traces, layout, {responsive:true, displayModeBar:false});
+
+      document.getElementById('experienceInsight').innerHTML = buildExperienceInsight(filters, traces, filtered);
+    }
+
+    function buildExperienceInsight(filters, traces, filtered){
+      if(!traces.length || !traces[0].x.length) return 'No experience trend is available for the selected filters.';
+      const summaries = traces.map(trace => {
+        const values = trace.y.map(v => v == null ? null : num(v)).filter(v => v != null);
+        const avg = values.length ? values.reduce((a,b) => a + b, 0) / values.length : 0;
+        const peak = values.length ? Math.max(...values) : 0;
+        const low = values.length ? Math.min(...values) : 0;
+        return {name:trace.name, avg, peak, low};
+      });
+      const focalSummary = summaries.find(s => s.name === filters.focalPoi) || summaries[0];
+      const focalRows = filtered.filter(r => r.poi_name === filters.focalPoi);
+      const totalVisits = focalRows.reduce((s,r) => s + num(r.visits), 0);
+      const posShare = totalVisits ? focalRows.reduce((s,r) => s + num(r.positive_share) * num(r.visits), 0) / totalVisits : 0;
+      const negShare = totalVisits ? focalRows.reduce((s,r) => s + num(r.negative_share) * num(r.visits), 0) / totalVisits : 0;
+      let text = `${boldName(filters.focalPoi)} averages ${formatFloat(focalSummary.avg,2)} sentiment across the selected period, ranging from ${formatFloat(focalSummary.low,2)} to ${formatFloat(focalSummary.peak,2)}. Its weighted positive share is ${formatFloat(posShare,2)}, while the negative share is ${formatFloat(negShare,2)}. `;
+      if(filters.comparePois.length){
+        const best = [...summaries].sort((a,b) => b.avg - a.avg)[0];
+        text += `${boldName(best.name)} records the strongest average sentiment in this comparison set.`;
+      } else {
+        text;
+      }
+      return text;
+    }
+
+    function renderMovement(filters){
+      const movement = getFilteredMovement(filters);
+      const pois = selectedPois(filters);
+
+      const fromCountByPoi = {};
+      const toCountByPoi = {};
+      const fromShareByPoi = {};
+      const toShareByPoi = {};
+      pois.forEach(poi => {
+        fromCountByPoi[poi] = {};
+        toCountByPoi[poi] = {};
+        fromShareByPoi[poi] = {};
+        toShareByPoi[poi] = {};
+      });
+
+      movement.forEach(row => {
+        if(row.type === 'from'){
+          fromCountByPoi[row.poi_name][row.related_poi_name] = num(row.count);
+          fromShareByPoi[row.poi_name][row.related_poi_name] = Number.isFinite(row.share) ? num(row.share) : null;
+        } else if(row.type === 'to'){
+          toCountByPoi[row.poi_name][row.related_poi_name] = num(row.count);
+          toShareByPoi[row.poi_name][row.related_poi_name] = Number.isFinite(row.share) ? num(row.share) : null;
+        }
+      });
+
+      fillMissingShares(fromCountByPoi, fromShareByPoi);
+      fillMissingShares(toCountByPoi, toShareByPoi);
+
+      const focalFrom = topNFromMap(fromShareByPoi[filters.focalPoi] || {}, 5).map(([name]) => name);
+      const focalTo = topNFromMap(toShareByPoi[filters.focalPoi] || {}, 5).map(([name]) => name);
+
+      const topFromNames = focalFrom.length ? focalFrom : topCombinedRelated(fromShareByPoi, 5);
+      const topToNames = focalTo.length ? focalTo : topCombinedRelated(toShareByPoi, 5);
+
+      const fromTraces = pois.map((poiName, idx) => {
+        const isFocal = poiName === filters.focalPoi;
+        return {
+          x: topFromNames.map(name => num(fromShareByPoi[poiName][name] || 0) * 100),
+          y: topFromNames,
+          type: 'bar',
+          orientation: 'h',
+          name: poiName,
+          customdata: topFromNames.map(name => [num(fromCountByPoi[poiName][name] || 0), num(fromShareByPoi[poiName][name] || 0) * 100]),
+          marker: {
+            color: getBarColor(idx, isFocal),
+            opacity: isFocal ? 0.95 : 0.72,
+            line: {color: isFocal ? '#173a9a' : '#ffffff', width: isFocal ? 1.2 : 0.7}
+          },
+          hovertemplate: '%{y}<br>Share: %{x:.2f}%<br>Movements: %{customdata[0]:,.0f}<extra>%{fullData.name}</extra>'
+        };
+      });
+
+      const toTraces = pois.map((poiName, idx) => {
+        const isFocal = poiName === filters.focalPoi;
+        return {
+          x: topToNames.map(name => num(toShareByPoi[poiName][name] || 0) * 100),
+          y: topToNames,
+          type: 'bar',
+          orientation: 'h',
+          name: poiName,
+          customdata: topToNames.map(name => [num(toCountByPoi[poiName][name] || 0), num(toShareByPoi[poiName][name] || 0) * 100]),
+          marker: {
+            color: getBarColor(idx, isFocal),
+            opacity: isFocal ? 0.95 : 0.72,
+            line: {color: isFocal ? '#173a9a' : '#ffffff', width: isFocal ? 1.2 : 0.7}
+          },
+          hovertemplate: '%{y}<br>Share: %{x:.2f}%<br>Movements: %{customdata[0]:,.0f}<extra>%{fullData.name}</extra>'
+        };
+      });
+
+      const layout = getBaseLayout({legend:true, xTitle:'Share (%)', yTitle:'Connected location'});
+      layout.barmode = 'group';
+      layout.margin.l = 190;
+      layout.yaxis.autorange = 'reversed';
+      Plotly.newPlot('movementFromChart', fromTraces, layout, {responsive:true, displayModeBar:false});
+      Plotly.newPlot('movementToChart', toTraces, layout, {responsive:true, displayModeBar:false});
+
+      document.getElementById('movementFromInsight').innerHTML = buildMovementInsight(filters, fromCountByPoi, fromShareByPoi, 'from');
+      document.getElementById('movementToInsight').innerHTML = buildMovementInsight(filters, toCountByPoi, toShareByPoi, 'to');
+    }
+
+    function fillMissingShares(countByPoi, shareByPoi){
+      Object.keys(countByPoi).forEach(poi => {
+        const countMap = countByPoi[poi] || {};
+        const shareMap = shareByPoi[poi] || {};
+        const totalCount = Object.values(countMap).reduce((sum, value) => sum + num(value), 0);
+        Object.keys(countMap).forEach(name => {
+          if(!Number.isFinite(shareMap[name])){
+            shareMap[name] = totalCount ? num(countMap[name]) / totalCount : 0;
+          }
+        });
+        shareByPoi[poi] = shareMap;
+      });
+    }
+
+    function topCombinedRelated(aggByPoi, n=5){
+      const combined = {};
+      Object.values(aggByPoi).forEach(map => {
+        Object.entries(map).forEach(([name, value]) => {
+          combined[name] = (combined[name] || 0) + num(value);
+        });
+      });
+      return Object.entries(combined).sort((a,b) => b[1] - a[1]).slice(0,n).map(([name]) => name);
+    }
+
+    function buildMovementInsight(filters, countAggByPoi, shareAggByPoi, direction){
+      const focalCountMap = countAggByPoi[filters.focalPoi] || {};
+      const focalShareMap = shareAggByPoi[filters.focalPoi] || {};
+      const focalTopByShare = topNFromMap(focalShareMap, 1)[0];
+      if(!focalTopByShare){
+        return `No ${direction === 'from' ? 'inbound' : 'outbound'} movement is available for the selected filters.`;
+      }
+      const topName = focalTopByShare[0];
+      const topSharePct = num(focalTopByShare[1]) * 100;
+      const topCount = num(focalCountMap[topName] || 0);
+      const relationWord = direction === 'from' ? 'origin' : 'destination';
+      const commonLinks = filters.comparePois.length
+        ? Object.keys(focalShareMap).filter(name => filters.comparePois.every(poi => Object.keys(shareAggByPoi[poi] || {}).includes(name))).slice(0,2)
+        : [];
+      const focalUnique = filters.comparePois.length
+        ? Object.keys(focalShareMap).filter(name => !filters.comparePois.some(poi => Object.keys(shareAggByPoi[poi] || {}).includes(name))).slice(0,2)
+        : [];
+
+      let text = `${boldName(filters.focalPoi)} is most strongly connected with ${escapeHtml(topName)} as a leading ${relationWord}, contributing ${formatFloat(topSharePct,2)}% of movements and ${formatInt(topCount)} observed movements. `;
+      if(filters.comparePois.length){
+        text += commonLinks.length ? `Shared ${direction === 'from' ? 'origins' : 'destinations'} include ${commonLinks.map(escapeHtml).join(', ')}, showing overlap with the comparison locations. ` : `The comparison set shows limited overlap in its strongest movement links. `;
+        text += focalUnique.length ? `${boldName(filters.focalPoi)} also stands out through more focal-specific links such as ${focalUnique.map(escapeHtml).join(', ')}.` : `Most leading links are shared, so the main difference is in relative strength rather than link composition.`;
+      } else {
+        text;
+      }
+      return text;
+    }
+
+    function getBaseLayout({legend=true, xTitle='', yTitle=''} = {}){
+      return {
+        paper_bgcolor:'rgba(0,0,0,0)',
+        plot_bgcolor:'#ffffff',
+        margin:{l:82,r:30,t:96,b:76},
+        font:{family:'Inter, ui-sans-serif, system-ui, sans-serif', size:16, color:'#1a1a1a'},
+        showlegend:legend,
+        legend:{
+          orientation:'h',
+          yanchor:'bottom',
+          y:1.18,
+          xanchor:'left',
+          x:0,
+          bgcolor:'rgba(255,255,255,.96)',
+          bordercolor:'#e4ecf6',
+          borderwidth:1,
+          font:{size:13}
+        },
+        xaxis:{
+          title:{text:xTitle, standoff:16},
+          gridcolor:'#edf2f8',
+          linecolor:'#d9e3ef',
+          zeroline:false,
+          tickfont:{size:14},
+          automargin:true
+        },
+        yaxis:{
+          title:{text:yTitle, standoff:14},
+          gridcolor:'#edf2f8',
+          linecolor:'#d9e3ef',
+          zeroline:false,
+          tickfont:{size:14},
+          automargin:true
+        },
+        hoverlabel:{bordercolor:'#d9e3ef'}
+      };
+    }
+
+    function escapeHtml(value){
+      return String(value == null ? '' : value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    async function getChartImage(chartId, width=1200, height=660){
+      const el = document.getElementById(chartId);
+      if(!el) return null;
+      return await Plotly.toImage(el, {format:'png', width, height, scale:2});
+    }
+
+    function getExportContext(){
+      const filters = getFilters();
+      return {
+        filters,
+        focalName: filters.focalPoi,
+        compareNames: filters.comparePois,
+        dateLabel: `${formatDate(filters.startDate)} – ${formatDate(filters.endDate)}`
+      };
+    }
+
+    function buildExportCoverPage(ctx){
+      const compareLabel = ctx.compareNames.length ? ctx.compareNames.join(', ') : 'None';
+      return `
+        <div class="export-page">
+          <div class="export-center">
+            <h1 class="export-cover-title">Report of ${escapeHtml(ctx.focalName)}</h1>
+            <div class="export-cover-meta">
+              <div class="export-cover-row">
+                <div class="k">Focal Location</div>
+                <div>${escapeHtml(ctx.focalName)}</div>
+              </div>
+              <div class="export-cover-row">
+                <div class="k">Compare Locations</div>
+                <div>${escapeHtml(compareLabel)}</div>
+              </div>
+              <div class="export-cover-row">
+                <div class="k">Start Date</div>
+                <div>${escapeHtml(formatDate(ctx.filters.startDate))}</div>
+              </div>
+              <div class="export-cover-row">
+                <div class="k">End Date</div>
+                <div>${escapeHtml(formatDate(ctx.filters.endDate))}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildExportProfilePage(ctx){
+      const meta = getLocationMeta(ctx.filters.focalPoi) || {};
+      const tags = parseTags(meta.poi_tags).join(', ') || '-';
+      return `
+        <div class="export-page">
+          <h1 class="export-title">${escapeHtml(ctx.focalName)}</h1>
+          <div class="export-meta">
+            <span class="export-pill"><strong>Focal Location:</strong> ${escapeHtml(ctx.focalName)}</span>
+          </div>
+
+          <div class="export-list" style="margin-top:26px;">
+            <div class="export-item">
+              <div class="k">Category</div>
+              <div class="v">${escapeHtml(meta.poi_category || '-')}</div>
+            </div>
+            <div class="export-item">
+              <div class="k">Description</div>
+              <div class="v">${escapeHtml(meta.poi_description || '-')}</div>
+            </div>
+            <div class="export-item">
+              <div class="k">Tags</div>
+              <div class="v">${escapeHtml(tags)}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildExportSummaryPage(ctx){
+      const metrics = state.latestSummaryMetrics || {};
+      const rows = state.latestMetrics || [];
+      const tableRows = rows.map(row => `
+        <tr class="${row.isFocal ? 'focal' : ''}">
+          <td>${escapeHtml(row.poi_name)}${row.isFocal ? ' (Focal)' : ''}</td>
+          <td>${formatInt(row.totalVisits)}</td>
+          <td>${formatFloat(row.avgVisitPerDay,1)}</td>
+          <td>${formatFloat(row.avgSentiment,2)}</td>
+          <td>${formatInt(row.marketCount)}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div class="export-page">
+          <h1 class="export-title">Summary</h1>
+          <div class="export-subhead">Summary Metrics</div>
+          <div class="export-metrics">
+            <div class="export-metric"><div class="k">TOTAL VISITS</div><div class="v">${formatInt(metrics.totalVisits || 0)}</div></div>
+            <div class="export-metric"><div class="k">VISITS/DAY</div><div class="v">${formatFloat(metrics.avgVisitPerDay || 0,1)}</div></div>
+            <div class="export-metric"><div class="k">AVG SENTIMENT</div><div class="v">${formatFloat(metrics.avgSentiment || 0,2)}</div></div>
+            <div class="export-metric"><div class="k">SOURCE MARKETS</div><div class="v">${formatInt(metrics.marketCount || 0)}</div></div>
+          </div>
+
+          <div class="export-insight">${document.getElementById('summaryInsight').innerHTML || ''}</div>
+
+          <div class="export-subhead" style="margin-top:14px;">Comparative Table</div>
+          <table class="export-table">
+            <thead>
+              <tr>
+                <th>LOCATION</th>
+                <th>TOTAL VISITS</th>
+                <th>VISITS/DAY</th>
+                <th>AVG SENTIMENT</th>
+                <th>SOURCE MARKETS</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function buildExportChartPage(ctx, sectionTitle, title, img, insight){
+      return `
+        <div class="export-page">
+          <div class="export-subhead">${escapeHtml(sectionTitle)}</div>
+          <h1 class="export-title">${escapeHtml(title)}</h1>
+          <div class="export-meta">
+            <span class="export-pill"><strong>Focal Location:</strong> ${escapeHtml(ctx.focalName)}</span>
+            <span class="export-pill"><strong>Compare Locations:</strong> ${escapeHtml(ctx.compareNames.length ? ctx.compareNames.join(', ') : 'None')}</span>
+            <span class="export-pill"><strong>Start Date:</strong> ${escapeHtml(formatDate(ctx.filters.startDate))}</span>
+            <span class="export-pill"><strong>End Date:</strong> ${escapeHtml(formatDate(ctx.filters.endDate))}</span>
+          </div>
+
+          <div style="margin-top:24px;">
+            <img class="export-chart-img" src="${img || ''}" alt="${escapeHtml(title)}" />
+            <div class="export-insight">${insight || ''}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function renderExportPageToCanvas(html){
+      const host = document.getElementById('exportRenderHost');
+      host.innerHTML = html;
+      const page = host.firstElementChild;
+      const canvas = await html2canvas(page, {scale:3, backgroundColor:'#ffffff'});
+      host.innerHTML = '';
+      return canvas;
+    }
+
+    async function buildPDFPages(){
+      const ctx = getExportContext();
+      const visitTrendImg = await getChartImage('visitTrendChart');
+      const sourceMarketImg = await getChartImage('sourceMarketChart');
+      const experienceImg = await getChartImage('experienceChart');
+      const movementFromImg = await getChartImage('movementFromChart');
+      const movementToImg = await getChartImage('movementToChart');
+
+      return [
+        buildExportCoverPage(ctx),
+        buildExportProfilePage(ctx),
+        buildExportSummaryPage(ctx),
+        buildExportChartPage(ctx, 'Visit Analysis', 'Visit Trend', visitTrendImg, document.getElementById('visitTrendInsight').innerHTML || ''),
+        buildExportChartPage(ctx, 'Visit Analysis', 'Source Market', sourceMarketImg, document.getElementById('sourceMarketInsight').innerHTML || ''),
+        buildExportChartPage(ctx, 'Experience Analysis', 'Experience Trend', experienceImg, document.getElementById('experienceInsight').innerHTML || ''),
+        buildExportChartPage(ctx, 'Movement Analysis', 'Top 5 Inbound Locations', movementFromImg, document.getElementById('movementFromInsight').innerHTML || ''),
+        buildExportChartPage(ctx, 'Movement Analysis', 'Top 5 Outbound Locations', movementToImg, document.getElementById('movementToInsight').innerHTML || '')
+      ];
+    }
+
+    async function exportPDFReport(){
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({orientation:'p', unit:'pt', format:'a4'});
+      const pages = await buildPDFPages();
+
+      for(let i = 0; i < pages.length; i++){
+        const canvas = await renderExportPageToCanvas(pages[i]);
+        const imgData = canvas.toDataURL('image/png');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
+        const imgW = canvas.width * ratio;
+        const imgH = canvas.height * ratio;
+        const x = (pageWidth - imgW) / 2;
+        const y = (pageHeight - imgH) / 2;
+        if(i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', x, y, imgW, imgH, undefined, 'FAST');
+      }
+
+      const ctx = getExportContext();
+      pdf.save(`${slugify(ctx.focalName)}_location_report.pdf`);
+    }
+
+    async function exportPPTReport(){
+      const ctx = getExportContext();
+      const pptx = new PptxGenJS();
+      pptx.layout = 'LAYOUT_WIDE';
+      pptx.author = 'OpenAI';
+      pptx.subject = 'Location report';
+      pptx.title = `Report of ${ctx.focalName}`;
+      pptx.company = 'OpenAI';
+      pptx.lang = 'en-US';
+
+      const compareLabel = ctx.compareNames.length ? ctx.compareNames.join(', ') : 'None';
+      const focalMeta = getLocationMeta(ctx.filters.focalPoi) || {};
+      const summaryMetrics = state.latestSummaryMetrics || {};
+
+      const chartImgs = {
+        visit: await getChartImage('visitTrendChart'),
+        source: await getChartImage('sourceMarketChart'),
+        experience: await getChartImage('experienceChart'),
+        from: await getChartImage('movementFromChart'),
+        to: await getChartImage('movementToChart')
+      };
+
+      const insightText = {
+        summary: (document.getElementById('summaryInsight').textContent || '').trim(),
+        visit: (document.getElementById('visitTrendInsight').textContent || '').trim(),
+        source: (document.getElementById('sourceMarketInsight').textContent || '').trim(),
+        experience: (document.getElementById('experienceInsight').textContent || '').trim(),
+        from: (document.getElementById('movementFromInsight').textContent || '').trim(),
+        to: (document.getElementById('movementToInsight').textContent || '').trim()
+      };
+
+      function addBase(slide){
+        slide.background = {color:'FFFFFF'};
+        slide.addShape(pptx.ShapeType.rect, {x:0, y:0, w:13.333, h:7.5, line:{color:'FFFFFF'}, fill:{color:'FFFFFF'}});
+      }
+
+      function addSlideHeader(slide, title, kicker='LOCATION REPORT'){
+        addBase(slide);
+        slide.addText(kicker, {x:0.6, y:0.28, w:3.4, h:0.22, fontSize:10, bold:true, color:'2952CC', charSpace:1.2});
+        slide.addText(title, {x:0.6, y:0.52, w:9.8, h:0.42, fontSize:24, bold:true, color:'000000'});
+        slide.addShape(pptx.ShapeType.line, {x:0.6, y:0.98, w:12.1, h:0, line:{color:'E7EEF8', pt:1.2}});
+      }
+
+      function addInfoCard(slide, x, y, w, h, label, value, soft=false){
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x, y, w, h,
+          fill:{color: soft ? 'F8FBFF' : 'FFFFFF'},
+          line:{color:'E4ECF6', pt:1}
+        });
+        slide.addText(label, {x:x+0.22, y:y+0.18, w:w-0.44, h:0.18, fontSize:10, bold:true, color:'4A5A6A', charSpace:0.8});
+        slide.addText(value || '-', {x:x+0.22, y:y+0.47, w:w-0.44, h:h-0.62, fontSize:16, color:'000000', margin:0.02, valign:'top'});
+      }
+
+      function addMetricCard(slide, x, y, w, h, label, value){
+        slide.addShape(pptx.ShapeType.roundRect, {x, y, w, h, fill:{color:'F8FBFF'}, line:{color:'E4ECF6', pt:1}});
+        slide.addText(label, {x:x+0.18, y:y+0.16, w:w-0.36, h:0.18, fontSize:10, bold:true, color:'4A5A6A', charSpace:0.7});
+        slide.addText(value, {x:x+0.18, y:y+0.48, w:w-0.36, h:0.34, fontSize:23, bold:true, color:'000000'});
+      }
+
+      function addNarrativeBox(slide, x, y, w, h, text){
+        slide.addShape(pptx.ShapeType.roundRect, {x, y, w, h, fill:{color:'F8FBFF'}, line:{color:'E4ECF6', pt:1}});
+        slide.addText(text || '-', {x:x+0.22, y:y+0.18, w:w-0.44, h:h-0.36, fontSize:15, color:'000000', margin:0.02, valign:'top'});
+      }
+
+      function addComparisonTable(slide, rows){
+        const cols = [0.62, 3.38, 5.28, 7.48, 9.43];
+        const widths = [2.76, 1.90, 2.20, 1.95, 3.30];
+        const headers = ['LOCATION', 'TOTAL VISITS', 'VISITS/DAY', 'AVG SENTIMENT', 'SOURCE MARKETS'];
+        const top = 4.18;
+        const rowH = 0.5;
+        headers.forEach((header, idx) => {
+          slide.addShape(pptx.ShapeType.rect, {x:cols[idx], y:top, w:widths[idx], h:rowH, fill:{color:'F5F8FD'}, line:{color:'E4ECF6', pt:1}});
+          slide.addText(header, {x:cols[idx]+0.08, y:top+0.12, w:widths[idx]-0.16, h:0.18, fontSize:10, bold:true, color:'111111', margin:0.01});
+        });
+        rows.forEach((row, rIdx) => {
+          const y = top + rowH + rIdx * rowH;
+          const isFocal = /\(Focal\)/.test(row[0]);
+          row.forEach((cell, cIdx) => {
+            slide.addShape(pptx.ShapeType.rect, {
+              x:cols[cIdx], y, w:widths[cIdx], h:rowH,
+              fill:{color: isFocal ? 'EEF4FF' : 'FFFFFF'},
+              line:{color:'E4ECF6', pt:1}
+            });
+            slide.addText(String(cell), {x:cols[cIdx]+0.08, y:y+0.12, w:widths[cIdx]-0.16, h:0.18, fontSize:11.5, bold:isFocal, color:'000000', margin:0.01});
+          });
+        });
+      }
+
+      let slide = pptx.addSlide();
+      addBase(slide);
+      slide.addText(`Report of ${ctx.focalName}`, {
+        x:1.2, y:1.35, w:10.9, h:0.7,
+        fontSize:30, bold:true, align:'center', color:'000000'
+      });
+      slide.addShape(pptx.ShapeType.roundRect, {x:2.5, y:2.1, w:8.35, h:2.35, fill:{color:'F8FBFF'}, line:{color:'E4ECF6', pt:1}});
+      slide.addText('Focal Location', {x:2.82, y:2.38, w:1.9, h:0.18, fontSize:11, bold:true, color:'4A5A6A', charSpace:0.8});
+      slide.addText(ctx.focalName, {x:4.9, y:2.36, w:5.2, h:0.22, fontSize:17, color:'000000'});
+      slide.addText('Compare Locations', {x:2.82, y:2.92, w:1.9, h:0.18, fontSize:11, bold:true, color:'4A5A6A', charSpace:0.8});
+      slide.addText(compareLabel, {x:4.9, y:2.90, w:5.2, h:0.36, fontSize:17, color:'000000'});
+      slide.addText('Start Date', {x:2.82, y:3.46, w:1.9, h:0.18, fontSize:11, bold:true, color:'4A5A6A', charSpace:0.8});
+      slide.addText(formatDate(ctx.filters.startDate), {x:4.9, y:3.44, w:5.2, h:0.22, fontSize:17, color:'000000'});
+      slide.addText('End Date', {x:2.82, y:4.00, w:1.9, h:0.18, fontSize:11, bold:true, color:'4A5A6A', charSpace:0.8});
+      slide.addText(formatDate(ctx.filters.endDate), {x:4.9, y:3.98, w:5.2, h:0.22, fontSize:17, color:'000000'});
+
+      slide = pptx.addSlide();
+      addSlideHeader(slide, ctx.focalName, 'PROFILE');
+      addInfoCard(slide, 0.72, 1.26, 12.0, 1.0, 'Category', focalMeta.poi_category || '-', true);
+      addInfoCard(slide, 0.72, 2.46, 12.0, 2.08, 'Description', focalMeta.poi_description || '-', false);
+      addInfoCard(slide, 0.72, 4.74, 12.0, 1.22, 'Tags', parseTags(focalMeta.poi_tags).join(', ') || '-', true);
+
+      slide = pptx.addSlide();
+      addSlideHeader(slide, 'Summary', 'SUMMARY');
+      slide.addText('Summary Metrics', {x:0.72, y:1.02, w:3.2, h:0.2, fontSize:10, bold:true, color:'4A5A6A', charSpace:0.9});
+      const cardSpecs = [
+        ['TOTAL VISITS', formatInt(summaryMetrics.totalVisits || 0)],
+        ['VISITS/DAY', formatFloat(summaryMetrics.avgVisitPerDay || 0, 1)],
+        ['AVG SENTIMENT', formatFloat(summaryMetrics.avgSentiment || 0, 2)],
+        ['SOURCE MARKETS', formatInt(summaryMetrics.marketCount || 0)]
+      ];
+      cardSpecs.forEach((spec, idx) => addMetricCard(slide, 0.62 + idx * 3.05, 1.24, 2.8, 1.15, spec[0], spec[1]));
+      addNarrativeBox(slide, 0.72, 2.7, 12.0, 1.0, insightText.summary);
+      slide.addText('Comparative Table', {x:0.72, y:3.94, w:3.0, h:0.2, fontSize:10, bold:true, color:'4A5A6A', charSpace:0.9});
+      const tableRows = (state.latestMetrics || []).map(m => [
+        `${m.poi_name}${m.isFocal ? ' (Focal)' : ''}`,
+        formatInt(m.totalVisits),
+        formatFloat(m.avgVisitPerDay,1),
+        formatFloat(m.avgSentiment,2),
+        formatInt(m.marketCount)
+      ]);
+      addComparisonTable(slide, tableRows);
+
+      const chartSlides = [
+        ['VISIT ANALYSIS', 'Visit Trend', chartImgs.visit, insightText.visit],
+        ['VISIT ANALYSIS', 'Source Market', chartImgs.source, insightText.source],
+        ['EXPERIENCE ANALYSIS', 'Experience Trend', chartImgs.experience, insightText.experience],
+        ['MOVEMENT ANALYSIS', 'Top 5 Inbound Locations', chartImgs.from, insightText.from],
+        ['MOVEMENT ANALYSIS', 'Top 5 Outbound Locations', chartImgs.to, insightText.to]
+      ];
+
+      chartSlides.forEach(spec => {
+        const s = pptx.addSlide();
+        addSlideHeader(s, spec[1], spec[0]);
+        if(spec[2]){
+          s.addImage({data:spec[2], x:0.62, y:1.2, w:8.45, h:4.75});
+        }
+        addNarrativeBox(s, 9.28, 1.2, 3.45, 4.75, spec[3]);
+      });
+
+      await pptx.writeFile({fileName: `${slugify(ctx.focalName)}_location_report.pptx`, compression:true});
+    }
+
+    function slugify(text){
+      return String(text || 'location_report')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>
