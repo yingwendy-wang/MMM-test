@@ -1,0 +1,661 @@
+poi_name,related_poi_name,count,unique_journeys,type,rank,share
+Avenue Of Stars,Victoria Harbour,30,28,from,1,0.14925373134328357
+Avenue Of Stars,K11 MUSEA,16,16,from,2,0.07960199004975124
+Avenue Of Stars,Hong Kong Disneyland,13,13,from,3,0.06467661691542288
+Avenue Of Stars,Tsim Sha Tsui,13,13,from,4,0.06467661691542288
+Avenue Of Stars,Victoria Peak,13,13,from,5,0.06467661691542288
+Avenue Of Stars,Victoria Harbour,57,55,to,1,0.2676056338028169
+Avenue Of Stars,Hong Kong Disneyland,21,21,to,2,0.09859154929577464
+Avenue Of Stars,K11 MUSEA,16,16,to,3,0.07511737089201878
+Avenue Of Stars,Clock Tower,8,8,to,4,0.03755868544600939
+Avenue Of Stars,The Peak Tram,8,8,to,5,0.03755868544600939
+Bakehouse (Wan Chai),Hong Kong Disneyland,35,31,from,1,0.10057471264367816
+Bakehouse (Wan Chai),Hong Kong International Airport,18,18,from,2,0.05172413793103448
+Bakehouse (Wan Chai),Tsim Sha Tsui,16,16,from,3,0.04597701149425287
+Bakehouse (Wan Chai),Hashtag B,14,14,from,4,0.040229885057471264
+Bakehouse (Wan Chai),Victoria Harbour,14,14,from,5,0.040229885057471264
+Bakehouse (Wan Chai),Hong Kong Disneyland,40,36,to,1,0.12269938650306748
+Bakehouse (Wan Chai),Hong Kong International Airport,23,23,to,2,0.0705521472392638
+Bakehouse (Wan Chai),Central,13,13,to,3,0.03987730061349693
+Bakehouse (Wan Chai),Vission Bakery,13,13,to,4,0.03987730061349693
+Bakehouse (Wan Chai),Hashtag B,10,10,to,5,0.03067484662576687
+Causeway Bay,Hong Kong Disneyland,27,26,from,1,0.0967741935483871
+Causeway Bay,Hong Kong International Airport,22,21,from,2,0.07885304659498207
+Causeway Bay,Central,16,16,from,3,0.05734767025089606
+Causeway Bay,Tsim Sha Tsui,15,13,from,4,0.053763440860215055
+Causeway Bay,Bakehouse (Wan Chai),8,8,from,5,0.02867383512544803
+Causeway Bay,Hong Kong Disneyland,20,20,to,1,0.07017543859649122
+Causeway Bay,Tsim Sha Tsui,18,16,to,2,0.06315789473684211
+Causeway Bay,Central,17,17,to,3,0.05964912280701754
+Causeway Bay,Victoria Harbour,14,14,to,4,0.04912280701754386
+Causeway Bay,Bakehouse (Wan Chai),11,10,to,5,0.03859649122807018
+Central,Hong Kong Disneyland,58,57,from,1,0.0777479892761394
+Central,Hong Kong International Airport,50,49,from,2,0.06702412868632708
+Central,Victoria Harbour,40,39,from,3,0.05361930294906166
+Central,Victoria Peak,28,27,from,4,0.03753351206434316
+Central,Tai Kwun,23,23,from,5,0.030831099195710455
+Central,Hong Kong Disneyland,51,51,to,1,0.06572164948453608
+Central,Hong Kong Observation Wheel,39,39,to,2,0.05025773195876289
+Central,Victoria Harbour,39,38,to,3,0.05025773195876289
+Central,Hong Kong International Airport,35,35,to,4,0.045103092783505154
+Central,Tsim Sha Tsui,29,29,to,5,0.037371134020618556
+Chungking Mansions,Hong Kong International Airport,10,9,from,1,0.1388888888888889
+Chungking Mansions,Hong Kong Disneyland,8,8,from,2,0.1111111111111111
+Chungking Mansions,Hong Kong Observation Wheel,7,7,from,3,0.09722222222222222
+Chungking Mansions,Tsim Sha Tsui,6,6,from,4,0.08333333333333333
+Chungking Mansions,Central,4,4,from,5,0.05555555555555555
+Chungking Mansions,Victoria Harbour,8,8,to,1,0.09411764705882353
+Chungking Mansions,Hong Kong Disneyland,7,7,to,2,0.08235294117647059
+Chungking Mansions,Central,4,4,to,3,0.047058823529411764
+Chungking Mansions,Hong Kong International Airport,4,4,to,4,0.047058823529411764
+Chungking Mansions,Mong Kok,4,4,to,5,0.047058823529411764
+Citygate Outlets,Hong Kong Disneyland,18,18,from,1,0.1956521739130435
+Citygate Outlets,Hong Kong International Airport,14,14,from,2,0.15217391304347827
+Citygate Outlets,Ngong Ping 360,14,14,from,3,0.15217391304347827
+Citygate Outlets,Tian Tan Buddha,6,6,from,4,0.06521739130434782
+Citygate Outlets,Lantau Island,4,4,from,5,0.043478260869565216
+Citygate Outlets,Hong Kong Disneyland,19,19,to,1,0.20430107526881722
+Citygate Outlets,Ngong Ping 360,14,14,to,2,0.15053763440860216
+Citygate Outlets,Hong Kong International Airport,7,7,to,3,0.07526881720430108
+Citygate Outlets,Ngong Ping,7,7,to,4,0.07526881720430108
+Citygate Outlets,Lantau Island,6,6,to,5,0.06451612903225806
+Clock Tower,Victoria Harbour,31,31,from,1,0.14691943127962084
+Clock Tower,Hong Kong Cultural Centre,23,23,from,2,0.10900473933649289
+Clock Tower,Hong Kong International Airport,19,19,from,3,0.09004739336492891
+Clock Tower,Hong Kong Disneyland,15,15,from,4,0.07109004739336493
+Clock Tower,Tsim Sha Tsui,9,9,from,5,0.04265402843601896
+Clock Tower,Hong Kong Disneyland,32,32,to,1,0.15920398009950248
+Clock Tower,Victoria Harbour,30,30,to,2,0.14925373134328357
+Clock Tower,Hong Kong Cultural Centre,20,20,to,3,0.09950248756218906
+Clock Tower,Tsim Sha Tsui,12,10,to,4,0.05970149253731343
+Clock Tower,Hong Kong Observation Wheel,11,11,to,5,0.05472636815920398
+Disney's Hollywood Hotel,Hong Kong Disneyland,434,274,from,1,0.8767676767676768
+Disney's Hollywood Hotel,Hong Kong International Airport,18,17,from,2,0.03636363636363636
+Disney's Hollywood Hotel,Disney Explorers Lodge,14,14,from,3,0.028282828282828285
+Disney's Hollywood Hotel,Victoria Harbour,3,3,from,4,0.006060606060606061
+Disney's Hollywood Hotel,Enchanted Garden Restaurant,2,2,from,5,0.00404040404040404
+Disney's Hollywood Hotel,Hong Kong Disneyland,470,294,to,1,0.9038461538461539
+Disney's Hollywood Hotel,Disney Explorers Lodge,9,9,to,2,0.01730769230769231
+Disney's Hollywood Hotel,Hong Kong International Airport,7,7,to,3,0.013461538461538462
+Disney's Hollywood Hotel,Ink & Plate,6,6,to,4,0.011538461538461539
+Disney's Hollywood Hotel,The Ritz-Carlton,3,3,to,5,0.0057692307692307696
+Hashtag B,Bakehouse (Wan Chai),10,10,from,1,0.1388888888888889
+Hashtag B,Tsim Sha Tsui,6,6,from,2,0.08333333333333333
+Hashtag B,Hong Kong Disneyland,4,4,from,3,0.05555555555555555
+Hashtag B,Victoria Harbour,4,4,from,4,0.05555555555555555
+Hashtag B,Sha Tin Che Kung Temple,3,3,from,5,0.041666666666666664
+Hashtag B,Bakehouse (Wan Chai),14,14,to,1,0.1794871794871795
+Hashtag B,Victoria Harbour,5,5,to,2,0.0641025641025641
+Hashtag B,Hong Kong Disneyland,4,4,to,3,0.05128205128205128
+Hashtag B,Hong Kong International Airport,4,4,to,4,0.05128205128205128
+Hashtag B,Hau Fook St,3,3,to,5,0.038461538461538464
+Hong Kong Convention and Exhibition Centre,Victoria Harbour,29,29,from,1,0.14948453608247422
+Hong Kong Convention and Exhibition Centre,Hong Kong International Airport,27,27,from,2,0.13917525773195877
+Hong Kong Convention and Exhibition Centre,Hong Kong Cultural Centre,10,10,from,3,0.05154639175257732
+Hong Kong Convention and Exhibition Centre,Hong Kong Disneyland,10,10,from,4,0.05154639175257732
+Hong Kong Convention and Exhibition Centre,Victoria Peak,10,9,from,5,0.05154639175257732
+Hong Kong Convention and Exhibition Centre,Hong Kong Disneyland,21,21,to,1,0.11290322580645161
+Hong Kong Convention and Exhibition Centre,Victoria Harbour,19,19,to,2,0.10215053763440861
+Hong Kong Convention and Exhibition Centre,Hong Kong Cultural Centre,12,11,to,3,0.06451612903225806
+Hong Kong Convention and Exhibition Centre,Hong Kong International Airport,12,11,to,4,0.06451612903225806
+Hong Kong Convention and Exhibition Centre,Hong Kong Observation Wheel,11,10,to,5,0.05913978494623656
+Hong Kong Cultural Centre,Victoria Harbour,62,60,from,1,0.155
+Hong Kong Cultural Centre,Hong Kong Disneyland,34,34,from,2,0.085
+Hong Kong Cultural Centre,Clock Tower,20,20,from,3,0.05
+Hong Kong Cultural Centre,Hong Kong International Airport,16,16,from,4,0.04
+Hong Kong Cultural Centre,The Peninsula,13,13,from,5,0.0325
+Hong Kong Cultural Centre,Victoria Harbour,60,58,to,1,0.15424164524421594
+Hong Kong Cultural Centre,Hong Kong Disneyland,46,46,to,2,0.11825192802056556
+Hong Kong Cultural Centre,Clock Tower,23,23,to,3,0.05912596401028278
+Hong Kong Cultural Centre,Museum of Art,16,13,to,4,0.04113110539845758
+Hong Kong Cultural Centre,K11 MUSEA,15,15,to,5,0.038560411311053984
+Hong Kong Disneyland,Hong Kong International Airport,657,616,from,1,0.1454183266932271
+Hong Kong Disneyland,Ocean Park,515,351,from,2,0.11398849048251439
+Hong Kong Disneyland,Disney's Hollywood Hotel,470,294,from,3,0.10402833111996458
+Hong Kong Disneyland,Victoria Harbour,206,193,from,4,0.045595396193005754
+Hong Kong Disneyland,Victoria Peak,197,192,from,5,0.043603364320495795
+Hong Kong Disneyland,Ocean Park,537,376,to,1,0.13368185212845407
+Hong Kong Disneyland,Hong Kong International Airport,455,424,to,2,0.11326860841423948
+Hong Kong Disneyland,Disney's Hollywood Hotel,434,274,to,3,0.10804082648742842
+Hong Kong Disneyland,Victoria Peak,191,186,to,4,0.0475479213343291
+Hong Kong Disneyland,Lantau Island,168,162,to,5,0.041822255414488425
+Hong Kong International Airport,Hong Kong Disneyland,455,424,from,1,0.3076402974983097
+Hong Kong International Airport,Victoria Harbour,77,75,from,2,0.052062204192021636
+Hong Kong International Airport,Hong Kong-Zhuhai-Macao Bridge,66,53,from,3,0.04462474645030426
+Hong Kong International Airport,Victoria Peak,52,52,from,4,0.03515889114266396
+Hong Kong International Airport,Ngong Ping 360,47,46,from,5,0.03177822853279243
+Hong Kong International Airport,Hong Kong Disneyland,657,616,to,1,0.2833117723156533
+Hong Kong International Airport,Victoria Harbour,119,118,to,2,0.0513152220784821
+Hong Kong International Airport,Lantau Island,81,76,to,3,0.03492884864165589
+Hong Kong International Airport,Tsing Ma Bridge,81,80,to,4,0.03492884864165589
+Hong Kong International Airport,Victoria Peak,80,80,to,5,0.03449762828805519
+Hong Kong Island,Victoria Harbour,15,15,from,1,0.17647058823529413
+Hong Kong Island,Hong Kong Disneyland,7,7,from,2,0.08235294117647059
+Hong Kong Island,Hong Kong International Airport,7,7,from,3,0.08235294117647059
+Hong Kong Island,Victoria Peak,6,6,from,4,0.07058823529411765
+Hong Kong Island,Hong Kong Observation Wheel,5,5,from,5,0.058823529411764705
+Hong Kong Island,Victoria Harbour,12,11,to,1,0.12
+Hong Kong Island,Victoria Peak,12,12,to,2,0.12
+Hong Kong Island,Hong Kong Disneyland,6,5,to,3,0.06
+Hong Kong Island,Causeway Bay,4,4,to,4,0.04
+Hong Kong Island,Central,4,4,to,5,0.04
+Hong Kong Observation Wheel,Hong Kong Disneyland,55,55,from,1,0.11554621848739496
+Hong Kong Observation Wheel,Central,39,39,from,2,0.0819327731092437
+Hong Kong Observation Wheel,Hong Kong International Airport,37,36,from,3,0.07773109243697479
+Hong Kong Observation Wheel,Victoria Harbour,35,35,from,4,0.07352941176470588
+Hong Kong Observation Wheel,Victoria Peak,28,28,from,5,0.058823529411764705
+Hong Kong Observation Wheel,Hong Kong Disneyland,82,81,to,1,0.18807339449541285
+Hong Kong Observation Wheel,Victoria Harbour,46,46,to,2,0.10550458715596331
+Hong Kong Observation Wheel,Hong Kong International Airport,25,24,to,3,0.05733944954128441
+Hong Kong Observation Wheel,Victoria Peak,18,18,to,4,0.04128440366972477
+Hong Kong Observation Wheel,Sky 100,15,15,to,5,0.034403669724770644
+Hong Kong Park,Hong Kong Disneyland,32,31,from,1,0.17777777777777778
+Hong Kong Park,Lantau Island,11,11,from,2,0.06111111111111111
+Hong Kong Park,Po Lin Monastery,10,10,from,3,0.05555555555555555
+Hong Kong Park,Central,9,9,from,4,0.05
+Hong Kong Park,The Peak Tram,8,8,from,5,0.044444444444444446
+Hong Kong Park,Hong Kong Disneyland,33,32,to,1,0.1774193548387097
+Hong Kong Park,The Peak Tram,13,13,to,2,0.06989247311827956
+Hong Kong Park,Victoria Peak,13,13,to,3,0.06989247311827956
+Hong Kong Park,Lantau Island,10,10,to,4,0.053763440860215055
+Hong Kong Park,Po Lin Monastery,9,9,to,5,0.04838709677419355
+Hong Kong Science Museum,Hong Kong Disneyland,55,50,from,1,0.3767123287671233
+Hong Kong Science Museum,The Peak Tram,9,9,from,2,0.06164383561643835
+Hong Kong Science Museum,Hong Kong International Airport,7,7,from,3,0.04794520547945205
+Hong Kong Science Museum,Hong Kong Cultural Centre,6,6,from,4,0.0410958904109589
+Hong Kong Science Museum,Hong Kong Space Museum,5,5,from,5,0.03424657534246575
+Hong Kong Science Museum,Hong Kong Disneyland,47,44,to,1,0.36153846153846153
+Hong Kong Science Museum,Victoria Harbour,8,8,to,2,0.06153846153846154
+Hong Kong Science Museum,Ocean Park,7,7,to,3,0.05384615384615385
+Hong Kong Science Museum,Museum of Art,6,6,to,4,0.046153846153846156
+Hong Kong Science Museum,Hong Kong Cultural Centre,5,5,to,5,0.038461538461538464
+Hong Kong Zoological and Botanical Gardens,Ocean Park,38,35,from,1,0.4418604651162791
+Hong Kong Zoological and Botanical Gardens,Hong Kong Disneyland,33,32,from,2,0.38372093023255816
+Hong Kong Zoological and Botanical Gardens,Ngong Ping 360,3,3,from,3,0.03488372093023256
+Hong Kong Zoological and Botanical Gardens,Central Market,1,1,from,4,0.011627906976744186
+Hong Kong Zoological and Botanical Gardens,Giant Panda Adventure,1,1,from,5,0.011627906976744186
+Hong Kong Zoological and Botanical Gardens,Hong Kong Disneyland,32,32,to,1,0.3855421686746988
+Hong Kong Zoological and Botanical Gardens,Ocean Park,31,31,to,2,0.37349397590361444
+Hong Kong Zoological and Botanical Gardens,Monster Building,2,2,to,3,0.024096385542168676
+Hong Kong Zoological and Botanical Gardens,Ngong Ping,2,2,to,4,0.024096385542168676
+Hong Kong Zoological and Botanical Gardens,The Grand Aquarium,2,2,to,5,0.024096385542168676
+Hong Kong-Zhuhai-Macao Bridge,Hong Kong International Airport,75,64,from,1,0.3024193548387097
+Hong Kong-Zhuhai-Macao Bridge,Hong Kong Disneyland,22,22,from,2,0.08870967741935484
+Hong Kong-Zhuhai-Macao Bridge,Lantau Island,22,21,from,3,0.08870967741935484
+Hong Kong-Zhuhai-Macao Bridge,Ngong Ping 360,22,22,from,4,0.08870967741935484
+Hong Kong-Zhuhai-Macao Bridge,Victoria Harbour,16,16,from,5,0.06451612903225806
+Hong Kong-Zhuhai-Macao Bridge,Hong Kong International Airport,66,53,to,1,0.264
+Hong Kong-Zhuhai-Macao Bridge,Hong Kong Disneyland,25,25,to,2,0.1
+Hong Kong-Zhuhai-Macao Bridge,Lantau Island,25,24,to,3,0.1
+Hong Kong-Zhuhai-Macao Bridge,Ngong Ping 360,16,16,to,4,0.064
+Hong Kong-Zhuhai-Macao Bridge,Ngong Ping,12,12,to,5,0.048
+K11 ARTMALL,Victoria Harbour,14,14,from,1,0.14736842105263157
+K11 ARTMALL,K11 MUSEA,8,8,from,2,0.08421052631578947
+K11 ARTMALL,Hong Kong Disneyland,7,7,from,3,0.07368421052631578
+K11 ARTMALL,Tsim Sha Tsui,7,6,from,4,0.07368421052631578
+K11 ARTMALL,Hong Kong International Airport,6,6,from,5,0.06315789473684211
+K11 ARTMALL,K11 MUSEA,14,14,to,1,0.16091954022988506
+K11 ARTMALL,Victoria Harbour,11,11,to,2,0.12643678160919541
+K11 ARTMALL,Hong Kong Disneyland,7,7,to,3,0.08045977011494253
+K11 ARTMALL,Central,4,4,to,4,0.04597701149425287
+K11 ARTMALL,Hong Kong International Airport,4,4,to,5,0.04597701149425287
+K11 MUSEA,Victoria Harbour,80,77,from,1,0.2572347266881029
+K11 MUSEA,Avenue Of Stars,16,16,from,2,0.05144694533762058
+K11 MUSEA,Hong Kong Cultural Centre,15,15,from,3,0.04823151125401929
+K11 MUSEA,Hong Kong Disneyland,14,14,from,4,0.04501607717041801
+K11 MUSEA,K11 ARTMALL,14,14,from,5,0.04501607717041801
+K11 MUSEA,Victoria Harbour,57,56,to,1,0.21189591078066913
+K11 MUSEA,Hong Kong Disneyland,18,18,to,2,0.06691449814126393
+K11 MUSEA,Avenue Of Stars,16,16,to,3,0.05947955390334572
+K11 MUSEA,Hong Kong International Airport,11,11,to,4,0.040892193308550186
+K11 MUSEA,The Peninsula,10,10,to,5,0.03717472118959108
+Kennedy Town,Central,7,6,from,1,0.05511811023622047
+Kennedy Town,Hong Kong International Airport,7,7,from,2,0.05511811023622047
+Kennedy Town,Victoria Peak,6,6,from,3,0.047244094488188976
+Kennedy Town,Avenue Of Stars,5,5,from,4,0.03937007874015748
+Kennedy Town,Hong Kong Disneyland,5,5,from,5,0.03937007874015748
+Kennedy Town,New Praya,11,11,to,1,0.08208955223880597
+Kennedy Town,Central,10,10,to,2,0.07462686567164178
+Kennedy Town,Hong Kong Disneyland,8,8,to,3,0.05970149253731343
+Kennedy Town,Tsim Sha Tsui,6,6,to,4,0.04477611940298507
+Kennedy Town,Victoria Harbour,6,6,to,5,0.04477611940298507
+Kowloon,Hong Kong International Airport,16,16,from,1,0.13559322033898305
+Kowloon,Hong Kong Disneyland,9,9,from,2,0.07627118644067797
+Kowloon,Victoria Harbour,9,8,from,3,0.07627118644067797
+Kowloon,Central,8,8,from,4,0.06779661016949153
+Kowloon,Causeway Bay,3,3,from,5,0.025423728813559324
+Kowloon,Hong Kong International Airport,10,10,to,1,0.08547008547008547
+Kowloon,Hong Kong Disneyland,9,9,to,2,0.07692307692307693
+Kowloon,Central,6,6,to,3,0.05128205128205128
+Kowloon,Victoria Harbour,5,5,to,4,0.042735042735042736
+Kowloon,K11 ARTMALL,4,4,to,5,0.03418803418803419
+Lan Fong Yuen,Central,15,14,from,1,0.13157894736842105
+Lan Fong Yuen,Hong Kong Disneyland,10,10,from,2,0.08771929824561403
+Lan Fong Yuen,Bakehouse (Wan Chai),6,6,from,3,0.05263157894736842
+Lan Fong Yuen,Victoria Peak,6,6,from,4,0.05263157894736842
+Lan Fong Yuen,Hong Kong International Airport,5,5,from,5,0.043859649122807015
+Lan Fong Yuen,Central,15,15,to,1,0.13274336283185842
+Lan Fong Yuen,Bakehouse (Wan Chai),7,7,to,2,0.061946902654867256
+Lan Fong Yuen,Hong Kong Disneyland,5,5,to,3,0.04424778761061947
+Lan Fong Yuen,Man Mo Temple,5,5,to,4,0.04424778761061947
+Lan Fong Yuen,Hong Kong International Airport,4,4,to,5,0.035398230088495575
+Lan Kwai Fong,Central,7,7,from,1,0.0958904109589041
+Lan Kwai Fong,Victoria Harbour,7,7,from,2,0.0958904109589041
+Lan Kwai Fong,Hong Kong Disneyland,6,6,from,3,0.0821917808219178
+Lan Kwai Fong,Hong Kong International Airport,6,6,from,4,0.0821917808219178
+Lan Kwai Fong,K11 MUSEA,3,3,from,5,0.0410958904109589
+Lan Kwai Fong,Hong Kong Disneyland,9,9,to,1,0.13846153846153847
+Lan Kwai Fong,Tsim Sha Tsui,6,6,to,2,0.09230769230769231
+Lan Kwai Fong,Victoria Harbour,6,6,to,3,0.09230769230769231
+Lan Kwai Fong,Bakehouse (Wan Chai),4,4,to,4,0.06153846153846154
+Lan Kwai Fong,Central,4,4,to,5,0.06153846153846154
+Lantau Island,Tian Tan Buddha,289,242,from,1,0.14285714285714285
+Lantau Island,Po Lin Monastery,249,225,from,2,0.12308452792881859
+Lantau Island,Ngong Ping,218,198,from,3,0.10776075135936727
+Lantau Island,Ngong Ping 360,198,182,from,4,0.09787444389520514
+Lantau Island,Hong Kong Disneyland,168,162,from,5,0.08304498269896193
+Lantau Island,Tian Tan Buddha,335,271,to,1,0.17429760665972946
+Lantau Island,Po Lin Monastery,295,263,to,2,0.15348595213319458
+Lantau Island,Hong Kong Disneyland,170,160,to,3,0.08844953173777315
+Lantau Island,Ngong Ping,166,155,to,4,0.08636836628511967
+Lantau Island,Ngong Ping 360,145,131,to,5,0.07544224765868887
+Madame Tussauds,The Peak Tram,32,30,from,1,0.23880597014925373
+Madame Tussauds,Victoria Peak,31,30,from,2,0.23134328358208955
+Madame Tussauds,Hong Kong Disneyland,13,13,from,3,0.09701492537313433
+Madame Tussauds,The Peak Tower,7,7,from,4,0.05223880597014925
+Madame Tussauds,Hong Kong International Airport,6,6,from,5,0.04477611940298507
+Madame Tussauds,Victoria Peak,26,26,to,1,0.20967741935483872
+Madame Tussauds,Hong Kong Disneyland,21,21,to,2,0.1693548387096774
+Madame Tussauds,The Peak Tram,13,10,to,3,0.10483870967741936
+Madame Tussauds,The Peak Tower,9,9,to,4,0.07258064516129033
+Madame Tussauds,Victoria Harbour,6,6,to,5,0.04838709677419355
+Man Mo Temple,Temple St,14,14,from,1,0.06222222222222222
+Man Mo Temple,Sha Tin Che Kung Temple,13,13,from,2,0.057777777777777775
+Man Mo Temple,Yaumatei Tin Hau Temple,11,11,from,3,0.04888888888888889
+Man Mo Temple,Hung Hom Kwun Yum Temple,10,10,from,4,0.044444444444444446
+Man Mo Temple,Po Lin Monastery,10,10,from,5,0.044444444444444446
+Man Mo Temple,Sha Tin Che Kung Temple,16,16,to,1,0.07048458149779736
+Man Mo Temple,Hong Kong International Airport,14,14,to,2,0.06167400881057269
+Man Mo Temple,Po Lin Monastery,13,12,to,3,0.05726872246696035
+Man Mo Temple,Tai Po,11,11,to,4,0.048458149779735685
+Man Mo Temple,Temple St,11,11,to,5,0.048458149779735685
+Mong Kok,Hong Kong Disneyland,24,24,from,1,0.07643312101910828
+Mong Kok,Hong Kong International Airport,23,23,from,2,0.0732484076433121
+Mong Kok,Central,17,17,from,3,0.054140127388535034
+Mong Kok,Tsim Sha Tsui,15,14,from,4,0.04777070063694268
+Mong Kok,Victoria Harbour,14,14,from,5,0.044585987261146494
+Mong Kok,Hong Kong Disneyland,31,30,to,1,0.09748427672955975
+Mong Kok,Tsim Sha Tsui,16,15,to,2,0.050314465408805034
+Mong Kok,Victoria Harbour,15,14,to,3,0.04716981132075472
+Mong Kok,Ladies' Market,14,14,to,4,0.0440251572327044
+Mong Kok,Central,13,13,to,5,0.040880503144654086
+Monster Building,Hong Kong Disneyland,8,8,from,1,0.10256410256410256
+Monster Building,Victoria Harbour,4,4,from,2,0.05128205128205128
+Monster Building,Victoria Peak,4,4,from,3,0.05128205128205128
+Monster Building,Avenue Of Stars,3,3,from,4,0.038461538461538464
+Monster Building,Choi Hung Estate,3,3,from,5,0.038461538461538464
+Monster Building,Avenue Of Stars,4,4,to,1,0.04878048780487805
+Monster Building,Hong Kong International Airport,4,4,to,2,0.04878048780487805
+Monster Building,Mong Kok,4,4,to,3,0.04878048780487805
+Monster Building,The Peak Tram,4,4,to,4,0.04878048780487805
+Monster Building,Victoria Peak,4,4,to,5,0.04878048780487805
+Museum of Art,Victoria Harbour,34,34,from,1,0.16037735849056603
+Museum of Art,Hong Kong Cultural Centre,16,13,from,2,0.07547169811320754
+Museum of Art,Tsim Sha Tsui,12,12,from,3,0.05660377358490566
+Museum of Art,Hong Kong Disneyland,11,10,from,4,0.05188679245283019
+Museum of Art,Hong Kong International Airport,9,9,from,5,0.04245283018867924
+Museum of Art,Victoria Harbour,56,55,to,1,0.26291079812206575
+Museum of Art,Hong Kong Disneyland,13,12,to,2,0.06103286384976526
+Museum of Art,Hong Kong Cultural Centre,12,11,to,3,0.056338028169014086
+Museum of Art,Clock Tower,8,8,to,4,0.03755868544600939
+Museum of Art,K11 MUSEA,8,8,to,5,0.03755868544600939
+Nan Lian Garden,Hong Kong Disneyland,13,13,from,1,0.1566265060240964
+Nan Lian Garden,Po Lin Monastery,10,10,from,2,0.12048192771084337
+Nan Lian Garden,Chi Lin Nunnery,5,5,from,3,0.060240963855421686
+Nan Lian Garden,Victoria Peak,5,5,from,4,0.060240963855421686
+Nan Lian Garden,Choi Hung Estate,3,3,from,5,0.03614457831325301
+Nan Lian Garden,Po Lin Monastery,18,18,to,1,0.18556701030927836
+Nan Lian Garden,Hong Kong Disneyland,11,11,to,2,0.1134020618556701
+Nan Lian Garden,Chi Lin Nunnery,9,9,to,3,0.09278350515463918
+Nan Lian Garden,Diamond Hill,4,4,to,4,0.041237113402061855
+Nan Lian Garden,Mong Kok,4,4,to,5,0.041237113402061855
+Nathan Rd,Hong Kong International Airport,20,16,from,1,0.1834862385321101
+Nathan Rd,Hong Kong Disneyland,10,10,from,2,0.09174311926605505
+Nathan Rd,Tsim Sha Tsui,6,6,from,3,0.05504587155963303
+Nathan Rd,Victoria Harbour,5,4,from,4,0.045871559633027525
+Nathan Rd,Central,4,4,from,5,0.03669724770642202
+Nathan Rd,Hong Kong International Airport,14,11,to,1,0.12280701754385964
+Nathan Rd,Victoria Harbour,10,10,to,2,0.08771929824561403
+Nathan Rd,Hong Kong Disneyland,9,9,to,3,0.07894736842105263
+Nathan Rd,Tsim Sha Tsui,7,6,to,4,0.06140350877192982
+Nathan Rd,Central,6,6,to,5,0.05263157894736842
+Ngong Ping,Ngong Ping 360,182,160,from,1,0.20335195530726258
+Ngong Ping,Lantau Island,166,155,from,2,0.18547486033519553
+Ngong Ping,Ngong Ping Village,82,80,from,3,0.09162011173184358
+Ngong Ping,Hong Kong Disneyland,80,80,from,4,0.0893854748603352
+Ngong Ping,Tian Tan Buddha,61,57,from,5,0.06815642458100558
+Ngong Ping,Lantau Island,218,198,to,1,0.23825136612021858
+Ngong Ping,Ngong Ping 360,130,114,to,2,0.14207650273224043
+Ngong Ping,Tian Tan Buddha,98,93,to,3,0.10710382513661203
+Ngong Ping,Po Lin Monastery,75,70,to,4,0.08196721311475409
+Ngong Ping,Ngong Ping Village,70,67,to,5,0.07650273224043716
+Ngong Ping 360,Lantau Island,145,131,from,1,0.15969162995594713
+Ngong Ping 360,Ngong Ping,130,114,from,2,0.14317180616740088
+Ngong Ping 360,Hong Kong Disneyland,115,110,from,3,0.12665198237885464
+Ngong Ping 360,Ocean Park,51,50,from,4,0.05616740088105727
+Ngong Ping 360,Victoria Peak,44,43,from,5,0.048458149779735685
+Ngong Ping 360,Lantau Island,198,182,to,1,0.19148936170212766
+Ngong Ping 360,Ngong Ping,182,160,to,2,0.1760154738878143
+Ngong Ping 360,Hong Kong Disneyland,98,96,to,3,0.09477756286266925
+Ngong Ping 360,Ngong Ping Village,83,81,to,4,0.08027079303675048
+Ngong Ping 360,Tian Tan Buddha,65,63,to,5,0.06286266924564797
+Ngong Ping Village,Lantau Island,114,108,from,1,0.2159090909090909
+Ngong Ping Village,Ngong Ping 360,83,81,from,2,0.1571969696969697
+Ngong Ping Village,Ngong Ping,70,67,from,3,0.13257575757575757
+Ngong Ping Village,Hong Kong Disneyland,35,35,from,4,0.06628787878787878
+Ngong Ping Village,Po Lin Monastery,32,32,from,5,0.06060606060606061
+Ngong Ping Village,Lantau Island,153,144,to,1,0.28073394495412846
+Ngong Ping Village,Ngong Ping,82,80,to,2,0.15045871559633028
+Ngong Ping Village,Po Lin Monastery,56,56,to,3,0.10275229357798166
+Ngong Ping Village,Tian Tan Buddha,53,52,to,4,0.09724770642201835
+Ngong Ping Village,Ngong Ping 360,38,37,to,5,0.06972477064220184
+North Point,Hong Kong International Airport,11,10,from,1,0.15942028985507245
+North Point,Hong Kong Observation Wheel,5,5,from,2,0.07246376811594203
+North Point,Victoria Harbour,4,4,from,3,0.057971014492753624
+North Point,Causeway Bay,3,3,from,4,0.043478260869565216
+North Point,Hyatt Centric,3,2,from,5,0.043478260869565216
+North Point,Hong Kong International Airport,8,8,to,1,0.1111111111111111
+North Point,Central,6,6,to,2,0.08333333333333333
+North Point,Hyatt Centric,5,4,to,3,0.06944444444444445
+North Point,Victoria Harbour,5,5,to,4,0.06944444444444445
+North Point,Western Market,3,2,to,5,0.041666666666666664
+Ocean Park,Hong Kong Disneyland,537,376,from,1,0.5676532769556025
+Ocean Park,Ngong Ping 360,47,46,from,2,0.049682875264270614
+Ocean Park,Victoria Peak,35,34,from,3,0.03699788583509514
+Ocean Park,Hong Kong Zoological and Botanical Gardens,31,31,from,4,0.03276955602536998
+Ocean Park,Ngong Ping,29,29,from,5,0.0306553911205074
+Ocean Park,Hong Kong Disneyland,515,351,to,1,0.5409663865546218
+Ocean Park,Ngong Ping 360,51,50,to,2,0.05357142857142857
+Ocean Park,Victoria Peak,42,41,to,3,0.04411764705882353
+Ocean Park,Hong Kong Zoological and Botanical Gardens,38,35,to,4,0.03991596638655462
+Ocean Park,Ngong Ping,33,33,to,5,0.03466386554621849
+Po Lin Monastery,Lantau Island,295,263,from,1,0.3089005235602094
+Po Lin Monastery,Tian Tan Buddha,99,92,from,2,0.10366492146596859
+Po Lin Monastery,Ngong Ping,75,70,from,3,0.07853403141361257
+Po Lin Monastery,Ngong Ping Village,56,56,from,4,0.05863874345549738
+Po Lin Monastery,Tai Po,56,50,from,5,0.05863874345549738
+Po Lin Monastery,Lantau Island,249,225,to,1,0.27483443708609273
+Po Lin Monastery,Tian Tan Buddha,94,88,to,2,0.10375275938189846
+Po Lin Monastery,Tai Po,71,68,to,3,0.07836644591611479
+Po Lin Monastery,Hong Kong Disneyland,61,59,to,4,0.0673289183222958
+Po Lin Monastery,Ngong Ping,51,48,to,5,0.056291390728476824
+Repulse Bay,Tai O,13,12,from,1,0.15853658536585366
+Repulse Bay,Tai Po,7,7,from,2,0.08536585365853659
+Repulse Bay,Hong Kong Disneyland,6,6,from,3,0.07317073170731707
+Repulse Bay,Hong Kong International Airport,3,3,from,4,0.036585365853658534
+Repulse Bay,Lamma Island,3,3,from,5,0.036585365853658534
+Repulse Bay,Tai O,11,10,to,1,0.13924050632911392
+Repulse Bay,Tai Po,8,8,to,2,0.10126582278481013
+Repulse Bay,Yaumatei Tin Hau Temple,6,6,to,3,0.0759493670886076
+Repulse Bay,Hong Kong Disneyland,4,4,to,4,0.05063291139240506
+Repulse Bay,Sha Tin Che Kung Temple,4,4,to,5,0.05063291139240506
+SOGO,Causeway Bay,8,8,from,1,0.16
+SOGO,Hong Kong Disneyland,3,3,from,2,0.06
+SOGO,Ocean Park,3,3,from,3,0.06
+SOGO,Bakehouse (Wan Chai),2,2,from,4,0.04
+SOGO,Central,2,2,from,5,0.04
+SOGO,Causeway Bay,7,7,to,1,0.14893617021276595
+SOGO,Hong Kong International Airport,4,4,to,2,0.0851063829787234
+SOGO,Hong Kong Observation Wheel,4,4,to,3,0.0851063829787234
+SOGO,Times Square,4,4,to,4,0.0851063829787234
+SOGO,Central,3,3,to,5,0.06382978723404255
+Sha Tin Che Kung Temple,Hong Kong Disneyland,20,20,from,1,0.09345794392523364
+Sha Tin Che Kung Temple,Man Mo Temple,16,16,from,2,0.07476635514018691
+Sha Tin Che Kung Temple,Yaumatei Tin Hau Temple,15,15,from,3,0.07009345794392523
+Sha Tin Che Kung Temple,Lantau Island,14,14,from,4,0.06542056074766354
+Sha Tin Che Kung Temple,Tai Po,13,13,from,5,0.06074766355140187
+Sha Tin Che Kung Temple,Temple St,19,19,to,1,0.08878504672897196
+Sha Tin Che Kung Temple,Hong Kong Disneyland,13,13,to,2,0.06074766355140187
+Sha Tin Che Kung Temple,Hong Kong International Airport,13,13,to,3,0.06074766355140187
+Sha Tin Che Kung Temple,Man Mo Temple,13,13,to,4,0.06074766355140187
+Sha Tin Che Kung Temple,Yaumatei Tin Hau Temple,12,12,to,5,0.056074766355140186
+Sky 100,Victoria Peak,47,46,from,1,0.14506172839506173
+Sky 100,Hong Kong Disneyland,36,36,from,2,0.1111111111111111
+Sky 100,The Peak Tram,36,36,from,3,0.1111111111111111
+Sky 100,Hong Kong International Airport,32,32,from,4,0.09876543209876543
+Sky 100,Ngong Ping 360,16,15,from,5,0.04938271604938271
+Sky 100,Victoria Peak,64,62,to,1,0.19571865443425077
+Sky 100,Hong Kong Disneyland,41,41,to,2,0.12538226299694188
+Sky 100,Hong Kong International Airport,24,24,to,3,0.07339449541284404
+Sky 100,Lantau Island,23,22,to,4,0.07033639143730887
+Sky 100,The Peak Tram,19,19,to,5,0.0581039755351682
+Tai Kwun,Central,23,22,from,1,0.23711340206185566
+Tai Kwun,Hong Kong Correctional Services Museum,11,7,from,2,0.1134020618556701
+Tai Kwun,Hong Kong Disneyland,6,6,from,3,0.061855670103092786
+Tai Kwun,Central-Mid-Levels Escalators,4,4,from,4,0.041237113402061855
+Tai Kwun,Hollywood Rd,4,3,from,5,0.041237113402061855
+Tai Kwun,Central,23,23,to,1,0.23711340206185566
+Tai Kwun,Hong Kong Correctional Services Museum,9,7,to,2,0.09278350515463918
+Tai Kwun,Central Market,3,3,to,3,0.030927835051546393
+Tai Kwun,Hong Kong Cultural Centre,3,3,to,4,0.030927835051546393
+Tai Kwun,Victoria Prison,3,3,to,5,0.030927835051546393
+Tai Mo Shan,Lantau Island,96,89,from,1,0.22325581395348837
+Tai Mo Shan,Po Lin Monastery,39,37,from,2,0.09069767441860466
+Tai Mo Shan,Victoria Peak,34,31,from,3,0.07906976744186046
+Tai Mo Shan,Tian Tan Buddha,32,31,from,4,0.07441860465116279
+Tai Mo Shan,Tai Po,25,24,from,5,0.05813953488372093
+Tai Mo Shan,Lantau Island,90,84,to,1,0.22959183673469388
+Tai Mo Shan,Victoria Peak,36,35,to,2,0.09183673469387756
+Tai Mo Shan,Po Lin Monastery,32,32,to,3,0.08163265306122448
+Tai Mo Shan,Tian Tan Buddha,25,23,to,4,0.06377551020408163
+Tai Mo Shan,Tai Po,22,21,to,5,0.05612244897959184
+Tai O,Lantau Island,46,45,from,1,0.09663865546218488
+Tai O,Tai Po,42,40,from,2,0.08823529411764706
+Tai O,Tian Tan Buddha,24,23,from,3,0.05042016806722689
+Tai O,Ngong Ping,22,22,from,4,0.046218487394957986
+Tai O,Po Lin Monastery,21,21,from,5,0.04411764705882353
+Tai O,Lantau Island,47,47,to,1,0.10829493087557604
+Tai O,Tai Po,35,34,to,2,0.08064516129032258
+Tai O,Hong Kong Disneyland,21,21,to,3,0.04838709677419355
+Tai O,Ngong Ping 360,21,19,to,4,0.04838709677419355
+Tai O,Tai Mo Shan,19,18,to,5,0.04377880184331797
+Tai Po,Lantau Island,94,89,from,1,0.1828793774319066
+Tai Po,Po Lin Monastery,71,68,from,2,0.13813229571984437
+Tai Po,Tian Tan Buddha,41,40,from,3,0.07976653696498054
+Tai Po,Tai O,35,34,from,4,0.06809338521400778
+Tai Po,Hong Kong Disneyland,24,24,from,5,0.04669260700389105
+Tai Po,Lantau Island,113,108,to,1,0.2198443579766537
+Tai Po,Po Lin Monastery,56,50,to,2,0.10894941634241245
+Tai Po,Tai O,42,40,to,3,0.08171206225680934
+Tai Po,Tian Tan Buddha,36,35,to,4,0.07003891050583658
+Tai Po,Tai Mo Shan,25,24,to,5,0.048638132295719845
+Tai Tam Reservoir,Tai O,9,9,from,1,0.12162162162162163
+Tai Tam Reservoir,Ngong Ping 360,7,7,from,2,0.0945945945945946
+Tai Tam Reservoir,Tai Mo Shan,7,5,from,3,0.0945945945945946
+Tai Tam Reservoir,Lantau Island,6,6,from,4,0.08108108108108109
+Tai Tam Reservoir,Victoria Peak,5,5,from,5,0.06756756756756757
+Tai Tam Reservoir,Tai Mo Shan,12,10,to,1,0.14814814814814814
+Tai Tam Reservoir,Lantau Island,9,9,to,2,0.1111111111111111
+Tai Tam Reservoir,Tai O,9,8,to,3,0.1111111111111111
+Tai Tam Reservoir,Ngong Ping,7,7,to,4,0.08641975308641975
+Tai Tam Reservoir,Po Lin Monastery,6,6,to,5,0.07407407407407407
+Temple St,Sha Tin Che Kung Temple,19,19,from,1,0.0892018779342723
+Temple St,Po Lin Monastery,13,13,from,2,0.06103286384976526
+Temple St,Temple Street Night Market,12,10,from,3,0.056338028169014086
+Temple St,Man Mo Temple,11,11,from,4,0.051643192488262914
+Temple St,Hong Kong International Airport,8,8,from,5,0.03755868544600939
+Temple St,Temple Street Night Market,21,19,to,1,0.10344827586206896
+Temple St,Man Mo Temple,14,14,to,2,0.06896551724137931
+Temple St,Hong Kong Disneyland,11,11,to,3,0.054187192118226604
+Temple St,Yaumatei Tin Hau Temple,11,11,to,4,0.054187192118226604
+Temple St,Hong Kong International Airport,9,9,to,5,0.04433497536945813
+Temple Street Night Market,Temple St,21,19,from,1,0.1810344827586207
+Temple Street Night Market,Hong Kong Disneyland,9,9,from,2,0.07758620689655173
+Temple Street Night Market,Sha Tin Che Kung Temple,8,8,from,3,0.06896551724137931
+Temple Street Night Market,Tai O,5,5,from,4,0.04310344827586207
+Temple Street Night Market,Man Mo Temple,4,4,from,5,0.034482758620689655
+Temple Street Night Market,Temple St,12,10,to,1,0.12903225806451613
+Temple Street Night Market,Hong Kong Disneyland,8,8,to,2,0.08602150537634409
+Temple Street Night Market,Hong Kong International Airport,5,5,to,3,0.053763440860215055
+Temple Street Night Market,Yaumatei Tin Hau Temple,5,5,to,4,0.053763440860215055
+Temple Street Night Market,Hong Kong Cultural Centre,4,4,to,5,0.043010752688172046
+The Peak Tower,Victoria Peak,64,57,from,1,0.3047619047619048
+The Peak Tower,The Peak Tram,42,41,from,2,0.2
+The Peak Tower,Hong Kong Disneyland,12,12,from,3,0.05714285714285714
+The Peak Tower,Sky 100,11,11,from,4,0.05238095238095238
+The Peak Tower,Central,9,8,from,5,0.04285714285714286
+The Peak Tower,Victoria Peak,68,60,to,1,0.3238095238095238
+The Peak Tower,The Peak Tram,20,20,to,2,0.09523809523809523
+The Peak Tower,Hong Kong International Airport,9,9,to,3,0.04285714285714286
+The Peak Tower,Ngong Ping 360,8,8,to,4,0.0380952380952381
+The Peak Tower,Sky 100,8,8,to,5,0.0380952380952381
+The Peak Tram,Victoria Peak,189,168,from,1,0.3004769475357711
+The Peak Tram,Hong Kong Disneyland,68,67,from,2,0.10810810810810811
+The Peak Tram,Hong Kong International Airport,35,35,from,3,0.05564387917329094
+The Peak Tram,Central,20,20,from,4,0.03179650238473768
+The Peak Tram,The Peak Tower,20,20,from,5,0.03179650238473768
+The Peak Tram,Victoria Peak,302,270,to,1,0.4
+The Peak Tram,Hong Kong Disneyland,66,66,to,2,0.08741721854304636
+The Peak Tram,The Peak Tower,42,41,to,3,0.05562913907284768
+The Peak Tram,Sky 100,36,36,to,4,0.04768211920529802
+The Peak Tram,Madame Tussauds,32,30,to,5,0.0423841059602649
+The Peninsula,Hong Kong Disneyland,43,37,from,1,0.12721893491124261
+The Peninsula,Victoria Harbour,31,29,from,2,0.09171597633136094
+The Peninsula,Hong Kong International Airport,30,30,from,3,0.08875739644970414
+The Peninsula,Central,19,19,from,4,0.05621301775147929
+The Peninsula,Tsim Sha Tsui,13,13,from,5,0.038461538461538464
+The Peninsula,Hong Kong Disneyland,55,49,to,1,0.1757188498402556
+The Peninsula,Victoria Harbour,55,53,to,2,0.1757188498402556
+The Peninsula,Hong Kong International Airport,17,17,to,3,0.054313099041533544
+The Peninsula,Central,15,15,to,4,0.04792332268370607
+The Peninsula,Hong Kong Cultural Centre,13,13,to,5,0.04153354632587859
+Tian Tan Buddha,Lantau Island,335,271,from,1,0.37725225225225223
+Tian Tan Buddha,Ngong Ping,98,93,from,2,0.11036036036036036
+Tian Tan Buddha,Po Lin Monastery,94,88,from,3,0.10585585585585586
+Tian Tan Buddha,Ngong Ping 360,65,63,from,4,0.0731981981981982
+Tian Tan Buddha,Ngong Ping Village,53,52,from,5,0.059684684684684686
+Tian Tan Buddha,Lantau Island,289,242,to,1,0.3541666666666667
+Tian Tan Buddha,Po Lin Monastery,99,92,to,2,0.1213235294117647
+Tian Tan Buddha,Ngong Ping,61,57,to,3,0.07475490196078431
+Tian Tan Buddha,Hong Kong Disneyland,49,49,to,4,0.06004901960784314
+Tian Tan Buddha,Ngong Ping 360,42,38,to,5,0.051470588235294115
+Times Square,Causeway Bay,6,6,from,1,0.0821917808219178
+Times Square,Hong Kong Disneyland,5,5,from,2,0.0684931506849315
+Times Square,Hong Kong International Airport,5,5,from,3,0.0684931506849315
+Times Square,Madame Tussauds,4,4,from,4,0.0547945205479452
+Times Square,SOGO,4,4,from,5,0.0547945205479452
+Times Square,Hong Kong Disneyland,8,8,to,1,0.11940298507462686
+Times Square,Causeway Bay,6,6,to,2,0.08955223880597014
+Times Square,Hong Kong International Airport,4,4,to,3,0.05970149253731343
+Times Square,Central,3,3,to,4,0.04477611940298507
+Times Square,Hong Kong Observation Wheel,3,3,to,5,0.04477611940298507
+Tsim Sha Tsui,Hong Kong International Airport,48,47,from,1,0.09073724007561437
+Tsim Sha Tsui,Victoria Harbour,37,37,from,2,0.06994328922495274
+Tsim Sha Tsui,Central,29,29,from,3,0.054820415879017016
+Tsim Sha Tsui,Hong Kong Disneyland,24,24,from,4,0.045368620037807186
+Tsim Sha Tsui,Causeway Bay,18,16,from,5,0.034026465028355386
+Tsim Sha Tsui,Victoria Harbour,48,48,to,1,0.08695652173913043
+Tsim Sha Tsui,Hong Kong Disneyland,35,35,to,2,0.06340579710144928
+Tsim Sha Tsui,Central,22,22,to,3,0.03985507246376811
+Tsim Sha Tsui,Hong Kong International Airport,18,18,to,4,0.03260869565217391
+Tsim Sha Tsui,Bakehouse (Wan Chai),16,16,to,5,0.028985507246376812
+Tsing Ma Bridge,Hong Kong International Airport,81,80,from,1,0.375
+Tsing Ma Bridge,Hong Kong Disneyland,20,20,from,2,0.09259259259259259
+Tsing Ma Bridge,Lantau Island,10,10,from,3,0.046296296296296294
+Tsing Ma Bridge,Victoria Peak,10,10,from,4,0.046296296296296294
+Tsing Ma Bridge,Hong Kong-Zhuhai-Macao Bridge,8,8,from,5,0.037037037037037035
+Tsing Ma Bridge,Hong Kong Disneyland,42,41,to,1,0.1826086956521739
+Tsing Ma Bridge,Victoria Harbour,23,23,to,2,0.1
+Tsing Ma Bridge,Victoria Peak,16,16,to,3,0.06956521739130435
+Tsing Ma Bridge,Hong Kong International Airport,14,14,to,4,0.06086956521739131
+Tsing Ma Bridge,Central,7,7,to,5,0.030434782608695653
+Tsz Shan Monastery,Lantau Island,36,33,from,1,0.24161073825503357
+Tsz Shan Monastery,Po Lin Monastery,32,30,from,2,0.21476510067114093
+Tsz Shan Monastery,Tai Po,15,14,from,3,0.10067114093959731
+Tsz Shan Monastery,Sha Tin Che Kung Temple,8,8,from,4,0.053691275167785234
+Tsz Shan Monastery,Hong Kong International Airport,7,7,from,5,0.04697986577181208
+Tsz Shan Monastery,Lantau Island,34,31,to,1,0.25757575757575757
+Tsz Shan Monastery,Po Lin Monastery,21,21,to,2,0.1590909090909091
+Tsz Shan Monastery,Tai Po,12,12,to,3,0.09090909090909091
+Tsz Shan Monastery,Tai O,6,6,to,4,0.045454545454545456
+Tsz Shan Monastery,Tian Tan Buddha,5,5,to,5,0.03787878787878788
+Victoria Harbour,Hong Kong Disneyland,166,149,from,1,0.11748053786270347
+Victoria Harbour,Hong Kong International Airport,119,118,from,2,0.08421797593772117
+Victoria Harbour,Victoria Peak,91,91,from,3,0.06440198159943383
+Victoria Harbour,Hong Kong Cultural Centre,60,58,from,4,0.04246284501061571
+Victoria Harbour,Avenue Of Stars,57,55,from,5,0.040339702760084924
+Victoria Harbour,Hong Kong Disneyland,206,193,to,1,0.1514705882352941
+Victoria Harbour,Victoria Peak,86,83,to,2,0.06323529411764706
+Victoria Harbour,K11 MUSEA,80,77,to,3,0.058823529411764705
+Victoria Harbour,Hong Kong International Airport,77,75,to,4,0.05661764705882353
+Victoria Harbour,Hong Kong Cultural Centre,62,60,to,5,0.045588235294117645
+Victoria Peak,The Peak Tram,302,270,from,1,0.2069910897875257
+Victoria Peak,Hong Kong Disneyland,191,186,from,2,0.13091158327621658
+Victoria Peak,Victoria Harbour,86,83,from,3,0.05894448252227553
+Victoria Peak,Hong Kong International Airport,80,80,from,4,0.05483207676490747
+Victoria Peak,The Peak Tower,68,60,from,5,0.04660726525017135
+Victoria Peak,Hong Kong Disneyland,197,192,to,1,0.14474650991917706
+Victoria Peak,The Peak Tram,189,168,to,2,0.13886847905951505
+Victoria Peak,Victoria Harbour,91,91,to,3,0.0668626010286554
+Victoria Peak,The Peak Tower,64,57,to,4,0.0470242468772961
+Victoria Peak,Hong Kong International Airport,52,52,to,5,0.03820720058780309
+Wan Chai,Central,9,9,from,1,0.08823529411764706
+Wan Chai,Bakehouse (Wan Chai),7,7,from,2,0.06862745098039216
+Wan Chai,Tsim Sha Tsui,5,5,from,3,0.049019607843137254
+Wan Chai,Hong Kong International Airport,4,4,from,4,0.0392156862745098
+Wan Chai,Victoria Harbour,4,4,from,5,0.0392156862745098
+Wan Chai,Central,12,12,to,1,0.10714285714285714
+Wan Chai,Bakehouse (Wan Chai),10,10,to,2,0.08928571428571429
+Wan Chai,Mong Kok,4,4,to,3,0.03571428571428571
+Wan Chai,Tsim Sha Tsui,4,4,to,4,0.03571428571428571
+Wan Chai,Victoria Harbour,4,4,to,5,0.03571428571428571
+Wong Tai Sin Temple,Sha Tin Che Kung Temple,11,11,from,1,0.09649122807017543
+Wong Tai Sin Temple,Hong Kong Disneyland,6,6,from,2,0.05263157894736842
+Wong Tai Sin Temple,Hung Hom Kwun Yum Temple,5,5,from,3,0.043859649122807015
+Wong Tai Sin Temple,Man Mo Temple,5,5,from,4,0.043859649122807015
+Wong Tai Sin Temple,Victoria Harbour,5,5,from,5,0.043859649122807015
+Wong Tai Sin Temple,Sha Tin Che Kung Temple,13,13,to,1,0.11016949152542373
+Wong Tai Sin Temple,Yaumatei Tin Hau Temple,12,12,to,2,0.1016949152542373
+Wong Tai Sin Temple,Man Mo Temple,6,6,to,3,0.05084745762711865
+Wong Tai Sin Temple,Po Lin Monastery,6,6,to,4,0.05084745762711865
+Wong Tai Sin Temple,Tai Po,5,5,to,5,0.0423728813559322
+Yau Ma Tei,Mong Kok,9,9,from,1,0.12
+Yau Ma Tei,Hong Kong International Airport,7,7,from,2,0.09333333333333334
+Yau Ma Tei,Tsim Sha Tsui,6,6,from,3,0.08
+Yau Ma Tei,Lai King,3,3,from,4,0.04
+Yau Ma Tei,Tai O,3,3,from,5,0.04
+Yau Ma Tei,Hong Kong Disneyland,5,5,to,1,0.07692307692307693
+Yau Ma Tei,Tsim Sha Tsui,4,4,to,2,0.06153846153846154
+Yau Ma Tei,Victoria Harbour,4,4,to,3,0.06153846153846154
+Yau Ma Tei,Kennedy Town,3,3,to,4,0.046153846153846156
+Yau Ma Tei,Kowloon,3,3,to,5,0.046153846153846156
+Yaumatei Tin Hau Temple,Tai Po,18,18,from,1,0.09424083769633508
+Yaumatei Tin Hau Temple,Sha Tin Che Kung Temple,12,12,from,2,0.06282722513089005
+Yaumatei Tin Hau Temple,Wong Tai Sin Temple,12,12,from,3,0.06282722513089005
+Yaumatei Tin Hau Temple,Po Lin Monastery,11,10,from,4,0.05759162303664921
+Yaumatei Tin Hau Temple,Tai O,11,11,from,5,0.05759162303664921
+Yaumatei Tin Hau Temple,Tai O,18,18,to,1,0.09523809523809523
+Yaumatei Tin Hau Temple,Sha Tin Che Kung Temple,15,15,to,2,0.07936507936507936
+Yaumatei Tin Hau Temple,Tai Po,15,15,to,3,0.07936507936507936
+Yaumatei Tin Hau Temple,Hong Kong Disneyland,13,13,to,4,0.06878306878306878
+Yaumatei Tin Hau Temple,Man Mo Temple,11,11,to,5,0.0582010582010582
+iSQUARE,Hong Kong International Airport,11,11,from,1,0.1506849315068493
+iSQUARE,Hong Kong Disneyland,9,9,from,2,0.1232876712328767
+iSQUARE,Tsim Sha Tsui,6,6,from,3,0.0821917808219178
+iSQUARE,Victoria Harbour,6,6,from,4,0.0821917808219178
+iSQUARE,Lantau Island,3,3,from,5,0.0410958904109589
+iSQUARE,Hong Kong Disneyland,23,23,to,1,0.27380952380952384
+iSQUARE,Hong Kong International Airport,8,8,to,2,0.09523809523809523
+iSQUARE,Causeway Bay,5,4,to,3,0.05952380952380952
+iSQUARE,Victoria Harbour,5,5,to,4,0.05952380952380952
+iSQUARE,Hong Kong Cultural Centre,3,3,to,5,0.03571428571428571
+ifc mall,Victoria Harbour,17,17,from,1,0.11971830985915492
+ifc mall,Hong Kong Disneyland,13,13,from,2,0.09154929577464789
+ifc mall,Hong Kong Observation Wheel,13,13,from,3,0.09154929577464789
+ifc mall,Victoria Peak,9,9,from,4,0.06338028169014084
+ifc mall,Hong Kong International Airport,7,7,from,5,0.04929577464788732
+ifc mall,Victoria Harbour,19,18,to,1,0.1357142857142857
+ifc mall,Hong Kong Disneyland,15,15,to,2,0.10714285714285714
+ifc mall,Hong Kong Observation Wheel,13,12,to,3,0.09285714285714286
+ifc mall,Central,8,8,to,4,0.05714285714285714
+ifc mall,K11 MUSEA,6,6,to,5,0.04285714285714286
